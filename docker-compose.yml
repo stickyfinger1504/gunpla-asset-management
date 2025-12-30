@@ -1,6 +1,16 @@
 version: "3.8"
 
 services:
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    environment:
+      HOST: db
+      ROOT_PASSWORD: ${ROOT_PASSWORD}
+
   nginx:
     image: nginx:latest
     ports:
@@ -33,7 +43,7 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      #When multiple users are needed during initial load
+      #for initial load
       - ./db_init:/docker-entrypoint-initdb.d
 volumes:
   db_data:

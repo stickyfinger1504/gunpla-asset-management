@@ -1,1 +1,3 @@
 .env
+src/transaction_images/*
+!src/transaction_images/.gitkeep
