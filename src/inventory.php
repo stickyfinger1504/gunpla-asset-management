@@ -173,7 +173,7 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-600">Price (IDR):</label>
-                        <input type="number" step="1" name="pricebought" placeholder="0.00" class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="number" step="1" name="pricebought" placeholder="Example: 150000" class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
 
