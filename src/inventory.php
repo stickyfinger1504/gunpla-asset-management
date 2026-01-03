@@ -71,7 +71,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $id = $_POST['edit_id'];
         $kit_name = $_POST["kit_name"];
         $status = $_POST["statusid"];
-        
         $datebought = !empty($_POST["datebought"]) ? $_POST["datebought"] : null;
         $pricebought = !empty($_POST["pricebought"]) ? $_POST["pricebought"] : null;
         $notes = (isset($_POST["notes"]) && $_POST["notes"] !== '') ? $_POST['notes'] : null;
@@ -123,260 +122,241 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #333; max-width: 950px; margin: 2rem auto; padding: 20px; }
-        .input-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        h1 { color: #2c3e50; text-align: center; }
-        label { display: block; margin-top: 15px; font-weight: 600; color: #555; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button.save-btn { margin-top: 20px; width: 100%; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
-        button.save-btn:hover { background-color: #2980b9; }
-        .msg { padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-        
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
-        th { background-color: #2c3e50; color: white; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; }
-        tr:hover { background-color: #f1f1f1; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; background: #eee; color: #555; }
-
-        .action-row { display: flex; gap: 5px; align-items: center; }
-        .action-btn {
-            width: 32px; height: 32px; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
-            border: none; cursor: pointer; text-decoration: none; font-size: 16px; transition: background 0.2s;
-        }
-        .btn-edit { background-color: #f0f0f0; } 
-        .btn-archive { background-color: #e3f2fd; color: #1976d2; } 
-        .btn-delete { background-color: #ffebee; color: #c62828; }
-        .action-btn:hover { filter: brightness(0.9); }
-        form.inline-form { margin: 0; padding: 0; }
-
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out;
-        }
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; color: #888; line-height: 1; }
-        .close-btn:hover { color: #333; }
+        .modal-animate { animation: slideDown 0.3s ease-out; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800">
 
-    <h1>🤖 Gunpla Hangar</h1>
-    
-    <div class="input-card">
-        <h2>Add New Kit</h2>
-        <?php if($message) echo "<div class='msg'>$message</div>"; ?>
+    <?php include 'header.php'; ?>
 
-        <form method="post">
-            <input type="hidden" name="action_type" value="add">
+    <div class="max-w-5xl mx-auto p-6">
 
-            <label>Kit Name:</label>
-            <input type="text" name="kit_name" required placeholder="e.g. MG Barbatos Lupus Rex">
+        <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-700 mb-4">Add New Kit</h2>
+            
+            <?php if($message) echo "<div class='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4'>$message</div>"; ?>
 
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <label>Brand:</label>
-                    <select name="brandid" required>
-                        <option value="">-- Select Brand --</option>
+            <form method="post" class="space-y-4">
+                <input type="hidden" name="action_type" value="add">
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Kit Name:</label>
+                    <input type="text" name="kit_name" required placeholder="e.g. MG Barbatos Lupus Rex" 
+                           class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
+                        <select name="brandid" required class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="">-- Select Brand --</option>
+                            <?php echo getoptions($conn, 'dim_brand', 'id', 'name', 'section', 'kit'); ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Status:</label>
+                        <select name="statusid" required class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <?php echo getOptions2($conn, 'dim_category', 'id', 'label', 'section','kitinventory', 'module','status'); ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Date Bought:</label>
+                        <input type="date" name="datebought" class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Price (IDR):</label>
+                        <input type="number" step="1" name="pricebought" placeholder="0.00" class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
+                    <textarea name="notes" rows="3" placeholder="Details..." class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Save to Database
+                </button>
+            </form>
+        </div>
+
+        <h3 class="text-xl font-bold text-gray-700 mb-2">📦 Current Inventory</h3>
+        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+            <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Filter Brand</label>
+                    <select name="filter_brand" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">All Brands</option>
                         <?php echo getoptions($conn, 'dim_brand', 'id', 'name', 'section', 'kit'); ?>
                     </select>
                 </div>
-                <div style="flex: 1;">
-                    <label>Status:</label>
-                    <select name="statusid" required>
-                        <?php echo getOptions2($conn, 'dim_category', 'id', 'label', 'section','kitinventory', 'module','status'); ?>
+                <div class="flex-1 w-full">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
+                    <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="date_desc">Date Bought (Newest)</option>
+                        <option value="date_asc">Date Bought (Oldest)</option>
+                        <option value="price_desc">Price (Highest)</option>
+                        <option value="price_asc">Price (Lowest)</option>
                     </select>
                 </div>
-            </div>
-
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <label>Date Bought:</label>
-                    <input type="date" name="datebought">
+                <div class="pb-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="show_archived" value="1" <?php echo isset($_GET['show_archived']) ? 'checked' : ''; ?> class="form-checkbox h-4 w-4 text-blue-600"> 
+                        <span class="ml-2 text-gray-700">Show <?php echo ucfirst($label_target); ?></span>
+                    </label>
                 </div>
-                <div style="flex: 1;">
-                    <label>Price (IDR):</label>
-                    <input type="number" step="1" name="pricebought" placeholder="0.00">
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                    <a href="inventory.php" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</a>
                 </div>
-            </div>
+            </form>
+        </div>
 
-            <label>Notes:</label>
-            <textarea name="notes" rows="3" placeholder="First batch, heavy weathering planned..."></textarea>
+        <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Kit Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Brand</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Price</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php
+                    $sql = "SELECT * FROM vw_kit_inventory WHERE 1=1";
 
-            <button type="submit" class="save-btn">Save to Database</button>
-        </form>
-    </div>
+                    if (!isset($_GET['show_archived'])) {
+                        if ($archived_id) {
+                            $sql .= " AND statusid != $archived_id";
+                        }
+                    }
 
-    <h3>📦 Current Inventory</h3>
-    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <form method="GET" style="display: flex; gap: 15px; align-items: flex-end;">
-            <div style="flex: 1;">
-                <label>Filter Brand:</label>
-                <select name="filter_brand">
-                    <option value="">All Brands</option>
-                    <?php echo getoptions($conn, 'dim_brand', 'id', 'name', 'section', 'kit'); ?>
-                </select>
-            </div>
-            <div style="flex: 1;">
-                <label>Sort By:</label>
-                <select name="sortby">
-                    <option value="date_desc">Date Bought (Newest)</option>
-                    <option value="date_asc">Date Bought (Oldest)</option>
-                    <option value="price_desc">Price (Highest)</option>
-                    <option value="price_asc">Price (Lowest)</option>
-                </select>
-            </div>
-            <div style="padding-bottom:10px;">
-                <label style="margin-top:0; font-weight:normal;">
-                    <input type="checkbox" name="show_archived" value="1" <?php echo isset($_GET['show_archived']) ? 'checked' : ''; ?>> 
-                    Show <?php echo ucfirst($label_target); ?>
-                </label>
-            </div>
-            <div>
-                <button type="submit" class="save-btn" style="margin-top:0;">Apply</button>
-                <a href="inventory.php" style="margin-left:10px; text-decoration:none; color:#555;">Clear</a>
-            </div>
-        </form>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Kit Name</th>
-                <th>Brand</th>
-                <th>Status</th>
-                <th>Date Bought</th>
-                <th>Price</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            $sql = "SELECT * FROM vw_kit_inventory WHERE 1=1";
-
-            if (!isset($_GET['show_archived'])) {
-                if ($archived_id) {
-                    $sql .= " AND statusid != $archived_id";
-                }
-            }
-
-            if (isset($_GET['filter_brand']) && $_GET['filter_brand'] != '') {
-                $f_brand = (int)$_GET['filter_brand'];
-                $sql .= " AND brandid='$f_brand'";
-            }
-            
-            $sort = $_GET['sortby'] ?? 'date_desc';
-            switch($sort) {
-                case 'price_desc': $sql .= " ORDER BY pricebought DESC"; break;
-                case 'price_asc':  $sql .= " ORDER BY pricebought ASC"; break;
-                case 'date_asc':   $sql .= " ORDER BY datebought ASC"; break;
-                default:           $sql .= " ORDER BY datebought DESC";
-            }
-
-            $result = $conn->query($sql);
-
-            if ($result && $result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $real_id = $row['actualid'];
-                    $display_id = $row['id'] ?? 'ERR';
-                    $price_display = $row['pricebought'] ? "Rp. " . number_format($row['pricebought'], 0, ',', '.') : "-";
+                    if (isset($_GET['filter_brand']) && $_GET['filter_brand'] != '') {
+                        $f_brand = (int)$_GET['filter_brand'];
+                        $sql .= " AND brandid='$f_brand'";
+                    }
                     
+                    $sort = $_GET['sortby'] ?? 'date_desc';
+                    switch($sort) {
+                        case 'price_desc': $sql .= " ORDER BY pricebought DESC"; break;
+                        case 'price_asc':  $sql .= " ORDER BY pricebought ASC"; break;
+                        case 'date_asc':   $sql .= " ORDER BY datebought ASC"; break;
+                        default:           $sql .= " ORDER BY datebought DESC";
+                    }
 
-                    $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
-                    $safe_notes = htmlspecialchars($row['notes'] ?? '', ENT_QUOTES);
+                    $result = $conn->query($sql);
 
-                    echo "<tr>
-                        <td><span class='badge'>$display_id</span></td>
-                        <td><strong>{$row['name']}</strong></td>
-                        <td>{$row['brand']}</td> 
-                        <td>{$row['status']}</td>
-                        <td>{$row['datebought']}</td>
-                        <td>$price_display</td>
-                        <td>
-                            <div class='action-row'>
-                                <button type='button' class='action-btn btn-edit' title='Edit'
-                                    data-id='{$real_id}'
-                                    data-name='{$safe_name}'
-                                    data-brand='{$row['brandid']}'
-                                    data-status='{$row['statusid']}'
-                                    data-date='{$row['datebought']}'
-                                    data-price='{$row['pricebought']}'
-                                    data-notes='{$safe_notes}'
-                                    onclick='openEditModal(this)'>
-                                    ✏️
-                                </button>
-                                
-                                <form method='POST' class='inline-form' onsubmit='return confirm(\"Archive {$safe_name}?\");'>
-                                    <input type='hidden' name='archiveid' value='$real_id'>
-                                    <button type='submit' class='action-btn btn-archive' title='Archive'>📦</button>
-                                </form>
+                    if ($result && $result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $real_id = $row['actualid'];
+                            $display_id = $row['id'] ?? 'ERR';
+                            $price_display = $row['pricebought'] ? "Rp. " . number_format($row['pricebought'], 0, ',', '.') : "-";
+                            $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
+                            $safe_notes = htmlspecialchars($row['notes'] ?? '', ENT_QUOTES);
 
-                                <form method='POST' class='inline-form' onsubmit='return confirm(\"Delete this kit?\");'>
-                                    <input type='hidden' name='deleteid' value='$real_id'>
-                                    <button type='submit' class='action-btn btn-delete' title='Delete'>🗑️</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>";
-                }
-            } 
-            else {
-                echo "<tr><td colspan='7' style='text-align:center; padding:20px;'>No kits found in the hangar yet! Start buying!</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
+                            echo "<tr class='hover:bg-gray-50 border-b border-gray-100'>
+                                <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'>{$display_id}</td>
+                                <td class='px-4 py-3 text-sm font-semibold text-gray-800'>{$row['name']}</td>
+                                <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>{$row['brand']}</td>
+                                <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>{$row['status']}</td>
+                                <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>{$row['datebought']}</td>
+                                <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>{$price_display}</td>
+                                <td class='px-4 py-3 text-sm'>
+                                    <div class='flex items-center space-x-2'>
+                                        <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
+                                            data-id='{$real_id}'
+                                            data-name='{$safe_name}'
+                                            data-brand='{$row['brandid']}'
+                                            data-status='{$row['statusid']}'
+                                            data-date='{$row['datebought']}'
+                                            data-price='{$row['pricebought']}'
+                                            data-notes='{$safe_notes}'
+                                            onclick='openEditModal(this)'>
+                                            ✏️
+                                        </button>
+                                        
+                                        <form method='POST' class='inline' onsubmit='return confirm(\"Archive {$safe_name}?\");'>
+                                            <input type='hidden' name='archiveid' value='$real_id'>
+                                            <button type='submit' class='p-1 hover:bg-blue-100 rounded text-lg' title='Archive'>📦</button>
+                                        </form>
 
-    <div id="editModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeEditModal()">&times;</span>
-            <h2>✏️ Edit Kit</h2>
+                                        <form method='POST' class='inline' onsubmit='return confirm(\"Delete this kit?\");'>
+                                            <input type='hidden' name='deleteid' value='$real_id'>
+                                            <button type='submit' class='p-1 hover:bg-red-100 rounded text-lg' title='Delete'>🗑️</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>";
+                        }
+                    } 
+                    else {
+                        echo "<tr><td colspan='7' class='text-center py-6 text-gray-500'>No kits found in the hangar yet! Start buying!</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
+            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
+            <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Kit</h2>
             
-            <form method="post">
+            <form method="post" class="space-y-4">
                 <input type="hidden" name="action_type" value="edit"> 
                 <input type="hidden" name="edit_id" id="modal_id">
                 
-                <label>Kit Name:</label>
-                <input type="text" name="kit_name" id="modal_name" required>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Kit Name:</label>
+                    <input type="text" name="kit_name" id="modal_name" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                </div>
 
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex: 1;">
-                        <label>Brand:</label>
-                        <select name="brandid" id="modal_brand" required>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
+                        <select name="brandid" id="modal_brand" required class="w-full mt-1 p-2 border border-gray-300 rounded">
                             <option value="">-- Select --</option>
                             <?php echo getoptions($conn, 'dim_brand', 'id', 'name', 'section', 'kit'); ?>
                         </select>
                     </div>
-                    <div style="flex: 1;">
-                        <label>Status:</label>
-                        <select name="statusid" id="modal_status" required>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Status:</label>
+                        <select name="statusid" id="modal_status" required class="w-full mt-1 p-2 border border-gray-300 rounded">
                             <?php echo getoptions2($conn, 'dim_category', 'id', 'label', 'section','kitinventory', 'module','status'); ?>
                         </select>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex: 1;">
-                        <label>Date Bought:</label>
-                        <input type="date" name="datebought" id="modal_date">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Date Bought:</label>
+                        <input type="date" name="datebought" id="modal_date" class="w-full mt-1 p-2 border border-gray-300 rounded">
                     </div>
-                    <div style="flex: 1;">
-                        <label>Price (IDR):</label>
-                        <input type="number" step="1" name="pricebought" id="modal_price">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Price:</label>
+                        <input type="number" step="1" name="pricebought" id="modal_price" class="w-full mt-1 p-2 border border-gray-300 rounded">
                     </div>
                 </div>
 
-                <label>Notes:</label>
-                <textarea name="notes" id="modal_notes" rows="3"></textarea>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
+                    <textarea name="notes" id="modal_notes" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
+                </div>
 
-                <button type="submit" class="save-btn">Save Changes</button>
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save Changes</button>
             </form>
         </div>
     </div>
@@ -391,7 +371,6 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
         const price = button.getAttribute('data-price');
         const notes = button.getAttribute('data-notes');
 
-
         document.getElementById('modal_id').value = id;
         document.getElementById('modal_name').value = name;
         document.getElementById('modal_brand').value = brand;   
@@ -399,14 +378,17 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
         document.getElementById('modal_date').value = date;
         document.getElementById('modal_price').value = price;
         document.getElementById('modal_notes').value = notes;
-        document.getElementById('editModal').style.display = 'flex';
+        
+        // Use flex to show the modal
+        document.getElementById('editModal').classList.remove('hidden');
+        document.getElementById('editModal').style.display = 'flex'; 
     }
 
     function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
         document.getElementById('editModal').style.display = 'none';
     }
 
-    // Close modal if user clicks outside the white box
     window.onclick = function(event) {
         const modal = document.getElementById('editModal');
         if (event.target == modal) {
