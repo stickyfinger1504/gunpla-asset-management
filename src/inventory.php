@@ -1,6 +1,9 @@
 <?php
 require 'db_connect.php';
 
+$section='kits';
+$page='inventory';
+
 $message = "";
 $label_target = 'archived';
 $archived_id = null;
@@ -132,8 +135,10 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
 
     <?php include 'header.php'; ?>
 
+    <div class="flex min-h-screen">
+        <?php include 'sidebar.php'?>
     <div class="max-w-5xl mx-auto p-6">
-
+        
         <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
         
         <div class="bg-white rounded-lg shadow p-6 mb-8">
@@ -360,7 +365,7 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
             </form>
         </div>
     </div>
-
+                </div>
 <script>
     function openEditModal(button) {
         const id = button.getAttribute('data-id');
