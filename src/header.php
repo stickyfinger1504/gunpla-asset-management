@@ -1,5 +1,4 @@
 <?php
-// Get the current file name to highlight the active link
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 

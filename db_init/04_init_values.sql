@@ -1,4 +1,3 @@
---populate brands
 INSERT INTO dim_brand (name,brandprefix,`section`) VALUES
 	 ('Bandai','BAN','kit'),
 	 ('Bootleg','BOT','kit'),
@@ -11,7 +10,6 @@ INSERT INTO dim_brand (name,brandprefix,`section`) VALUES
 	 ('Other','OTH','paint'),
 	 ('Samurai Paint','SMP','paint');
 
---populate categories
 INSERT INTO dim_category (label,`section`,module,remarks) VALUES
 	 ('Clean Build','backlogplan','buildplan',NULL),
 	 ('Custom Build','backlogplan','buildplan',NULL),

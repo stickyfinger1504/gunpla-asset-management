@@ -378,8 +378,6 @@ function getoptions2($conn, $table, $id, $name, $section, $section_value, $secti
         document.getElementById('modal_date').value = date;
         document.getElementById('modal_price').value = price;
         document.getElementById('modal_notes').value = notes;
-        
-        // Use flex to show the modal
         document.getElementById('editModal').classList.remove('hidden');
         document.getElementById('editModal').style.display = 'flex'; 
     }
