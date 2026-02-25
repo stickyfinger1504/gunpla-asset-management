@@ -14,4 +14,9 @@ $conn = new mysqli($server,$user,$password,$database);
 if($conn->connect_error){
     die("Connection Failed: " . $conn->connect_error);
 }
+
+// Set timezone from env (defaults to UTC)
+$tz = getenv('APP_TIMEZONE') ?: 'UTC';
+date_default_timezone_set($tz);
+$conn->query("SET time_zone = '" . (new DateTime('now', new DateTimeZone($tz)))->format('P') . "'");
 ?>

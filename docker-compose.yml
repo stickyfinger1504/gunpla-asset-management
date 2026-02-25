@@ -29,6 +29,7 @@ services:
       - DB_NAME=${DATABASE}
       - DB_USER=${USER}
       - DB_PASSWORD=${PASSWORD}
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
     depends_on:
       - db
   db:
@@ -43,7 +44,6 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      #for initial load
       - ./db_init:/docker-entrypoint-initdb.d
 volumes:
   db_data:

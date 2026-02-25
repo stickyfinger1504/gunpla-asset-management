@@ -1,5 +1,7 @@
 <?php
-if(!isset($section)) {$section ='kits';}
+if(!isset($current_section)) {$current_section = 'kits';}
+if(!isset($current_page)) {$current_page = '';}
+global $NAV_SECTIONS;
 ?>
 
 <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-16">
@@ -13,19 +15,25 @@ if(!isset($section)) {$section ='kits';}
                     </svg>
                 </button>
                 
-                <a href="index.php" class="flex items-center gap-2">
-                    <span class="text-2xl">🤖</span>
-                    <span class="font-bold text-gray-700 hidden sm:block">Gunpla Hangar</span>
+                <a href="/inventory" class="flex items-center gap-2">
+                    <span class="text-2xl"><?= APP_EMOJI ?></span>
+                    <span class="font-bold text-gray-700 hidden sm:block"><?= APP_NAME ?></span>
                 </a>
             </div>
             <div class="flex items-center gap-6">
             <div class="hidden md:flex items-center space-x-4">
-                <a href="inventory.php" class="<?php echo ($current_section == 'kits') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'; ?> px-1 py-4 text-sm font-medium transition">
-                    Kits
-                </a>
-                <a href="#" class="<?php echo ($current_section == 'paints') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'; ?> px-1 py-4 text-sm font-medium transition">
-                    Paints
-                </a>
+                <?php foreach ($NAV_SECTIONS as $section_key => $section_data): ?>
+                    <?php 
+                    $is_active = ($current_section == $section_key);
+                    $classes = $is_active 
+                        ? 'text-blue-600 border-b-2 border-blue-600' 
+                        : 'text-gray-500 hover:text-gray-700';
+                    ?>
+                    <a href="<?= e($section_data['default_page']) ?>" 
+                       class="<?= $classes ?> px-1 py-4 text-sm font-medium transition">
+                        <?= e($section_data['label']) ?>
+                    </a>
+                <?php endforeach; ?>
             </div>
 
             
@@ -40,19 +48,17 @@ if(!isset($section)) {$section ='kits';}
     </div>
 </nav>
 <script>
-    function sidebar(){
-        const sidebar= document.getElementById('sidebar')
-        const sidebar= document.getElementById('sidebar-overlay')
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
 
-        if(sidebar.classlist.contains('hidden')){
-            
+        if (sidebar.classList.contains('hidden')) {
             sidebar.classList.remove('hidden');
             setTimeout(() => {
                 sidebar.classList.remove('-translate-x-full');
             }, 10);
             overlay.classList.remove('hidden');
-        }
-        else{
+        } else {
             sidebar.classList.add('-translate-x-full');
             overlay.classList.add('hidden');
             setTimeout(() => {
@@ -60,6 +66,4 @@ if(!isset($section)) {$section ='kits';}
             }, 300);
         }
     }
-
-
-</script>   
+</script>

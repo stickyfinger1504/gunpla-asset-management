@@ -1,0 +1,432 @@
+<?php
+require '../includes/bootstrap.php';
+require_once '../includes/functions/backlog.php';
+
+$current_section = 'kits';
+$current_page = 'backlog';
+$page_title = 'Backlog Plan';
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $action_success = false;
+
+    if (isset($_POST['deleteid'])) {
+        $action_success = delete_backlog_item($conn, $_POST['deleteid']);
+        $msg_text = $action_success ? "✅ Successfully Deleted" : "❌ Delete failed";
+    }
+    elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'add') {
+        $action_success = add_backlog_item($conn, $_POST);
+        $msg_text = $action_success ? "✅ Successfully added to backlog" : "❌ Error adding item";
+    }
+    elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'edit') {
+        $action_success = update_backlog_item($conn, $_POST);
+        $msg_text = $action_success ? "✅ Item updated successfully" : "❌ Error updating item";
+    }
+
+    if (isset($msg_text)) {
+        set_flash_message($msg_text);
+        header("Location: /backlog");
+        exit;
+    }
+}
+
+$message = get_flash_message();
+
+$statuses = get_backlog_statuses($conn);
+$buildplans = get_backlog_buildplans($conn);
+$inventory_kits = get_inventory_kits($conn);
+$items = get_backlog_items($conn, $_GET);
+
+$stats = calculate_backlog_stats($items);
+
+$has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !empty($_GET['filter_buildplan']);
+
+?>
+<?php include '../components/layout_header.php'; ?>
+
+        <div class="max-w-5xl mx-auto w-full"> <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🚧 Backlog Plan</h1>
+            
+            <?php include '../components/toast.php'; ?>
+
+            <!-- Currently In Progress -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-700 mb-3">🔨 Currently In Progress</h3>
+                <?php 
+                $in_progress = array_filter($items, fn($item) => ($item['status_label'] ?? '') === 'In Progress');
+                ?>
+                <?php if (!empty($in_progress)): ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <?php foreach ($in_progress as $ip_item): ?>
+                    <a href="/build_progress?filter_backlog=<?= $ip_item['actualid'] ?? '' ?>" 
+                       class="bg-white border border-blue-200 rounded-lg p-3 flex items-center gap-3 shadow-sm hover:border-blue-400 hover:shadow-md transition-all">
+                        <div class="w-2 h-10 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-gray-800 truncate"><?= htmlspecialchars($ip_item['name'] ?? '-') ?></p>
+                            <p class="text-xs text-gray-500">
+                                <?= htmlspecialchars($ip_item['buildplan_label'] ?? 'No plan') ?>
+                            </p>
+                        </div>
+                        <span class="text-gray-400 text-sm flex-shrink-0">→</span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-sm text-gray-500">
+                    No kits currently in progress. Pick one from the backlog below! 🚀
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($stats['total_items'] > 0): ?>
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <?php
+                $id = 'statusChart';
+                $title = 'Status Distribution';
+                include '../components/charts/chart_canvas.php';
+
+                $id = 'buildplanChart';
+                $title = 'Build Plan Distribution';
+                include '../components/charts/chart_canvas.php';
+                ?>
+            </div>
+
+            <?php include '../components/charts/init_charts.php'; ?>
+            <script>
+            (function() {
+                const statusData = <?= json_encode($stats['status_counts']) ?>;
+                const buildplanData = <?= json_encode($stats['buildplan_counts']) ?>;
+                
+                initDoughnutChart('statusChart', Object.keys(statusData), Object.values(statusData));
+                initDoughnutChart('buildplanChart', Object.keys(buildplanData), Object.values(buildplanData));
+            })();
+            </script>
+            <?php endif; ?>
+
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold text-gray-700">📋 Current Backlog</h3>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
+                        <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
+                               placeholder="Kit name or ID..." 
+                               class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-gray-500 uppercase">Filter Status</label>
+                        <select name="filter_status" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <option value="">All Status</option>
+                            <?php foreach($statuses as $status): ?>
+                                <option value="<?= $status['id'] ?>" <?= (isset($_GET['filter_status']) && $_GET['filter_status'] == $status['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($status['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-gray-500 uppercase">Filter Build Plan</label>
+                        <select name="filter_buildplan" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <option value="">All Build Plans</option>
+                            <?php foreach($buildplans as $bp): ?>
+                                <option value="<?= $bp['id'] ?>" <?= (isset($_GET['filter_buildplan']) && $_GET['filter_buildplan'] == $bp['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($bp['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Kit Name</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Build Plan</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Notes</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">References</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php if (count($items) > 0): ?>
+                            <?php
+                            $status_palette = [
+                                'bg-green-100 text-green-800',
+                                'bg-yellow-100 text-yellow-800',
+                                'bg-red-100 text-red-800',
+                                'bg-blue-100 text-blue-800',
+                                'bg-purple-100 text-purple-800',
+                            ];
+                            ?>
+                            <?php foreach ($items as $row): ?>
+                                <?php 
+                                    $safe_name = htmlspecialchars($row['name'] ?? '-', ENT_QUOTES);
+                                    $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
+                                    $safe_refs = htmlspecialchars($row['references'] ?? '', ENT_QUOTES);
+
+                                    $status_class = $status_palette[($row['status'] ?? 0) % count($status_palette)];
+                                ?>
+                                <tr class='hover:bg-gray-50 border-b border-gray-100'>
+                                    <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?? '' ?></td>
+                                    <td class='px-4 py-3 text-sm font-semibold text-gray-800'>
+                                        <a href="/kit/<?= $row['inventoryid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
+                                    </td>
+                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                        <?php if (!empty($row['buildplan_label'])): 
+                                            $bp_colors = [
+                                                'Clean Build'      => 'bg-green-100 text-green-800',
+                                                'Custom Build'     => 'bg-purple-100 text-purple-800',
+                                                'Painted Build'    => 'bg-orange-100 text-orange-800',
+                                                'Full Build'       => 'bg-red-100 text-red-800',
+                                                'Kitbash Material' => 'bg-yellow-100 text-yellow-800',
+                                            ];
+                                            $bp_class = $bp_colors[$row['buildplan_label']] ?? 'bg-blue-100 text-blue-800';
+                                        ?>
+                                        <span class="px-2 py-1 text-xs font-bold rounded-full <?= $bp_class ?>">
+                                            <?= htmlspecialchars($row['buildplan_label']) ?>
+                                        </span>
+                                        <?php else: ?>
+                                        -
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                        <?php if (!empty($row['status_label'])): ?>
+                                        <span class="px-2 py-1 text-xs font-bold rounded-full <?= $status_class ?>">
+                                            <?= htmlspecialchars($row['status_label']) ?>
+                                        </span>
+                                        <?php else: ?>
+                                        -
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
+                                    <td class='px-4 py-3 text-sm text-gray-600'>
+                                        <?php if (!empty($row['references'])): ?>
+                                            <a href="<?= $safe_refs ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>
+                                        <?php else: ?>
+                                            -
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class='px-4 py-3 text-sm'>
+                                        <div class='flex items-center space-x-2'>
+                                            <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
+                                                data-id='<?= $row['actualid'] ?>'
+                                                data-inventoryid='<?= $row['inventoryid'] ?>'
+                                                data-buildplanid='<?= $row['buildplanid'] ?>'
+                                                data-status='<?= $row['status'] ?>'
+                                                data-notes='<?= $safe_notes ?>'
+                                                data-references='<?= $safe_refs ?>'
+                                                onclick='openEditModal(this)'>
+                                                ✏️
+                                            </button>
+                                            
+                                            <form method='POST' class='inline' onsubmit='return confirm("Delete this item?");'>
+                                                <input type='hidden' name='deleteid' value='<?= $row['actualid'] ?>'>
+                                                <button type='submit' class='p-1 hover:bg-red-100 rounded text-lg' title='Delete'>🗑️</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan='7' class='text-center py-6 text-gray-500'>No items in your backlog yet! Start adding!</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <!-- Floating Action Button -->
+    <button onclick="openAddModal()" 
+            class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
+            title="Add New Item">
+        +
+    </button>
+
+    <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
+            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
+            <h2 class="text-xl font-bold text-gray-700 mb-4">➕ Add to Backlog</h2>
+            
+            <form method="post" class="space-y-4">
+                <input type="hidden" name="action_type" value="add">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Kit (from Inventory):</label>
+                    <select name="inventoryid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">-- Select Kit --</option>
+                        <?php foreach($inventory_kits as $kit): ?>
+                            <option value="<?= $kit['actualid'] ?>"><?= htmlspecialchars($kit['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Build Plan:</label>
+                        <select name="buildplanid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <option value="">-- Select --</option>
+                            <?php foreach($buildplans as $bp): ?>
+                                <option value="<?= $bp['id'] ?>"><?= htmlspecialchars($bp['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Status:</label>
+                        <select name="statusid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <?php foreach($statuses as $status): ?>
+                                <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
+                    <textarea name="notes" rows="3" placeholder="Details..." class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">References (URL):</label>
+                    <input type="url" name="references" placeholder="https://..." class="w-full mt-1 p-2 border border-gray-300 rounded">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
+                    Add to Backlog
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
+            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
+            <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Backlog Item</h2>
+            
+            <form method="post" class="space-y-4">
+                <input type="hidden" name="action_type" value="edit"> 
+                <input type="hidden" name="edit_id" id="modal_id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Kit (from Inventory):</label>
+                    <select name="inventoryid" id="modal_inventoryid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">-- Select Kit --</option>
+                        <?php foreach($inventory_kits as $kit): ?>
+                            <option value="<?= $kit['actualid'] ?>"><?= htmlspecialchars($kit['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Build Plan:</label>
+                        <select name="buildplanid" id="modal_buildplanid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <option value="">-- Select --</option>
+                            <?php foreach($buildplans as $bp): ?>
+                                <option value="<?= $bp['id'] ?>"><?= htmlspecialchars($bp['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Status:</label>
+                        <select name="statusid" id="modal_status" required class="w-full mt-1 p-2 border border-gray-300 rounded">
+                            <?php foreach($statuses as $status): ?>
+                                <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
+                    <textarea name="notes" id="modal_notes" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">References (URL):</label>
+                    <input type="url" name="references" id="modal_references" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        function openEditModal(button) {
+            const id = button.getAttribute('data-id');
+            const inventoryid = button.getAttribute('data-inventoryid');
+            const buildplanid = button.getAttribute('data-buildplanid');
+            const status = button.getAttribute('data-status');
+            const notes = button.getAttribute('data-notes');
+            const references = button.getAttribute('data-references');
+
+            document.getElementById('modal_id').value = id;
+            document.getElementById('modal_inventoryid').value = inventoryid;
+            document.getElementById('modal_buildplanid').value = buildplanid;
+            document.getElementById('modal_status').value = status;
+            document.getElementById('modal_notes').value = notes;
+            document.getElementById('modal_references').value = references;
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').style.display = 'flex'; 
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addModal');
+            const editModal = document.getElementById('editModal');
+            if (event.target == addModal) {
+                closeAddModal();
+            }
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+        }
+
+        function clearFilters(btn) {
+            const form = btn.closest('form');
+            form.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
+            form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+            form.submit();
+        }
+    </script>
+
+    <script>
+        (function() {
+            var pos = sessionStorage.getItem('backlog_scroll');
+            if (pos) {
+                window.scrollTo(0, parseInt(pos));
+                sessionStorage.removeItem('backlog_scroll');
+            }
+            
+            document.querySelectorAll('form').forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    sessionStorage.setItem('backlog_scroll', window.scrollY);
+                });
+            });
+        })();
+    </script>
+
+<?php include '../components/layout_footer.php'; ?>

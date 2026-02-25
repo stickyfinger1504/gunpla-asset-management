@@ -1,3 +1,6 @@
 .env
-src/transaction_images/*
-!src/transaction_images/.gitkeep
+docs/*
+src/assets/transaction_images/*
+src/assets/paint_images/*
+!src/assets/transaction_images/.gitkeep
+!src/assets/paint_images/.gitkeep
