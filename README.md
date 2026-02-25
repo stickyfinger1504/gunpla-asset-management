@@ -1,7 +1,40 @@
-# Gunpla Asset Management
+# Gunpla Hangar
 
-To address my crippling addiction of gunpla over the past three years, instead of actually trying to stop the addiction I decided to make a inventory/asset management style website that tracks what gunplas I have, the backlog plans that I have, down to the build progress that I made. Which surely I didn't vibe-coded it.
+A self-hosted, comprehensive asset management system designed for gunpla builders or other model kit builders by being able to track physical inventory, plan backlogs, monitor build progress, and manage paint supplies.
 
-## How it works
+## Key Stuffs
 
-This website is self hosted from your local device by using docker desktop. You download this repo and then run it. Usually it doesn't appear in the docker desktop. You need to run `docker compose up -d` in cmd on the folder and it should appear in the docker desktop and from there you can edit or change things from there.
+### Kit Management
+* **Inventory Tracking**: Comprehensive CRUD operations for your collection, including brand, status, price, and purchase dates.
+* **Backlog Planning**: Organize your upcoming projects and prioritize your build queue.
+* **Wishlist**: Maintain a dedicated list of desired kits with priority levels and links.
+
+###  Build Progress
+* **Task Lists**: Break down complex builds into granular, manageable tasks.
+* **Transaction Logs**: Document every step of your build with notes and photo uploads.
+* **Status Tracking**: Real-time progress updates for every active project.
+
+### Paint & Supplies
+* **Paint Inventory**: Track your stock levels, paint types (Lacquer, Acrylic, etc.), and brands.
+* **Mixing Recipes**: Store and manage custom paint ratios with visual references.
+* **Paint Wishlist**: Track specific colors or supplies needed for future projects.
+
+## Tech Stack
+* **Backend**: PHP with a custom dynamic router.
+* **Database**: MySQL / MariaDB with structured relational schema.
+* **Frontend**: Tailwind CSS and Vanilla JavaScript.
+* **Infrastructure**: Nginx and Docker Compose.
+
+## 📦 Installation & Setup
+
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed on your machine.
+
+### Deployment
+1.  Clone this repository to your local machine.
+2.  Navigate to the project folder in your terminal.
+3.  Run the following command:
+    ```bash
+    docker compose up -d
+    ```
+4.  The application will be available at `http://localhost`.
