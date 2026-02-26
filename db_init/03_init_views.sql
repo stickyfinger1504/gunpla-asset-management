@@ -92,7 +92,7 @@ CREATE OR REPLACE VIEW vw_kit_backlog_plan as (
 			left join dim_category d on a.status = d.id and d.section = 'backlogplan' and d.module='status'
 	)
 	select
-		concat('BCKLG-',rn),
+		concat('BCKLG-',rn) as backlogid,
 		backlogid 'actualid',
 		inventoryid,
 		inventory_id,
@@ -110,7 +110,7 @@ CREATE OR REPLACE view vw_kit_transaction_log as (
 	select a.logid,
 		a.backlogid as actual_backlogid,
 		b.backlogid,
-		b.inventory_id,
+		b.inventoryid,
 		b.name,
 		a.logname,
 		a.notes,
@@ -178,3 +178,28 @@ with calculatedpaint as(
 		a.imagepath
 	from calculatedpaint a
 );
+
+CREATE OR REPLACE VIEW vw_tool_inventory AS
+SELECT
+    t.toolid AS actualid,
+    t.toolid AS id,
+    t.name,
+    b.name AS brand,
+    t.brand AS brandid,
+    c.label AS category,
+    t.category AS categoryid,
+    s.label AS status,
+    t.status AS statusid,
+    t.quantity,
+    t.unit,
+    t.pricebought,
+    t.datebought,
+    t.imagepath,
+    t.link,
+    t.notes,
+    t.createdat,
+    t.lastupdate
+FROM tool_inventory t
+LEFT JOIN dim_brand b     ON t.brand    = b.id    AND b.section = 'tool'
+LEFT JOIN dim_category c  ON t.category = c.id    AND c.section = 'toolbox' AND c.module = 'category'
+LEFT JOIN dim_category s  ON t.status   = s.id    AND s.section = 'toolbox' AND s.module = 'status';

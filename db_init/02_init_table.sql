@@ -16,6 +16,19 @@ CREATE TABLE `dim_category` (
   PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `kit_inventory` (
+  `inventoryid` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `datebought` date DEFAULT NULL,
+  `pricebought` int DEFAULT NULL,
+  `notes` varchar(300) DEFAULT NULL,
+  `brandid` int NOT NULL,
+  PRIMARY KEY (`inventoryid`),
+  KEY `fk_inventory_brand` (`brandid`),
+  CONSTRAINT `fk_inventory_brand` FOREIGN KEY (`brandid`) REFERENCES `dim_brand` (`id`)
+);
+
 CREATE TABLE `kit_backlog_plan` (
   `backlogid` int NOT NULL AUTO_INCREMENT,
   `inventoryid` int DEFAULT NULL,
@@ -28,19 +41,6 @@ CREATE TABLE `kit_backlog_plan` (
   KEY `fk_backlog_buildplanid` (`buildplanid`),
   CONSTRAINT `fk_backlog_buildplanid` FOREIGN KEY (`buildplanid`) REFERENCES `dim_category` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_backlog_inventoryid` FOREIGN KEY (`inventoryid`) REFERENCES `kit_inventory` (`inventoryid`) ON DELETE CASCADE
-);
-
-CREATE TABLE `kit_inventory` (
-  `inventoryid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `status` varchar(20) NOT NULL,
-  `datebought` date DEFAULT NULL,
-  `pricebought` int DEFAULT NULL,
-  `notes` varchar(300) DEFAULT NULL,
-  `brandid` int NOT NULL,
-  PRIMARY KEY (`inventoryid`),
-  KEY `fk_inventory_brand` (`brandid`),
-  CONSTRAINT `fk_inventory_brand` FOREIGN KEY (`brandid`) REFERENCES `dim_brand` (`id`)
 );
 
 CREATE TABLE `kit_transaction_log` (
@@ -164,4 +164,25 @@ CREATE TABLE paint_recipe_item (
         REFERENCES paint_recipe(recipeid) ON DELETE CASCADE,
     CONSTRAINT fk_recipe_item_paint FOREIGN KEY (paintid)
         REFERENCES paint_inventory(inventoryid) ON DELETE CASCADE
+);
+
+CREATE TABLE tool_inventory (
+    toolid       INT NOT NULL AUTO_INCREMENT,
+    name         VARCHAR(255) NOT NULL,
+    brand        INT DEFAULT NULL,
+    category     INT DEFAULT NULL,
+    status       INT DEFAULT NULL,
+    quantity     INT NOT NULL DEFAULT 1,
+    unit         VARCHAR(50) DEFAULT NULL,
+    pricebought  INT DEFAULT NULL,
+    datebought   DATE DEFAULT NULL,
+    imagepath    VARCHAR(255) DEFAULT NULL,
+    link         VARCHAR(300) DEFAULT NULL,
+    notes        VARCHAR(300) DEFAULT NULL,
+    createdat    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lastupdate   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (toolid),
+    CONSTRAINT fk_tool_brand    FOREIGN KEY (brand)    REFERENCES dim_brand(id)    ON DELETE SET NULL,
+    CONSTRAINT fk_tool_category FOREIGN KEY (category) REFERENCES dim_category(id) ON DELETE SET NULL,
+    CONSTRAINT fk_tool_status   FOREIGN KEY (status)   REFERENCES dim_category(id) ON DELETE SET NULL
 );

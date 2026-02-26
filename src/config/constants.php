@@ -28,6 +28,13 @@ $NAV_SECTIONS = [
             ['page' => 'paint_wishlist', 'href' => '/paint_wishlist', 'icon' => '✨', 'label' => 'Paint Wishlist'],
             ['page' => 'mixing_recipes', 'href' => '/mixing_recipes', 'icon' => '🧪', 'label' => 'Mixing Recipes'],
         ]
+    ],
+    'tools' => [
+        'label'        => 'Tools',
+        'default_page' => '/tool_inventory',
+        'sidebar_items' => [
+            ['page' => 'tool_inventory', 'href' => '/tool_inventory', 'icon' => '🔧', 'label' => 'Tool Inventory'],
+        ]
     ]
 ];
 
@@ -38,3 +45,5 @@ define('PAINT_UPLOAD_DIR', __DIR__ . '/../assets/paint_images/');
 define('PAINT_UPLOAD_URL_PREFIX', '/assets/paint_images/');
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 define('MAX_IMAGE_SIZE', 10 * 1024 * 1024); // 10MB per image
+define('TOOL_UPLOAD_DIR',        __DIR__ . '/../assets/tool_images/');
+define('TOOL_UPLOAD_URL_PREFIX', '/assets/tool_images/');

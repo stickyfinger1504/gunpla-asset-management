@@ -4,3 +4,5 @@ src/assets/transaction_images/*
 src/assets/paint_images/*
 !src/assets/transaction_images/.gitkeep
 !src/assets/paint_images/.gitkeep
+src/assets/tool_images/*
+!src/assets/tool_images/.gitkeep

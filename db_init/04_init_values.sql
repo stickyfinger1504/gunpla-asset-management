@@ -49,4 +49,35 @@ INSERT INTO dim_category (label,`section`,module,remarks) VALUES
 	 ('Enamel','paintlist','painttype',NULL),
 	 ('Thinner','paintlist','painttype',NULL),
 	 ('Partially Thinned','paintlist','thinnedstatus',NULL),
-	 ('Archived','kitinventory','status',NULL);
+ 	 ('Archived','kitinventory','status',NULL);
+
+-- Tool brands (section = 'tool')
+INSERT INTO dim_brand (name, brandprefix, section) VALUES
+    ('Tamiya',    'TAM', 'tool'),
+    ('Godhand',   'GH',  'tool'),
+    ('Mr. Hobby', 'MRH', 'tool'),
+    ('Olfa',      'OLF', 'tool'),
+    ('SM-F',      'SMF', 'tool'),
+    ('Other',     'OTH', 'tool');
+
+-- Tool categories (section = 'toolbox', module = 'category')
+INSERT INTO dim_category (label, section, module) VALUES
+    ('Nipper',            'toolbox', 'category'),
+    ('Sanding Stick',     'toolbox', 'category'),
+    ('Sandpaper',         'toolbox', 'category'),
+    ('Brush',             'toolbox', 'category'),
+    ('Airbrush',          'toolbox', 'category'),
+    ('Knife / Scriber',   'toolbox', 'category'),
+    ('Replacement Blade', 'toolbox', 'category'),
+    ('Tweezer',           'toolbox', 'category'),
+    ('Putty / Filler',    'toolbox', 'category'),
+    ('Other',             'toolbox', 'category');
+
+-- Tool status / condition (section = 'toolbox', module = 'status')
+INSERT INTO dim_category (label, section, module) VALUES
+    ('New',               'toolbox', 'status'),
+    ('Good',              'toolbox', 'status'),
+    ('Worn',              'toolbox', 'status'),
+    ('Needs Replacement', 'toolbox', 'status'),
+    ('Broken',            'toolbox', 'status'),
+    ('Retired',           'toolbox', 'status');
