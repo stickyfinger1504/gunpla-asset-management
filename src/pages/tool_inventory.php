@@ -102,7 +102,12 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
         <h3 class="text-xl font-bold text-gray-700">🔧 My Tools</h3>
     </div>
     <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-        <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+        <form method="GET">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">▼ Filters</button>
+            </div>
+            <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
             <div class="flex-1 w-full">
                 <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
                 <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
@@ -155,12 +160,13 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                 <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
             </div>
+        </div>
         </form>
     </div>
 
     <!-- Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
             <thead class="bg-gray-800 text-white">
                 <tr>
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Name</th>
@@ -209,7 +215,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                         $qty_class = $qty <= 3 ? 'text-red-600 font-bold' : 'text-gray-800';
                         ?>
                         <tr class="hover:bg-gray-50 border-b border-gray-100">
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-800">
+                            <td data-label="Name" class="px-4 py-3 text-sm font-semibold text-gray-800">
                                 <?php if (!empty($row['imagepath'])): ?>
                                 <a href="<?= e($row['imagepath']) ?>" target="_blank" class="mr-2">
                                     <img src="<?= e($row['imagepath']) ?>" alt="Tool"
@@ -218,17 +224,17 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                                 <?php endif; ?>
                                 <?= $safe_name ?>
                             </td>
-                            <td class="px-4 py-3 text-sm whitespace-nowrap">
+                            <td data-label="Brand" class="px-4 py-3 text-sm whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
                                     <?= e($row['brand'] ?? '-') ?>
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-sm whitespace-nowrap">
+                            <td data-label="Category" class="px-4 py-3 text-sm whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-bold rounded-full <?= $cat_class ?>">
                                     <?= e($row['category'] ?? '-') ?>
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-sm whitespace-nowrap">
+                            <td data-label="Status" class="px-4 py-3 text-sm whitespace-nowrap">
                                 <?php if (!empty($row['status'])): ?>
                                 <span class="px-2 py-1 text-xs font-bold rounded-full <?= $status_class ?>">
                                     <?= e($status_label) ?>
@@ -237,16 +243,16 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                                 <span class="text-gray-400">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-sm text-center <?= $qty_class ?>">
+                            <td data-label="Qty" class="px-4 py-3 text-sm text-center <?= $qty_class ?>">
                                 <?= $qty ?><?= !empty($row['unit']) ? ' ' . e($row['unit']) : '' ?>
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                            <td data-label="Price" class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
                                 <?= $row['pricebought'] ? format_currency($row['pricebought']) : '-' ?>
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate" title="<?= $safe_notes ?>">
+                            <td data-label="Notes" class="px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate" title="<?= $safe_notes ?>">
                                 <?= $safe_notes ?>
                             </td>
-                            <td class="px-4 py-3 text-sm">
+                            <td data-label="Actions" class="px-4 py-3 text-sm">
                                 <div class="flex items-center space-x-2">
                                     <button type="button" class="p-1 hover:bg-gray-200 rounded text-lg" title="Edit"
                                         data-id="<?= $row['actualid'] ?>"

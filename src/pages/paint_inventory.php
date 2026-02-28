@@ -157,7 +157,12 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                 </div>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">▼ Filters</button>
+                    </div>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
                     <input type="hidden" name="view" id="view-input" value="<?= htmlspecialchars($_GET['view'] ?? 'table') ?>">
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
@@ -211,12 +216,13 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
                     </div>
+                </div>
                 </form>
             </div>
 
             <!-- Table -->
             <div id="table-view" class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
@@ -271,30 +277,29 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                     }
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
-                                    <td class='px-4 py-3 text-sm font-semibold'>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="Paint Name" class='px-4 py-3 text-sm font-semibold'>
                                         <a href="/paint/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
                                             <?= e($row['brand']) ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Type" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $type_class ?>">
                                             <?= e($row['painttype']) ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= e($row['thinned'] ?? '-') ?></td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Thinned" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= e($row['thinned'] ?? '-') ?></td>
+                                    <td data-label="Amount" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $amount_class ?>">
                                             <?= $amount_label ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate' title='<?= $safe_notes ?>'><?= $safe_notes ?></td>
-
-                                    <td class='px-4 py-3 text-sm text-gray-500 whitespace-nowrap'><?= !empty($row['lastupdate']) ? date('d M Y', strtotime($row['lastupdate'])) : '-' ?></td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate' title='<?= $safe_notes ?>'><?= $safe_notes ?></td>
+                                    <td data-label="Updated" class='px-4 py-3 text-sm text-gray-500 whitespace-nowrap'><?= !empty($row['lastupdate']) ? date('d M Y', strtotime($row['lastupdate'])) : '-' ?></td>
+                                    <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= $row['actualid'] ?>'

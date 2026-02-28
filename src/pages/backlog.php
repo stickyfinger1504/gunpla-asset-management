@@ -107,7 +107,12 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                 <h3 class="text-xl font-bold text-gray-700">📋 Current Backlog</h3>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">▼ Filters</button>
+                    </div>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
                         <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
@@ -140,11 +145,12 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
                     </div>
+                </div>
                 </form>
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
@@ -173,14 +179,14 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
                                     $safe_refs = htmlspecialchars($row['references'] ?? '', ENT_QUOTES);
 
-                                    $status_class = $status_palette[($row['status'] ?? 0) % count($status_palette)];
+                                    $status_class = $status_palette[((int)($row['status'] ?? 0)) % count($status_palette)];
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?? '' ?></td>
-                                    <td class='px-4 py-3 text-sm font-semibold text-gray-800'>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?? '' ?></td>
+                                    <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'>
                                         <a href="/kit/<?= $row['inventoryid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Build Plan" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <?php if (!empty($row['buildplan_label'])): 
                                             $bp_colors = [
                                                 'Clean Build'      => 'bg-green-100 text-green-800',
@@ -198,7 +204,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                                         -
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Status" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <?php if (!empty($row['status_label'])): ?>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $status_class ?>">
                                             <?= htmlspecialchars($row['status_label']) ?>
@@ -207,15 +213,15 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                                         -
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600'>
+                                    <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
+                                    <td data-label="References" class='px-4 py-3 text-sm text-gray-600'>
                                         <?php if (!empty($row['references'])): ?>
                                             <a href="<?= $safe_refs ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>
                                         <?php else: ?>
                                             -
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= $row['actualid'] ?>'
@@ -244,7 +250,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
             </div>
         </div>
 
-    <!-- Floating Action Button -->
+
     <button onclick="openAddModal()" 
             class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
             title="Add New Item">

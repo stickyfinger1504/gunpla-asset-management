@@ -45,7 +45,7 @@ $items = get_wishlist_items($conn, $_GET);
 
 $stats = calculate_wishlist_stats($items);
 
-// Check if any filters are active (for UI indication)
+
 $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empty($_GET['filter_priority']) || !empty($_GET['filter_obtained']);
 
 ?>
@@ -120,7 +120,12 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                 <h3 class="text-xl font-bold text-gray-700">🎯 Current Wishlist</h3>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">▼ Filters</button>
+                    </div>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
                         <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
@@ -161,11 +166,12 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
                     </div>
+                </div>
                 </form>
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
@@ -210,14 +216,14 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     };
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
-                                    <td class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $row['name'] ?></td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $row['name'] ?></td>
+                                    <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
                                             <?= $row['brand'] ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Priority" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <?php if (!empty($row['priority'])): ?>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $priority_class ?>">
                                             <?= $row['priority'] ?>
@@ -226,16 +232,16 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                         -
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $row['obtained'] ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600'>
+                                    <td data-label="Obtained" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $row['obtained'] ?></td>
+                                    <td data-label="Link" class='px-4 py-3 text-sm text-gray-600'>
                                         <?php if (!empty($row['link'])): ?>
                                             <a href="<?= $safe_link ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>
                                         <?php else: ?>
                                             -
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
+                                    <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= $row['actualid'] ?>'

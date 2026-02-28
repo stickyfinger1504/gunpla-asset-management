@@ -33,10 +33,17 @@ if(!isset($current_page)) { $current_page = ''; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
+<script>
+    function toggleFilterBar(btn) {
+        const body = btn.closest('form').querySelector('.filter-bar-body');
+        body.classList.toggle('is-open');
+        btn.textContent = body.classList.contains('is-open') ? '▲ Hide' : '▼ Filters';
+    }
+</script>
 
 <?php include __DIR__ . '/header.php'; ?>
 
 <div class="flex min-h-screen">
     <?php include __DIR__ . '/sidebar.php'; ?>
     
-    <main class="flex-1 p-6">
+    <main class="flex-1 min-w-0 p-2 sm:p-4 md:p-6">

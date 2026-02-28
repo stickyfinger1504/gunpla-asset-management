@@ -40,17 +40,17 @@ $kits = get_kit_inventory($conn, $_GET);
 
 $stats = calculate_kit_stats($kits);
 
-// Check if any filters are active (for UI indication)
+
 $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empty($_GET['filter_status']);
 
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-        <div class="max-w-5xl mx-auto w-full"> <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
+        <div class="max-w-5xl mx-auto w-full"> <h1 class="page-title text-3xl font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
             
             <?php include '../components/toast.php'; ?>
 
-            <!-- Statistics Dashboard -->
+
             <div class="mb-8">
                 <?php if ($has_filters): ?>
                     <div class="text-sm text-blue-600 mb-2 flex items-center gap-2">
@@ -85,7 +85,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             </div>
 
             <?php if ($stats['total_kits'] > 0): ?>
-            <!-- Charts Section -->
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <?php
                 $id = 'brandChart';
@@ -113,7 +113,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                 ?>
             </div>
 
-            <!-- Chart.js Logic -->
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
@@ -187,53 +186,61 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                 <h3 class="text-xl font-bold text-gray-700">📦 Current Inventory</h3>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
-                        <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
-                               placeholder="Kit name or ID..." 
-                               class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="this.closest('form').querySelector('.filter-bar-body').classList.toggle('is-open'); this.textContent = this.textContent.includes('▼') ? '▲ Hide' : '▼ Filters';">
+                            ▼ Filters
+                        </button>
                     </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Filter Brand</label>
-                        <select name="filter_brand" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">All Brands</option>
-                            <?php foreach($brands as $brand): ?>
-                                <option value="<?= $brand['id'] ?>" <?= (isset($_GET['filter_brand']) && $_GET['filter_brand'] == $brand['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($brand['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
-                        <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="date_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_desc') ? 'selected' : '' ?>>Date Bought (Newest)</option>
-                            <option value="date_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_asc') ? 'selected' : '' ?>>Date Bought (Oldest)</option>
-                            <option value="price_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_desc') ? 'selected' : '' ?>>Price (Highest)</option>
-                            <option value="price_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_asc') ? 'selected' : '' ?>>Price (Lowest)</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Filter Status</label>
-                        <select name="filter_status" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">All Statuses</option>
-                            <?php foreach($statuses as $status): ?>
-                                <option value="<?= $status['id'] ?>" <?= (isset($_GET['filter_status']) && $_GET['filter_status'] == $status['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($status['label']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
-                        <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
+                            <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
+                                   placeholder="Kit name or ID..." 
+                                   class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Filter Brand</label>
+                            <select name="filter_brand" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                                <option value="">All Brands</option>
+                                <?php foreach($brands as $brand): ?>
+                                    <option value="<?= $brand['id'] ?>" <?= (isset($_GET['filter_brand']) && $_GET['filter_brand'] == $brand['id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($brand['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
+                            <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                                <option value="date_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_desc') ? 'selected' : '' ?>>Date Bought (Newest)</option>
+                                <option value="date_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_asc') ? 'selected' : '' ?>>Date Bought (Oldest)</option>
+                                <option value="price_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_desc') ? 'selected' : '' ?>>Price (Highest)</option>
+                                <option value="price_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_asc') ? 'selected' : '' ?>>Price (Lowest)</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Filter Status</label>
+                            <select name="filter_status" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                                <option value="">All Statuses</option>
+                                <?php foreach($statuses as $status): ?>
+                                    <option value="<?= $status['id'] ?>" <?= (isset($_GET['filter_status']) && $_GET['filter_status'] == $status['id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($status['label']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                            <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                        </div>
                     </div>
                 </form>
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
@@ -273,24 +280,24 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     $status_class = $palette[($row['statusid'] ?? 0) % count($palette)];
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
-                                    <td class='px-4 py-3 text-sm font-semibold text-gray-800'>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'>
                                         <a href="/kit/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $row['name'] ?></a>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
                                             <?= $row['brand'] ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm whitespace-nowrap'>
+                                    <td data-label="Status" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $status_class ?>">
                                             <?= $row['status'] ?>
                                         </span>
                                     </td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $safe_dates ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $price_display ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Date" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $safe_dates ?></td>
+                                    <td data-label="Price" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $price_display ?></td>
+                                    <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
+                                    <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= $row['actualid'] ?>'

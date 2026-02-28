@@ -9,7 +9,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action_success = false;
 
     if (isset($_POST['deleteid'])) {
-        // Fetch image path before deleting the record
         $stmt = $conn->prepare("SELECT imagepath FROM kit_transaction_log WHERE logid = ?");
         $stmt->bind_param("s", $_POST['deleteid']);
         $stmt->execute();
@@ -80,9 +79,8 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             
             <?php include '../components/toast.php'; ?>
 
-            <!-- Latest Update -->
             <?php if (!empty($logs)): 
-                $latest = $logs[0]; // already sorted by date desc
+                $latest = $logs[0];
                 $latest_name = htmlspecialchars($latest['name'] ?? '-');
                 $latest_logname = htmlspecialchars($latest['logname'] ?? '-');
                 $latest_notes = htmlspecialchars($latest['notes'] ?? '');
@@ -109,7 +107,7 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                 </div>
             </div>
             <?php endif; ?>
-            <!-- Activity Summary -->
+
             <div class="mb-8">
                 <h3 class="text-lg font-bold text-gray-700 mb-3">📊 Activity Summary</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -129,7 +127,6 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             </div>
 
             <?php if ($stats['total_entries'] > 0): ?>
-            <!-- Charts Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <?php
                 $id = 'kitChart';
@@ -147,12 +144,16 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             </script>
             <?php endif; ?>
 
-            <!-- Filter Bar -->
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xl font-bold text-gray-700">📋 Log Entries</h3>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">▼ Filters</button>
+                    </div>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
                         <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
@@ -183,12 +184,13 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
                     </div>
+                </div>
                 </form>
             </div>
 
-            <!-- Data Table -->
+
             <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Kit</th>
@@ -211,16 +213,16 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                                     $formatted_time = !empty($row['createdat']) ? date('H:i', strtotime($row['createdat'])) : '';
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100' data-logid='<?= htmlspecialchars($row['logid'] ?? '') ?>'>
-                                    <td class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $safe_name ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-700 font-medium'><?= $safe_logname ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 max-w-xs truncate'><?= $safe_notes ?: '-' ?></td>
-                                    <td class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>
+                                    <td data-label="Kit" class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $safe_name ?></td>
+                                    <td data-label="Log Entry" class='px-4 py-3 text-sm text-gray-700 font-medium'><?= $safe_logname ?></td>
+                                    <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600 max-w-xs truncate'><?= $safe_notes ?: '-' ?></td>
+                                    <td data-label="Date" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'>
                                         <div><?= $formatted_date ?></div>
                                         <?php if ($formatted_time): ?>
                                         <div class="text-xs text-gray-400"><?= $formatted_time ?></div>
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Image" class='px-4 py-3 text-sm'>
                                         <?php if (!empty($row['imagepath'])): ?>
                                             <a href="<?= $safe_image ?>" target="_blank" title="Click to view full size">
                                                 <img src="<?= $safe_image ?>" alt="Build photo" 
@@ -231,7 +233,7 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                                             <span class="text-gray-400">-</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class='px-4 py-3 text-sm'>
+                                    <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= htmlspecialchars($row['logid'] ?? '') ?>'
@@ -259,7 +261,6 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             </div>
         </div>
 
-    <!-- Floating Action Button -->
     <button onclick="openAddModal()" 
             class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
             title="Log New Progress">
@@ -276,7 +277,6 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             document.getElementById('modal_logname').value = button.getAttribute('data-logname');
             document.getElementById('modal_notes').value = button.getAttribute('data-notes');
 
-            // Image preview handling
             const imagepath = button.getAttribute('data-imagepath');
             document.getElementById('modal_imagepath').value = imagepath;
             const preview = document.getElementById('modal_image_preview');

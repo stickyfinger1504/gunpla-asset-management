@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $_POST['imagepath'] = $imagepath;
 
-        // Parse ingredient arrays
+
         $items = [];
         if (!empty($_POST['paintid']) && is_array($_POST['paintid'])) {
             foreach ($_POST['paintid'] as $i => $pid) {
@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_POST['imagepath'] = $_POST['existing_imagepath'] ?? '';
         }
 
-        // Parse ingredient arrays
+
         $items = [];
         if (!empty($_POST['paintid']) && is_array($_POST['paintid'])) {
             foreach ($_POST['paintid'] as $i => $pid) {
@@ -104,7 +104,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
 
     <?php include '../components/toast.php'; ?>
 
-    <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         <?php
         $value = count($recipes);
@@ -132,7 +131,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
         ?>
     </div>
 
-    <!-- Search -->
+
     <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
         <form method="GET" class="flex gap-4 items-end">
             <div class="flex-1">
@@ -148,7 +147,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
         </form>
     </div>
 
-    <!-- Recipe Cards -->
+
     <?php if (!empty($recipes)): ?>
     <div class="space-y-4">
         <?php foreach ($recipes as $recipe): ?>
@@ -157,7 +156,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                 <div class="flex-1">
                     <h3 class="text-lg font-bold text-gray-800"><?= e($recipe['name']) ?></h3>
 
-                    <!-- Ingredients list -->
+         
                     <div class="mt-3 space-y-1">
                         <?php foreach ($recipe['items'] as $item): ?>
                         <div class="flex items-center gap-2 text-sm">
@@ -169,7 +168,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- Thinner + date -->
                     <div class="mt-3 flex items-center gap-4 text-xs text-gray-400">
                         <?php if (!empty($recipe['thinner_ratio'])): ?>
                         <span>💧 Thinner: <?= e($recipe['thinner_ratio']) ?></span>
@@ -177,13 +175,13 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                         <span><?= date('d M Y', strtotime($recipe['createdat'])) ?></span>
                     </div>
 
-                    <!-- Notes -->
+ 
                     <?php if (!empty($recipe['notes'])): ?>
                     <p class="mt-2 text-sm text-gray-500"><?= e($recipe['notes']) ?></p>
                     <?php endif; ?>
                 </div>
 
-                <!-- Swatch image -->
+
                 <?php if (!empty($recipe['imagepath'])): ?>
                 <a href="<?= e($recipe['imagepath']) ?>" target="_blank" class="ml-4 flex-shrink-0">
                     <img src="<?= e($recipe['imagepath']) ?>" alt="Color swatch"
@@ -193,7 +191,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                 <?php endif; ?>
             </div>
 
-            <!-- Actions -->
             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
                 <button type="button" class="text-sm text-blue-500 hover:text-blue-700"
                         data-recipe='<?= htmlspecialchars(json_encode($recipe), ENT_QUOTES) ?>'
@@ -215,14 +212,12 @@ $paint_dropdown = get_paints_for_dropdown($conn);
     <?php endif; ?>
 </div>
 
-<!-- Floating Action Button -->
 <button onclick="openAddModal()"
         class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
         title="New Recipe">
     +
 </button>
 
-<!-- Add Modal -->
 <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 modal-animate relative max-h-[90vh] overflow-y-auto">
         <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
@@ -243,7 +238,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                        class="w-full mt-1 p-2 border border-gray-300 rounded">
             </div>
 
-            <!-- Dynamic Ingredients -->
             <div>
                 <label class="block text-sm font-semibold text-gray-600 mb-2">Ingredients:</label>
                 <div id="add-ingredients-list" class="space-y-2">
@@ -284,7 +278,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
     </div>
 </div>
 
-<!-- Edit Modal -->
 <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 modal-animate relative max-h-[90vh] overflow-y-auto">
         <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
@@ -307,11 +300,10 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                        class="w-full mt-1 p-2 border border-gray-300 rounded">
             </div>
 
-            <!-- Dynamic Ingredients -->
             <div>
                 <label class="block text-sm font-semibold text-gray-600 mb-2">Ingredients:</label>
                 <div id="edit-ingredients-list" class="space-y-2">
-                    <!-- Populated by JavaScript -->
+
                 </div>
                 <button type="button" onclick="addIngredientRow('edit-ingredients-list')"
                         class="mt-2 text-sm text-blue-500 hover:text-blue-700 font-medium">
@@ -319,7 +311,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                 </button>
             </div>
 
-            <!-- Existing image preview -->
+
             <div id="edit_image_preview" class="hidden">
                 <label class="block text-sm font-semibold text-gray-600">Current Image:</label>
                 <img id="edit_image_thumb" src="" alt="Swatch" class="w-16 h-16 object-cover rounded border mt-1">
@@ -420,7 +412,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
         document.getElementById('editModal').style.display = 'none';
     }
 
-    // ---- Shared ----
+
     window.onclick = function(event) {
         const addModal = document.getElementById('addModal');
         const editModal = document.getElementById('editModal');

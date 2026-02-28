@@ -1,14 +1,4 @@
 <?php
-/**
- * Chart Canvas Component
- * 
- * Renders the HTML container for a Chart.js chart.
- * 
- * @param string $id       Unique ID for the canvas element
- * @param string $title    Title displayed above the chart
- * @param string $height   CSS height (default: 'h-64')
- */
-
 $height = $height ?? 'h-64';
 ?>
 <div class="bg-white rounded-lg shadow p-4">
