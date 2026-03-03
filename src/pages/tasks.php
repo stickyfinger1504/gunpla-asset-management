@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $message = get_flash_message();
 
-$backlog_items = get_backlog_items_for_dropdown($conn);
+$backlog_items = get_backlog_items_for_task_dropdown($conn);
 $all_tasks = get_tasks($conn, $_GET);
 $stats = calculate_task_stats($all_tasks);
 $has_filters = !empty($_GET['filter_kit']) || (isset($_GET['filter_status']) && $_GET['filter_status'] !== '') || !empty($_GET['search']);

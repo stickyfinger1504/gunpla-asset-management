@@ -39,6 +39,13 @@ function get_tasks($conn, $filters = []) {
     return $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 }
 
+function get_backlog_items_for_task_dropdown($conn) {
+    $sql = "SELECT actualid, name FROM vw_kit_backlog_plan ORDER BY name ASC";
+    $result = $conn->query($sql);
+    return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+}
+
+
 /**
  * Get tasks for a kit (all backlog entries combined, used on kit detail page)
  */
