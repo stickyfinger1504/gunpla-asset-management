@@ -46,7 +46,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-        <div class="max-w-5xl mx-auto w-full"> <h1 class="page-title font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
+        <div class="max-w-7xl mx-auto w-full"> <h1 class="page-title font-bold text-gray-700 text-center mb-8">🤖 Gunpla Hangar</h1>
             
             <?php include '../components/toast.php'; ?>
 

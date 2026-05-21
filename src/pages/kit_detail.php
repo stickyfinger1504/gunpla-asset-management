@@ -11,7 +11,7 @@ if (!$data) {
     http_response_code(404);
     $page_title = 'Kit Not Found';
     include '../components/layout_header.php';
-    echo "<div class='max-w-5xl mx-auto text-center py-20'>";
+    echo "<div class='max-w-7xl mx-auto text-center py-20'>";
     echo "<h1 class='text-4xl mb-4'>Kit not found</h1>";
     echo "<a href='/inventory' class='text-blue-500 hover:underline'>← Back to Inventory</a>";
     echo "</div>";
@@ -28,7 +28,7 @@ $page_title = $kit['name'];
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-<div class="max-w-5xl mx-auto w-full">
+<div class="max-w-7xl mx-auto w-full">
 
     <div class="flex items-center justify-between mb-6">
         <a href="/inventory" class="text-blue-500 hover:underline text-sm">← Back to Inventory</a>

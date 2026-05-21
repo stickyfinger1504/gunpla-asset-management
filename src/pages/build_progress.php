@@ -74,7 +74,7 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-        <div class="max-w-5xl mx-auto w-full">
+        <div class="max-w-7xl mx-auto w-full">
             <h1 class="page-title font-bold text-gray-700 text-center mb-8">🔨 Build Progress</h1>
             
             <?php include '../components/toast.php'; ?>

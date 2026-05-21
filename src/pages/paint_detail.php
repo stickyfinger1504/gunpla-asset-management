@@ -11,7 +11,7 @@ if (!$data) {
     http_response_code(404);
     $page_title = 'Paint Not Found';
     include '../components/layout_header.php';
-    echo "<div class='max-w-5xl mx-auto text-center py-20'>";
+    echo "<div class='max-w-7xl mx-auto text-center py-20'>";
     echo "<h1 class='text-4xl mb-4'>🎨 Paint not found</h1>";
     echo "<a href='/paint_inventory' class='text-blue-500 hover:underline'>← Back to Paint Inventory</a>";
     echo "</div>";
@@ -42,7 +42,7 @@ if (str_contains($amount_lower, 'full')) {
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-<div class="max-w-5xl mx-auto w-full">
+<div class="max-w-7xl mx-auto w-full">
 
     <div class="flex items-center justify-between mb-6">
         <a href="/paint_inventory" class="text-blue-500 hover:underline text-sm">← Back to Paint Inventory</a>
