@@ -100,7 +100,7 @@ $paint_dropdown = get_paints_for_dropdown($conn);
 <?php include '../components/layout_header.php'; ?>
 
 <div class="max-w-5xl mx-auto w-full">
-    <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🧪 Mixing Recipes</h1>
+    <h1 class="page-title font-bold text-gray-700 text-center mb-8">🧪 Mixing Recipes</h1>
 
     <?php include '../components/toast.php'; ?>
 
@@ -218,122 +218,11 @@ $paint_dropdown = get_paints_for_dropdown($conn);
     +
 </button>
 
-<div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 modal-animate relative max-h-[90vh] overflow-y-auto">
-        <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
-        <h2 class="text-xl font-bold text-gray-700 mb-4">➕ New Recipe</h2>
+<?php $mode = 'add'; include '../components/mixing_recipe_modal.php'; ?>
 
-        <form method="post" enctype="multipart/form-data" class="space-y-4">
-            <input type="hidden" name="action_type" value="add">
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Recipe Name:</label>
-                <input type="text" name="name" required placeholder="e.g. Char's Custom Red"
-                       class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Thinner Ratio:</label>
-                <input type="text" name="thinner_ratio" placeholder="e.g. 1.5:1 or 2:1"
-                       class="w-full mt-1 p-2 border border-gray-300 rounded">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600 mb-2">Ingredients:</label>
-                <div id="add-ingredients-list" class="space-y-2">
-                    <div class="flex gap-2 items-center ingredient-row">
-                        <select name="paintid[]" required class="flex-1 p-2 border border-gray-300 rounded text-sm">
-                            <option value="">-- Select Paint --</option>
-                            <?php foreach($paint_dropdown as $p): ?>
-                                <option value="<?= $p['actualid'] ?>"><?= e($p['id'] . ' — ' . $p['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="number" name="percentage[]" required placeholder="%" min="1" max="100"
-                               class="w-20 p-2 border border-gray-300 rounded text-sm text-center">
-                        <button type="button" onclick="removeIngredient(this)"
-                                class="text-red-400 hover:text-red-600 text-lg px-1" title="Remove">🗑️</button>
-                    </div>
-                </div>
-                <button type="button" onclick="addIngredientRow('add-ingredients-list')"
-                        class="mt-2 text-sm text-blue-500 hover:text-blue-700 font-medium">
-                    + Add Ingredient
-                </button>
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Color Swatch (optional):</label>
-                <input type="file" name="image" accept="image/*" class="w-full mt-1 text-sm">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                <textarea name="notes" rows="2" placeholder="Spray pressure, coats, etc."
-                          class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-            </div>
-
-            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                Save Recipe
-            </button>
-        </form>
-    </div>
-</div>
-
-<div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 modal-animate relative max-h-[90vh] overflow-y-auto">
-        <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
-        <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Recipe</h2>
-
-        <form method="post" enctype="multipart/form-data" class="space-y-4">
-            <input type="hidden" name="action_type" value="edit">
-            <input type="hidden" name="edit_id" id="edit_recipeid">
-            <input type="hidden" name="existing_imagepath" id="edit_existing_imagepath">
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Recipe Name:</label>
-                <input type="text" name="name" id="edit_name" required
-                       class="w-full mt-1 p-2 border border-gray-300 rounded">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Thinner Ratio:</label>
-                <input type="text" name="thinner_ratio" id="edit_thinner_ratio"
-                       class="w-full mt-1 p-2 border border-gray-300 rounded">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600 mb-2">Ingredients:</label>
-                <div id="edit-ingredients-list" class="space-y-2">
-
-                </div>
-                <button type="button" onclick="addIngredientRow('edit-ingredients-list')"
-                        class="mt-2 text-sm text-blue-500 hover:text-blue-700 font-medium">
-                    + Add Ingredient
-                </button>
-            </div>
+<?php $mode = 'edit'; include '../components/mixing_recipe_modal.php'; ?>
 
 
-            <div id="edit_image_preview" class="hidden">
-                <label class="block text-sm font-semibold text-gray-600">Current Image:</label>
-                <img id="edit_image_thumb" src="" alt="Swatch" class="w-16 h-16 object-cover rounded border mt-1">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Replace Image (optional):</label>
-                <input type="file" name="image" accept="image/*" class="w-full mt-1 text-sm">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                <textarea name="notes" id="edit_notes" rows="2"
-                          class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-            </div>
-
-            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                Save Changes
-            </button>
-        </form>
-    </div>
-</div>
 
 <script>
     const paintOptionsHTML = `
@@ -420,11 +309,6 @@ $paint_dropdown = get_paints_for_dropdown($conn);
         if (event.target == editModal) closeEditModal();
     }
 
-    function clearFilters(btn) {
-        const form = btn.closest('form');
-        form.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
-        form.submit();
-    }
 </script>
 
 <script>

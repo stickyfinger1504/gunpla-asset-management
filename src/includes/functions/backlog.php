@@ -55,7 +55,7 @@ function get_backlog_buildplans($conn) {
 }
 
 function get_inventory_kits($conn) {
-    $sql = "SELECT actualid, name FROM vw_kit_inventory ORDER BY name ASC";
+    $sql = "SELECT actualid, name, notes FROM vw_kit_inventory ORDER BY name ASC";
     $result = $conn->query($sql);
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }

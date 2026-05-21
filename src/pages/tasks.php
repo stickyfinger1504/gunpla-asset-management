@@ -81,7 +81,7 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
 <?php include '../components/layout_header.php'; ?>
 
         <div class="max-w-5xl mx-auto w-full">
-            <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">📋 Tasks</h1>
+            <h1 class="page-title font-bold text-gray-700 text-center mb-8">📋 Tasks</h1>
 
             <?php include '../components/toast.php'; ?>
 
@@ -230,87 +230,8 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
         +
     </button>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">➕ Add Task</h2>
-
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
-                <input type="hidden" name="action_type" value="add">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Link to Kit (optional):</label>
-                    <select name="backlogid" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                        <option value="">General Task (no kit)</option>
-                        <?php foreach($backlog_items as $bl): ?>
-                            <option value="<?= $bl['actualid'] ?>"><?= e($bl['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Task:</label>
-                    <input type="text" name="description" required
-                           placeholder="e.g. Remove seamlines from knee joint"
-                           class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Reference Image (optional):</label>
-                    <input type="file" name="image" accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded"
-                           onchange="previewImage(this, 'addPreview')">
-                    <img id="addPreview" class="mt-2 hidden w-32 h-32 object-cover rounded border">
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                    Add Task
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Task</h2>
-
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
-                <input type="hidden" name="action_type" value="edit">
-                <input type="hidden" name="edit_id" id="modal_id">
-                <input type="hidden" name="existing_imagepath" id="modal_existing_imagepath">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Link to Kit (optional):</label>
-                    <select name="backlogid" id="modal_backlogid" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                        <option value="">📌 General Task (no kit)</option>
-                        <?php foreach($backlog_items as $bl): ?>
-                            <option value="<?= $bl['actualid'] ?>"><?= e($bl['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Task:</label>
-                    <input type="text" name="description" id="modal_description" required
-                           class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Reference Image (optional):</label>
-                    <input type="file" name="image" accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded"
-                           onchange="previewImage(this, 'editPreview')">
-                    <img id="editPreview" class="mt-2 hidden w-32 h-32 object-cover rounded border">
-                    <p id="editCurrentImage" class="mt-1 text-xs text-gray-400 hidden">Current image will be kept if no new one is selected.</p>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                    Save Changes
-                </button>
-            </form>
-        </div>
-    </div>
+    <?php $mode = 'add'; include '../components/task_modal.php'; ?>
+    <?php $mode = 'edit'; include '../components/task_modal.php'; ?>
 
     <script>
         function previewImage(input, previewId) {

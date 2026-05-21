@@ -67,7 +67,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
 <?php include '../components/layout_header.php'; ?>
 
         <div class="max-w-7xl mx-auto w-full">
-            <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🎨 Paint Inventory</h1>
+            <h1 class="page-title font-bold text-gray-700 text-center mb-8">🎨 Paint Inventory</h1>
 
             <?php include '../components/toast.php'; ?>
 
@@ -432,166 +432,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
         +
     </button>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">➕ Add Paint</h2>
-
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
-                <input type="hidden" name="action_type" value="add">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Paint Name:</label>
-                    <input type="text" name="name" required placeholder="e.g. Flat Black"
-                           class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                        <select name="brand" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_brands as $b): ?>
-                                <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Paint Type:</label>
-                        <select name="painttype" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_types as $pt): ?>
-                                <option value="<?= $pt['id'] ?>"><?= htmlspecialchars($pt['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Thinned:</label>
-                        <select name="thinned" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($thinned_statuses as $ts): ?>
-                                <option value="<?= $ts['id'] ?>"><?= htmlspecialchars($ts['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Amount:</label>
-                        <select name="amount" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($amount_levels as $al): ?>
-                                <option value="<?= $al['id'] ?>"><?= htmlspecialchars($al['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Date Added:</label>
-                    <input type="date" name="createddate" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                    <textarea name="notes" rows="3" placeholder="Color code, usage notes..." class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Image:</label>
-                    <input type="file" name="image" accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded text-sm">
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                    Save to Collection
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Paint</h2>
-
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
-                <input type="hidden" name="action_type" value="edit">
-                <input type="hidden" name="edit_id" id="modal_id">
-                <input type="hidden" name="existing_imagepath" id="modal_imagepath">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Paint Name:</label>
-                    <input type="text" name="name" id="modal_name" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                        <select name="brand" id="modal_brand" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_brands as $b): ?>
-                                <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Paint Type:</label>
-                        <select name="painttype" id="modal_painttype" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_types as $pt): ?>
-                                <option value="<?= $pt['id'] ?>"><?= htmlspecialchars($pt['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Thinned:</label>
-                        <select name="thinned" id="modal_thinned" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($thinned_statuses as $ts): ?>
-                                <option value="<?= $ts['id'] ?>"><?= htmlspecialchars($ts['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Amount:</label>
-                        <select name="amount" id="modal_amount" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($amount_levels as $al): ?>
-                                <option value="<?= $al['id'] ?>"><?= htmlspecialchars($al['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Date Added:</label>
-                    <input type="date" name="createddate" id="modal_createddate" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                    <textarea name="notes" id="modal_notes" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Image:</label>
-                    <div id="modal_image_preview" class="hidden mb-2">
-                        <img id="modal_image_thumb" src="" alt="Current image" class="w-20 h-20 object-cover rounded border">
-                        <span class="text-xs text-gray-500">Current image (upload new to replace)</span>
-                    </div>
-                    <input type="file" name="image" accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded text-sm">
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save Changes</button>
-            </form>
-        </div>
-    </div>
+    <?php $mode = 'add'; include '../components/paint_inventory_modal.php'; ?>
+    <?php $mode = 'edit'; include '../components/paint_inventory_modal.php'; ?>
 
     <script>
         function openAddModal() {
@@ -641,12 +483,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
             if (event.target == editModal) closeEditModal();
         }
 
-        function clearFilters(btn) {
-            const form = btn.closest('form');
-            form.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
-            form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-            form.submit();
-        }
 
         function setView(mode) {
             const tableView = document.getElementById('table-view');

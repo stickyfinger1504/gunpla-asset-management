@@ -51,7 +51,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
 ?>
 <?php include '../components/layout_header.php'; ?>
 
-        <div class="max-w-5xl mx-auto w-full"> <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">✨ Wishlist</h1>
+        <div class="max-w-5xl mx-auto w-full"> <h1 class="page-title font-bold text-gray-700 text-center mb-8">✨ Wishlist</h1>
             
             <?php include '../components/toast.php'; ?>
 
@@ -285,125 +285,10 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
         +
     </button>
 
-    <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">➕ Add to Wishlist</h2>
-            
-            <form method="post" class="space-y-4">
-                <input type="hidden" name="action_type" value="add">
-                
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Kit Name:</label>
-                    <input type="text" name="kit_name" required placeholder="e.g. PG Unleashed RX-78-2" 
-                           class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
+    <?php $mode = 'add'; include '../components/wishlist_modal.php'; ?>
+    <?php $mode = 'edit'; include '../components/wishlist_modal.php'; ?> 
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                        <select name="brandid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($brands as $brand): ?>
-                                <option value="<?= $brand['id'] ?>"><?= htmlspecialchars($brand['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Priority:</label>
-                        <select name="priorityid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <?php foreach($priorities as $priority): ?>
-                                <option value="<?= $priority['id'] ?>"><?= htmlspecialchars($priority['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Link (optional):</label>
-                    <input type="url" name="link" placeholder="https://..." class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                    <textarea name="notes" rows="3" placeholder="Details..." class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                    Add to Wishlist
-                </button>
-            </form>
-        </div>
-    </div>
-
-        <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-                <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
-                <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Wishlist Item</h2>
-                
-                <form method="post" class="space-y-4">
-                    <input type="hidden" name="action_type" value="edit"> 
-                    <input type="hidden" name="edit_id" id="modal_id">
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Kit Name:</label>
-                        <input type="text" name="kit_name" id="modal_name" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                            <select name="brandid" id="modal_brand" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                                <option value="">-- Select --</option>
-                                <?php foreach($brands as $brand): ?>
-                                    <option value="<?= $brand['id'] ?>"><?= htmlspecialchars($brand['name']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600">Priority:</label>
-                            <select name="priorityid" id="modal_priority" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                                <?php foreach($priorities as $priority): ?>
-                                    <option value="<?= $priority['id'] ?>"><?= htmlspecialchars($priority['label']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Obtained:</label>
-                        <select name="obtained" id="modal_obtained" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="0">Not Obtained</option>
-                            <option value="1">Obtained</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Link:</label>
-                        <input type="url" name="link" id="modal_link" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                        <textarea name="notes" id="modal_notes" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                    </div>
-
-                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save Changes</button>
-                </form>
-            </div>
-        </div>
-    </div> <script>
-        function openAddModal() {
-            document.getElementById('addModal').classList.remove('hidden');
-
-            document.getElementById('addModal').style.display = 'flex';
-        }
-
-        function closeAddModal() {
-            document.getElementById('addModal').classList.add('hidden');
-            document.getElementById('addModal').style.display = 'none';
-        }
-
+    <script>
         function openEditModal(button) {
             const id = button.getAttribute('data-id');
             const name = button.getAttribute('data-name');
@@ -423,48 +308,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             document.getElementById('editModal').classList.remove('hidden');
             document.getElementById('editModal').style.display = 'flex'; 
         }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-
-            const editModal = document.getElementById('editModal');
-            if (event.target == addModal) {
-                closeAddModal();
-            }
-            if (event.target == editModal) {
-                closeEditModal();
-            }
-        }
-
-        function clearFilters(btn) {
-
-            const form = btn.closest('form');
-            form.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
-            form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-            form.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-            form.submit();
-        }
     </script>
 
-    <script>
-        (function() {
-            var pos = sessionStorage.getItem('wishlist_scroll');
-            if (pos) {
-                window.scrollTo(0, parseInt(pos));
-                sessionStorage.removeItem('wishlist_scroll');
-            }
-            
-            document.querySelectorAll('form').forEach(function(form) {
-                form.addEventListener('submit', function() {
-                    sessionStorage.setItem('wishlist_scroll', window.scrollY);
-                });
-            });
-        })();
-    </script>
+    <script>initScrollRestore('wishlist_scroll');</script>
 
 <?php include '../components/layout_footer.php'; ?>

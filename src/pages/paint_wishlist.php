@@ -46,7 +46,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
 <?php include '../components/layout_header.php'; ?>
 
         <div class="max-w-7xl mx-auto w-full">
-            <h1 class="text-3xl font-bold text-gray-700 text-center mb-8">🎨 Paint Wishlist</h1>
+            <h1 class="page-title font-bold text-gray-700 text-center mb-8">🎨 Paint Wishlist</h1>
 
             <?php include '../components/toast.php'; ?>
 
@@ -300,138 +300,11 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
         +
     </button>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeAddModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">➕ Add to Paint Wishlist</h2>
-
-            <form method="post" class="space-y-4">
-                <input type="hidden" name="action_type" value="add">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Paint Name:</label>
-                    <input type="text" name="name" required placeholder="e.g. Flat Black"
-                           class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                        <select name="brandid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_brands as $b): ?>
-                                <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Paint Type:</label>
-                        <select name="painttypeid" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($paint_types as $pt): ?>
-                                <option value="<?= $pt['id'] ?>"><?= htmlspecialchars($pt['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Priority:</label>
-                    <select name="priorityid" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                        <?php foreach($priorities as $p): ?>
-                            <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['label']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Link (optional):</label>
-                    <input type="url" name="link" placeholder="https://..." class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                    <textarea name="notes" rows="3" placeholder="Details..." class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                    Add to Wishlist
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="editModal" class="hidden fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 modal-animate relative">
-            <span class="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600" onclick="closeEditModal()">&times;</span>
-            <h2 class="text-xl font-bold text-gray-700 mb-4">✏️ Edit Wishlist Item</h2>
-
-            <form method="post" class="space-y-4">
-                <input type="hidden" name="action_type" value="edit">
-                <input type="hidden" name="edit_id" id="modal_id">
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Paint Name:</label>
-                    <input type="text" name="name" id="modal_name" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Brand:</label>
-                        <select name="brandid" id="modal_brand" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- Select --</option>
-                            <?php foreach($paint_brands as $b): ?>
-                                <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Paint Type:</label>
-                        <select name="painttypeid" id="modal_painttype" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="">-- N/A --</option>
-                            <?php foreach($paint_types as $pt): ?>
-                                <option value="<?= $pt['id'] ?>"><?= htmlspecialchars($pt['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Priority:</label>
-                        <select name="priorityid" id="modal_priority" required class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <?php foreach($priorities as $p): ?>
-                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600">Obtained:</label>
-                        <select name="obtained" id="modal_obtained" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="0">Not Obtained</option>
-                            <option value="1">Obtained</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Link:</label>
-                    <input type="url" name="link" id="modal_link" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600">Notes:</label>
-                    <textarea name="notes" id="modal_notes" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save Changes</button>
-            </form>
-        </div>
-    </div>
+    <?php $mode = 'add'; include '../components/paint_wishlist_modal.php'; ?>
+    <?php $mode = 'edit'; include '../components/paint_wishlist_modal.php'; ?>
 
     <script>
+
         function openAddModal() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').style.display = 'flex';
@@ -467,12 +340,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             if (event.target == editModal) closeEditModal();
         }
 
-        function clearFilters(btn) {
-            const form = btn.closest('form');
-            form.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
-            form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-            form.submit();
-        }
     </script>
 
     <script>
