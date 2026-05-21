@@ -55,7 +55,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             
             <?php include '../components/toast.php'; ?>
 
-            <!-- Statistics Dashboard -->
             <div class="mb-8">
                 <?php if ($has_filters): ?>
                     <div class="text-sm text-blue-600 mb-2 flex items-center gap-2">
@@ -90,7 +89,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             </div>
 
             <?php if ($stats['total_items'] > 0): ?>
-            <!-- Charts Section -->
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <?php
                 $id = 'priorityChart';
@@ -103,7 +102,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                 ?>
             </div>
 
-            <!-- Chart.js Logic -->
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
@@ -163,8 +161,10 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                         </select>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <?php if ($has_filters): ?>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 </form>
@@ -174,11 +174,11 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                 <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Kit Name</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Brand</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Priority</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Obtained</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 0, 'number')">ID</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 1, 'text')">Kit Name</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 2, 'text')">Brand</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 3, 'text')">Priority</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 4, 'text')">Obtained</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Link</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Notes</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
@@ -278,7 +278,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             </div>
         </div>
 
-    <!-- Floating Action Button -->
     <button onclick="openAddModal()" 
             class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
             title="Add New Item">

@@ -26,7 +26,6 @@
             <div class="mt-3 border-t border-gray-100"></div>
         </div>
 
-        <!-- Current Section Pages -->
         <?php if (isset($NAV_SECTIONS[$current_section])): 
             $section_data = $NAV_SECTIONS[$current_section];
         ?>

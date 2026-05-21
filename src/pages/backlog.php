@@ -48,7 +48,6 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
             
             <?php include '../components/toast.php'; ?>
 
-            <!-- Currently In Progress -->
             <div class="mb-8">
                 <h3 class="text-lg font-bold text-gray-700 mb-3">🔨 Currently In Progress</h3>
                 <?php 
@@ -78,7 +77,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
             </div>
 
             <?php if ($stats['total_items'] > 0): ?>
-            <!-- Charts Section -->
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <?php
                 $id = 'statusChart';
@@ -142,8 +141,10 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                         </select>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <?php if ($has_filters): ?>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 </form>
@@ -153,10 +154,10 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                 <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">ID</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Kit Name</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Build Plan</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 0, 'number')">ID</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 1, 'text')">Kit Name</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 2, 'text')">Build Plan</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 3, 'text')">Status</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Notes</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">References</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>

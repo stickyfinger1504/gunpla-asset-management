@@ -9,7 +9,7 @@ $height = $height ?? 'h-64';
     <div class="<?= $height ?>">
         <canvas id="<?= e($id) ?>"></canvas>
     </div>
-    <!-- Slot for extra controls (like buttons) -->
+
     <?php if (isset($extra_controls)): ?>
         <div class="mt-2">
             <?= $extra_controls ?>

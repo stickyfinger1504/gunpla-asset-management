@@ -96,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 $message = get_flash_message();
 $recipes = get_recipes($conn, $_GET);
 $paint_dropdown = get_paints_for_dropdown($conn);
+$has_filters = !empty($_GET['search']);
 ?>
 <?php include '../components/layout_header.php'; ?>
 
@@ -141,8 +142,10 @@ $paint_dropdown = get_paints_for_dropdown($conn);
                        class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Search</button>
+                <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Search</button>
+                <?php if ($has_filters): ?>
                 <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                <?php endif; ?>
             </div>
         </form>
     </div>

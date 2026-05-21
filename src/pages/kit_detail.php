@@ -30,12 +30,10 @@ $page_title = $kit['name'];
 
 <div class="max-w-5xl mx-auto w-full">
 
-    <!-- Navigation Bar -->
     <div class="flex items-center justify-between mb-6">
         <a href="/inventory" class="text-blue-500 hover:underline text-sm">← Back to Inventory</a>
     </div>
 
-    <!-- Kit Header -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-2"><?= e($kit['name']) ?></h1>
         <div class="flex flex-wrap gap-2 mb-3">
@@ -66,7 +64,6 @@ $page_title = $kit['name'];
         </div>
     </div>
 
-    <!-- Quick Stats -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-white border border-blue-200 rounded-lg p-4 shadow-sm text-center">
             <p class="text-3xl font-bold text-blue-600"><?= count($logs) ?></p>
@@ -86,7 +83,6 @@ $page_title = $kit['name'];
         </div>
     </div>
 
-    <!-- Wishlist Origin -->
     <?php if ($wishlist): ?>
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
         <h3 class="text-sm font-bold text-yellow-800 mb-1">✨ From Wishlist</h3>
@@ -99,7 +95,6 @@ $page_title = $kit['name'];
     </div>
     <?php endif; ?>
 
-    <!-- Backlog Plans -->
     <?php if (!empty($backlogs)): ?>
     <div class="mb-6">
         <h3 class="text-xl font-bold text-gray-700 mb-3">🚧 Backlog Plans</h3>
@@ -130,7 +125,6 @@ $page_title = $kit['name'];
     </div>
     <?php endif; ?>
 
-    <!-- Tasks Section -->
     <?php
     $kit_tasks = get_tasks_for_kit($conn, $kit_id);
     $task_stats = calculate_task_stats($kit_tasks);
@@ -176,8 +170,6 @@ $page_title = $kit['name'];
     </div>
     <?php endif; ?>
 
-
-    <!-- Timeline Section -->
     <?php
     $timeline = build_kit_timeline($kit_tasks, $logs);
     ?>
@@ -186,7 +178,7 @@ $page_title = $kit['name'];
         <h3 class="text-xl font-bold text-gray-700 mb-3">⏳ Timeline</h3>
 
         <div class="relative">
-            <!-- Vertical line -->
+
             <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
             <div class="space-y-0">
@@ -199,16 +191,16 @@ $page_title = $kit['name'];
                 ?>
 
                     <?php if ($show_date): ?>
-                    <!-- Date separator -->
+
                     <div class="relative flex items-center pl-10 py-3">
-                        <!-- Dot on the line -->
+
                         <div class="absolute left-[11px] w-3 h-3 rounded-full bg-gray-300 border-2 border-white"></div>
                         <span class="text-xs font-bold text-gray-400 uppercase tracking-wide"><?= $event_date ?></span>
                     </div>
                     <?php endif; ?>
 
                     <?php if ($event['type'] === 'build_log'): ?>
-                    <!-- Build log event (full card) -->
+
                     <div class="relative flex items-start pl-10 py-2">
                         <div class="absolute left-[11px] w-3 h-3 rounded-full bg-blue-400 border-2 border-white"></div>
                         <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex-1">
@@ -237,7 +229,7 @@ $page_title = $kit['name'];
                     </div>
 
                     <?php elseif ($event['type'] === 'task_done'): ?>
-                    <!-- Task completed event (inline) -->
+
                     <div class="relative flex items-center pl-10 py-1.5">
                         <div class="absolute left-[11px] w-3 h-3 rounded-full bg-green-400 border-2 border-white"></div>
                         <p class="text-sm text-green-700">
@@ -249,7 +241,7 @@ $page_title = $kit['name'];
                     </div>
 
                     <?php elseif ($event['type'] === 'task_created'): ?>
-                    <!-- Task created event (subtle) -->
+
                     <div class="relative flex items-center pl-10 py-1.5">
                         <div class="absolute left-[11px] w-3 h-3 rounded-full bg-gray-300 border-2 border-white"></div>
                         <p class="text-sm text-gray-400">

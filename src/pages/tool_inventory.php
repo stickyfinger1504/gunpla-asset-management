@@ -57,7 +57,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
 
     <?php include '../components/toast.php'; ?>
 
-    <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <?php
         $value = $stats['total_tools'];
@@ -79,7 +78,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
     </div>
 
     <?php if ($stats['total_tools'] > 0): ?>
-    <!-- Charts -->
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <?php
         $id = 'categoryChart'; $title = 'By Category'; include '../components/charts/chart_canvas.php';
@@ -97,7 +96,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
     </script>
     <?php endif; ?>
 
-    <!-- Filter Bar -->
     <div class="flex items-center justify-between mb-2">
         <h3 class="text-xl font-bold text-gray-700">🔧 My Tools</h3>
     </div>
@@ -157,24 +155,25 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                 </select>
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                <?php if ($has_filters): ?>
                 <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                <?php endif; ?>
             </div>
         </div>
         </form>
     </div>
 
-    <!-- Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
             <thead class="bg-gray-800 text-white">
                 <tr>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Name</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Brand</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Category</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Status</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Qty</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Price</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 0, 'text')">Name</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 1, 'text')">Brand</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 2, 'text')">Category</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 3, 'text')">Status</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 4, 'number')">Qty</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 5, 'number')">Price</th>
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Notes</th>
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
                 </tr>
@@ -285,16 +284,13 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
     </div>
 </div>
 
-<!-- FAB -->
 <button onclick="openAddModal()"
         class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
         title="Add Tool">+
 </button>
 
-<!-- Add Modal -->
 <?php $mode = 'add'; include '../components/tool_inventory_modal.php'; ?>
 
-<!-- Edit Modal -->
 <?php $mode = 'edit'; include '../components/tool_inventory_modal.php'; ?>
 
 <script>

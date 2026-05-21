@@ -1,129 +1,36 @@
-/* ============================================
-   CARD COMPONENT
-   ============================================ */
-.card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    padding: 1.5rem;
-}
-.card-header {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #374151;
-    margin-bottom: 1rem;
-}
-.card-gradient {
-    background-image: linear-gradient(to bottom right, #8b5cf6, #2563eb);
-    color: white;
-}
+
 
 /* ============================================
-   FORM COMPONENTS
+   SORTABLE TABLE HEADERS
    ============================================ */
-.form-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #4b5563;
+.sortable-th {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background-color 0.15s;
 }
-.form-input {
-    width: 100%;
-    margin-top: 0.25rem;
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    outline: none;
+.sortable-th:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
-.form-input:focus {
-    box-shadow: 0 0 0 2px #3b82f6;
+.sortable-th::after {
+    content: '⇅';
+    opacity: 0.35;
+    font-size: 0.65em;
+    display: inline-block;
+    vertical-align: middle;
+    transform: translateY(-2px);
+    margin-left: 0.35rem;
 }
-.form-select {
-    width: 100%;
-    margin-top: 0.25rem;
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
+.sortable-th.is-sorted-asc::after {
+    content: '▲';
+    opacity: 1;
+}
+.sortable-th.is-sorted-desc::after {
+    content: '▼';
+    opacity: 1;
 }
 
-/* ============================================
-   BUTTON VARIANTS
-   ============================================ */
-.btn {
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-    transition-duration: 200ms;
-}
-.btn-primary {
-    background-color: #3b82f6;
-    color: white;
-}
-.btn-primary:hover {
-    background-color: #2563eb;
-}
-.btn-secondary {
-    background-color: #e5e7eb;
-    color: #374151;
-}
-.btn-secondary:hover {
-    background-color: #d1d5db;
-}
-.btn-danger {
-    background-color: #ef4444;
-    color: white;
-}
-.btn-danger:hover {
-    background-color: #dc2626;
-}
 
-/* ============================================
-   TABLE STYLES
-   ============================================ */
-.data-table {
-    min-width: 100%;
-}
-.data-table > :not([hidden]) ~ :not([hidden]) {
-    --tw-divide-y-reverse: 0;
-    border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
-    border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
-    border-color: #e5e7eb;
-}
-.data-table th {
-    padding: 0.75rem 1rem;
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.data-table td {
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-}
-
-/* ============================================
-   STAT CARDS (for dashboards)
-   ============================================ */
-.stat-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    padding: 1rem;
-    border-left-width: 4px;
-}
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-}
-.stat-label {
-    font-size: 0.875rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-}
 
 @media (max-width: 640px) {
     .mobile-stack-table {

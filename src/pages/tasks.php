@@ -85,7 +85,6 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
 
             <?php include '../components/toast.php'; ?>
 
-            <!-- Activity Summary -->
             <div class="mb-8">
                 <h3 class="text-lg font-bold text-gray-700 mb-3">📊 Summary</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -103,48 +102,57 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                     </div>
                 </div>
             </div>
-
-            <!-- Filter Bar -->
-            <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Search</label>
-                        <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
-                               placeholder="Task description..." 
-                               class="w-full p-2 border border-gray-300 rounded">
+            <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xl font-bold text-gray-700">📝 Current Tasks</h3>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                <form method="GET">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Filters</span>
+                        <button type="button" class="filter-toggle-btn" onclick="toggleFilterBar(this)">
+                            ▼ Filters
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Kit</label>
-                        <select name="filter_kit" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="">All Kits</option>
-                            <?php foreach ($filter_kits as $kit): ?>
-                                <option value="<?= $kit['inventoryid'] ?>" <?= ($_GET['filter_kit'] ?? '') == $kit['inventoryid'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($kit['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
-                        <select name="filter_status" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="">All</option>
-                            <option value="0" <?= (isset($_GET['filter_status']) && $_GET['filter_status'] === '0') ? 'selected' : '' ?>>To-Do</option>
-                            <option value="1" <?= ($_GET['filter_status'] ?? '') === '1' ? 'selected' : '' ?>>Done</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">Filter</button>
-                        <?php if ($has_filters): ?>
-                        <button type="button" onclick="clearFilters(this)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded transition">✕</button>
-                        <?php endif; ?>
+                    <div class="filter-bar-body <?= $has_filters ? 'is-open' : '' ?>">
+                    
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Search</label>
+                            <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
+                                   placeholder="Task description..." 
+                                   class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Kit</label>
+                            <select name="filter_kit" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                                <option value="">All Kits</option>
+                                <?php foreach ($filter_kits as $kit): ?>
+                                    <option value="<?= $kit['inventoryid'] ?>" <?= ($_GET['filter_kit'] ?? '') == $kit['inventoryid'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($kit['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-gray-500 uppercase">Status</label>
+                            <select name="filter_status" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                                <option value="">All Statuses</option>
+                                <option value="0" <?= (isset($_GET['filter_status']) && $_GET['filter_status'] === '0') ? 'selected' : '' ?>>To-Do</option>
+                                <option value="1" <?= ($_GET['filter_status'] ?? '') === '1' ? 'selected' : '' ?>>Done</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                            <?php if ($has_filters): ?>
+                            <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </form>
             </div>
 
-            <!-- Grouped Task Lists -->
             <?php foreach ($grouped as $group_key => $tasks): ?>
                 <div class="mb-6">
-                    <!-- Group Header -->
+
                     <h3 class="text-md font-bold text-gray-700 mb-2 flex items-center gap-2">
                         <?php if ($group_key === '__general__'): ?>
                             📌 General Tasks
@@ -160,11 +168,10 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                         <?php endif; ?>
                     </h3>
 
-                    <!-- Task Items -->
                     <div class="bg-white rounded-lg shadow divide-y divide-gray-100">
                         <?php foreach ($tasks as $task): ?>
                         <div class="flex items-center px-4 py-3 gap-3 <?= $task['is_done'] ? 'opacity-50' : '' ?>">
-                            <!-- Toggle Checkbox -->
+
                             <form method="POST" class="flex-shrink-0">
                                 <input type="hidden" name="toggle_id" value="<?= $task['taskid'] ?>">
                                 <button type="submit" class="text-xl hover:scale-110 transition" title="Toggle">
@@ -172,7 +179,6 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                                 </button>
                             </form>
 
-                            <!-- Description -->
                             <span class="flex-1 text-sm <?= $task['is_done'] ? 'line-through text-gray-400' : 'text-gray-800' ?>">
                                 <?php if (!empty($task['kit_name'])): ?>
                                     <span class="font-bold mr-1"><?= e($task['kit_name']) ?> —</span>
@@ -180,7 +186,6 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                                 <?= e($task['description']) ?>
                             </span>
 
-                            <!-- Image Thumbnail -->
                             <?php if (!empty($task['imagepath'])): ?>
                             <a href="<?= e($task['imagepath']) ?>" target="_blank" class="flex-shrink-0">
                                 <img src="<?= e($task['imagepath']) ?>" alt="Reference"
@@ -189,12 +194,10 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                             </a>
                             <?php endif; ?>
 
-                            <!-- Date -->
                             <span class="text-xs text-gray-400 flex-shrink-0">
                                 <?= date('d M', strtotime($task['createdat'])) ?>
                             </span>
 
-                            <!-- Actions -->
                             <div class="flex items-center gap-1 flex-shrink-0">
                                 <button type="button" class="p-1 hover:bg-gray-200 rounded text-sm" title="Edit"
                                         data-id="<?= $task['taskid'] ?>"
@@ -223,7 +226,6 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
 
         </div>
 
-    <!-- Floating Action Button -->
     <button onclick="openAddModal()" 
             class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl transition-all duration-200 hover:scale-110 z-40"
             title="Add Task">

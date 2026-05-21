@@ -44,16 +44,13 @@ if (str_contains($amount_lower, 'full')) {
 
 <div class="max-w-5xl mx-auto w-full">
 
-    <!-- Back Navigation -->
     <div class="flex items-center justify-between mb-6">
         <a href="/paint_inventory" class="text-blue-500 hover:underline text-sm">← Back to Paint Inventory</a>
     </div>
 
-    <!-- Paint Header + Image -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
         <div class="flex flex-col md:flex-row gap-6">
 
-            <!-- Image (left side) -->
             <?php if (!empty($paint['imagepath'])): ?>
             <div class="flex-shrink-0">
                 <a href="<?= e($paint['imagepath']) ?>" target="_blank">
@@ -64,7 +61,6 @@ if (str_contains($amount_lower, 'full')) {
             </div>
             <?php endif; ?>
 
-            <!-- Info (right side) -->
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-800 mb-2"><?= e($paint['name']) ?></h1>
                 <div class="flex flex-wrap gap-2 mb-4">
@@ -110,7 +106,6 @@ if (str_contains($amount_lower, 'full')) {
         </div>
     </div>
 
-    <!-- Quick Stats -->
     <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="bg-white border border-blue-200 rounded-lg p-4 shadow-sm text-center">
             <p class="text-3xl font-bold text-blue-600"><?= count($recipes) ?></p>
@@ -124,7 +119,6 @@ if (str_contains($amount_lower, 'full')) {
         </div>
     </div>
 
-    <!-- Wishlist Origin -->
     <?php if ($wishlist): ?>
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
         <h3 class="text-sm font-bold text-yellow-800 mb-1">✨ From Wishlist</h3>
@@ -140,7 +134,6 @@ if (str_contains($amount_lower, 'full')) {
     </div>
     <?php endif; ?>
 
-    <!-- Recipes Using This Paint -->
     <div class="mb-6">
         <h3 class="text-xl font-bold text-gray-700 mb-3">🧪 Used in Recipes</h3>
 

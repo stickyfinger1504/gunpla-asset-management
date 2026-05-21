@@ -181,8 +181,10 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                         </select>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <?php if ($has_filters): ?>
                         <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 </form>
@@ -193,10 +195,10 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                 <table class="min-w-full divide-y divide-gray-200 mobile-stack-table">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Kit</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Log Entry</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 0, 'text')">Kit</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 1, 'text')">Log Entry</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Notes</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Date</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider sortable-th" onclick="sortTable(this, 3, 'date')">Date</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Image</th>
                             <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
                         </tr>
