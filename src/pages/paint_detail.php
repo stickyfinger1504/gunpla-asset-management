@@ -25,20 +25,7 @@ $recipes = $data['recipes'];
 $page_title = $paint['name'];
 
 $amount_label = $paint['amount'] ?? '-';
-$amount_lower = strtolower($amount_label);
-if (str_contains($amount_lower, 'full')) {
-    $amount_class = 'bg-green-100 text-green-800';
-} elseif (str_contains($amount_lower, 'high') || str_contains($amount_lower, '75') || str_contains($amount_lower, 'most')) {
-    $amount_class = 'bg-blue-100 text-blue-800';
-} elseif (str_contains($amount_lower, 'half') || str_contains($amount_lower, 'mid') || str_contains($amount_lower, '50')) {
-    $amount_class = 'bg-yellow-100 text-yellow-800';
-} elseif (str_contains($amount_lower, 'low') || str_contains($amount_lower, '25')) {
-    $amount_class = 'bg-orange-100 text-orange-800';
-} elseif (str_contains($amount_lower, 'empty') || str_contains($amount_lower, '0')) {
-    $amount_class = 'bg-red-100 text-red-800';
-} else {
-    $amount_class = 'bg-gray-100 text-gray-800';
-}
+$amount_class = get_paint_amount_class($amount_label);
 ?>
 <?php include '../components/layout_header.php'; ?>
 

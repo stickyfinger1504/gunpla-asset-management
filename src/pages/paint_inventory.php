@@ -238,42 +238,16 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (count($paints) > 0): ?>
-                            <?php
-                            $palette = [
-                                'bg-blue-100 text-blue-800',
-                                'bg-green-100 text-green-800',
-                                'bg-yellow-100 text-yellow-800',
-                                'bg-red-100 text-red-800',
-                                'bg-purple-100 text-purple-800',
-                                'bg-pink-100 text-pink-800',
-                                'bg-cyan-100 text-cyan-800',
-                                'bg-lime-100 text-lime-800',
-                                'bg-orange-100 text-orange-800',
-                                'bg-indigo-100 text-indigo-800',
-                            ];
-                            ?>
+
                             <?php foreach ($paints as $row): ?>
                                 <?php
                                     $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
-                                    $brand_class = $palette[($row['brandid'] ?? 0) % count($palette)];
-                                    $type_class = $palette[($row['painttypeid'] ?? 0) % count($palette)];
+                                    $brand_class = get_brand_color_palette($row['brandid']);
+                                    $type_class = get_brand_color_palette($row['painttypeid']);
 
                                     $amount_label = $row['amount'] ?? '-';
-                                    $amount_lower = strtolower($amount_label);
-                                    if (str_contains($amount_lower, 'full')) {
-                                        $amount_class = 'bg-green-100 text-green-800';
-                                    } elseif (str_contains($amount_lower, 'high') || str_contains($amount_lower, '75') || str_contains($amount_lower, 'most')) {
-                                        $amount_class = 'bg-blue-100 text-blue-800';
-                                    } elseif (str_contains($amount_lower, 'half') || str_contains($amount_lower, 'mid') || str_contains($amount_lower, '50')) {
-                                        $amount_class = 'bg-yellow-100 text-yellow-800';
-                                    } elseif (str_contains($amount_lower, 'low') || str_contains($amount_lower, '25')) {
-                                        $amount_class = 'bg-orange-100 text-orange-800';
-                                    } elseif (str_contains($amount_lower, 'empty') || str_contains($amount_lower, '0')) {
-                                        $amount_class = 'bg-red-100 text-red-800';
-                                    } else {
-                                        $amount_class = 'bg-gray-100 text-gray-800';
-                                    }
+                                    $amount_class = get_paint_amount_class($amount_label);
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
                                     <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
@@ -347,22 +321,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                 <?php
                                     $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '', ENT_QUOTES);
-
                                     $amount_label = $row['amount'] ?? '-';
-                                    $amount_lower = strtolower($amount_label);
-                                    if (str_contains($amount_lower, 'full')) {
-                                        $amount_class = 'bg-green-100 text-green-800';
-                                    } elseif (str_contains($amount_lower, 'high') || str_contains($amount_lower, '75') || str_contains($amount_lower, 'most')) {
-                                        $amount_class = 'bg-blue-100 text-blue-800';
-                                    } elseif (str_contains($amount_lower, 'half') || str_contains($amount_lower, 'mid') || str_contains($amount_lower, '50')) {
-                                        $amount_class = 'bg-yellow-100 text-yellow-800';
-                                    } elseif (str_contains($amount_lower, 'low') || str_contains($amount_lower, '25')) {
-                                        $amount_class = 'bg-orange-100 text-orange-800';
-                                    } elseif (str_contains($amount_lower, 'empty') || str_contains($amount_lower, '0')) {
-                                        $amount_class = 'bg-red-100 text-red-800';
-                                    } else {
-                                        $amount_class = 'bg-gray-100 text-gray-800';
-                                    }
+                                    $amount_class = get_paint_amount_class($amount_label);
                                 ?>
                                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
                                     <?php if (!empty($row['imagepath'])): ?>

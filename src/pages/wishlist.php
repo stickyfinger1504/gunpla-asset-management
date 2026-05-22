@@ -186,27 +186,13 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (count($items) > 0): ?>
-                            <?php 
-                            $palette = [
-                                'bg-blue-100 text-blue-800',
-                                'bg-green-100 text-green-800',
-                                'bg-yellow-100 text-yellow-800',
-                                'bg-red-100 text-red-800',
-                                'bg-purple-100 text-purple-800',
-                                'bg-pink-100 text-pink-800',
-                                'bg-cyan-100 text-cyan-800',
-                                'bg-lime-100 text-lime-800',
-                                'bg-orange-100 text-orange-800',
-                                'bg-indigo-100 text-indigo-800',
-                            ];
-                            ?>
+
                             <?php foreach ($items as $row): ?>
                                 <?php 
                                     $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
                                     $safe_link = htmlspecialchars($row['link'] ?? '', ENT_QUOTES);
-                                    
-                                    $brand_class = $palette[($row['brandid'] ?? 0) % count($palette)];
+                                    $brand_class = get_brand_color_palette($row['brandid']);
                                     
                                     $priority_class = match($row['priority']) {
                                         'High' => 'bg-red-100 text-red-800',

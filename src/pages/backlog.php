@@ -165,22 +165,14 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (count($items) > 0): ?>
-                            <?php
-                            $status_palette = [
-                                'bg-green-100 text-green-800',
-                                'bg-yellow-100 text-yellow-800',
-                                'bg-red-100 text-red-800',
-                                'bg-blue-100 text-blue-800',
-                                'bg-purple-100 text-purple-800',
-                            ];
-                            ?>
+
                             <?php foreach ($items as $row): ?>
                                 <?php 
                                     $safe_name = htmlspecialchars($row['name'] ?? '-', ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
                                     $safe_refs = htmlspecialchars($row['references'] ?? '', ENT_QUOTES);
 
-                                    $status_class = $status_palette[((int)($row['status'] ?? 0)) % count($status_palette)];
+                                    $status_class = get_brand_color_palette((int)($row['status'] ?? 0));
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
                                     <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['backlogid'] ?? '' ?></td>

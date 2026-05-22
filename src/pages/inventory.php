@@ -257,20 +257,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (count($kits) > 0): ?>
-                            <?php 
-                            $palette = [
-                                'bg-blue-100 text-blue-800',
-                                'bg-green-100 text-green-800',
-                                'bg-yellow-100 text-yellow-800',
-                                'bg-red-100 text-red-800',
-                                'bg-purple-100 text-purple-800',
-                                'bg-pink-100 text-pink-800',
-                                'bg-cyan-100 text-cyan-800',
-                                'bg-lime-100 text-lime-800',
-                                'bg-orange-100 text-orange-800',
-                                'bg-indigo-100 text-indigo-800',
-                            ];
-                            ?>
                             <?php foreach ($kits as $row): ?>
                                 <?php 
                                     $price_display = $row['pricebought'] ? format_currency($row['pricebought']) : "-";
@@ -278,8 +264,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
                                     $safe_dates = htmlspecialchars($row['datebought'] ??'-', ENT_QUOTES);
                                     
-                                    $brand_class = $palette[($row['brandid'] ?? 0) % count($palette)];
-                                    $status_class = $palette[($row['statusid'] ?? 0) % count($palette)];
+                                    $brand_class = get_brand_color_palette($row['brandid']);
+                                    $status_class = get_brand_color_palette($row['statusid']);
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
                                     <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
@@ -327,7 +313,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan='7' class='text-center py-6 text-gray-500'>No kits found in the hangar yet! Start buying!</td></tr>
+                            <tr><td colspan='8' class='text-center py-6 text-gray-500'>No kits found in the hangar yet! Start buying!</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

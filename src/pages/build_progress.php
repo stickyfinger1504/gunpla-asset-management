@@ -23,20 +23,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $msg_text = $action_success ? "✅ Log entry deleted" : "❌ Delete failed";
     }
     elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'clear_orphaned') {
-        $stmt = $conn->prepare("SELECT imagepath FROM kit_transaction_log WHERE backlogid IS NULL");
+        $stmt = $conn->prepare("SELECT imagepath FROM kit_transaction_log WHERE backlogid IS NULL AND imagepath IS NOT NULL");
         $stmt->execute();
         $images = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-        $stmt = $conn->prepare("DELETE FROM kit_transaction_log WHERE backlogid IS NULL");
-        $action_success = $stmt->execute();
-
-        if ($action_success) {
-            foreach ($images as $img) {
-                if (!empty($img['imagepath'])) {
-                    delete_image_file($img['imagepath']);
-                }
+        foreach ($images as $img) {
+            if (!empty($img['imagepath'])) {
+                delete_image_file($img['imagepath']);
             }
         }
+
+        $stmt = $conn->prepare("DELETE FROM kit_transaction_log WHERE backlogid IS NULL");
+        $action_success = $stmt->execute();
         $msg_text = $action_success ? "✅ Orphaned logs cleared" : "❌ Error clearing logs";
     }
     elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'add') {
