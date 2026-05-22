@@ -19,7 +19,7 @@ CREATE TABLE `dim_category` (
 CREATE TABLE `kit_inventory` (
   `inventoryid` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `status` varchar(20) NOT NULL,
+  `status` INT NOT NULL,
   `datebought` date DEFAULT NULL,
   `pricebought` int DEFAULT NULL,
   `notes` varchar(300) DEFAULT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE `kit_transaction_log` (
   `imagepath` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`logid`),
   KEY `fk_transaction_backlog` (`backlogid`),
-  CONSTRAINT `fk_transaction_backlog` FOREIGN KEY (`backlogid`) REFERENCES `kit_backlog_plan` (`backlogid`)
+  CONSTRAINT `fk_transaction_backlog` FOREIGN KEY (`backlogid`) REFERENCES `kit_backlog_plan` (`backlogid`) ON DELETE SET NULL
 );
 
 

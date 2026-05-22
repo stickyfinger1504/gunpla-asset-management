@@ -100,8 +100,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const priorityData = <?= json_encode($stats['priority_counts']) ?>;
-                const brandData = <?= json_encode($stats['brand_counts']) ?>;
+                const priorityData = <?= json_encode($stats['priority_counts'], JSON_HEX_TAG) ?>;
+                const brandData = <?= json_encode($stats['brand_counts'], JSON_HEX_TAG) ?>;
 
                 initDoughnutChart('priorityChart', Object.keys(priorityData), Object.values(priorityData));
                 initDoughnutChart('brandChart', Object.keys(brandData), Object.values(brandData));
@@ -340,19 +340,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
 
     </script>
 
-    <script>
-        (function() {
-            var pos = sessionStorage.getItem('paint_wishlist_scroll');
-            if (pos) {
-                window.scrollTo(0, parseInt(pos));
-                sessionStorage.removeItem('paint_wishlist_scroll');
-            }
-            document.querySelectorAll('form').forEach(function(form) {
-                form.addEventListener('submit', function() {
-                    sessionStorage.setItem('paint_wishlist_scroll', window.scrollY);
-                });
-            });
-        })();
-    </script>
+    <script>initScrollRestore('paint_wishlist_scroll');</script>
 
 <?php include '../components/layout_footer.php'; ?>

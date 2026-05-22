@@ -106,9 +106,24 @@ function update_kit($conn, $data) {
 }
 
 function delete_kit($conn, $id) {
+    $stmt = $conn->prepare("SELECT t.imagepath FROM kit_task t JOIN kit_backlog_plan b ON t.backlogid = b.backlogid WHERE b.inventoryid = ? AND t.imagepath IS NOT NULL");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $images = $result->fetch_all(MYSQLI_ASSOC);
+
     $stmt = $conn->prepare("DELETE FROM kit_inventory WHERE inventoryid=?");
     $stmt->bind_param("i", $id);
-    return $stmt->execute();
+    $success = $stmt->execute();
+
+    if ($success) {
+        foreach ($images as $img) {
+            if (!empty($img['imagepath'])) {
+                delete_image_file($img['imagepath']);
+            }
+        }
+    }
+    return $success;
 }
 
 function archive_kit($conn, $id) {

@@ -114,7 +114,7 @@ function update_tool($conn, $data) {
          WHERE toolid=?"
     );
     // s-i-i-i-i-s-i-s-s-s-s-i = 12 params
-    $stmt->bind_param("siiiisisssi",
+    $stmt->bind_param("siiiisissssi",
         $data['name'], $brand, $category, $status, $quantity,
         $unit, $price, $date, $imagepath, $link, $notes,
         $data['edit_id']

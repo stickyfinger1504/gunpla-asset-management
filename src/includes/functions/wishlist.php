@@ -5,20 +5,28 @@
 
 function get_wishlist_items($conn, $filters = []) {
     $sql = "SELECT * FROM vw_kit_wishlist WHERE 1=1";
+    $params = [];
+    $types = "";
     
     if (!empty($filters['search'])) {
-        $search = $conn->real_escape_string($filters['search']);
-        $sql .= " AND (name LIKE '%$search%' OR brand LIKE '%$search%' OR id LIKE '%$search%')";
+        $search = '%' . $filters['search'] . '%';
+        $sql .= " AND (name LIKE ? OR brand LIKE ? OR actualid LIKE ?)";
+        $params[] = $search; $params[] = $search; $params[] = $search;
+        $types .= "sss";
     }
     
     if (!empty($filters['filter_brand'])) {
         $brandId = (int)$filters['filter_brand'];
-        $sql .= " AND brandid = $brandId";
+        $sql .= " AND brandid = ?";
+        $params[] = $brandId;
+        $types .= "i";
     }
     
     if (!empty($filters['filter_priority'])) {
         $priorityId = (int)$filters['filter_priority'];
-        $sql .= " AND priorityid = $priorityId";
+        $sql .= " AND priorityid = ?";
+        $params[] = $priorityId;
+        $types .= "i";
     }
     
     if (!empty($filters['filter_obtained'])) {
@@ -52,7 +60,14 @@ function get_wishlist_items($conn, $filters = []) {
             break;
     }
     
-    $result = $conn->query($sql);
+    if (count($params) > 0) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else {
+        $result = $conn->query($sql);
+    }
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 
@@ -63,49 +78,41 @@ function get_wishlist_priorities($conn) {
 }
 
 function add_wishlist_item($conn, $data) {
-    $name = $conn->real_escape_string($data['kit_name']);
+    $name = $data['kit_name'];
     $brandid = (int)$data['brandid'];
     $priorityid = (int)$data['priorityid'];
-    $link = $conn->real_escape_string($data['link'] ?? '');
-    $notes = $conn->real_escape_string($data['notes'] ?? '');
+    $link = $data['link'] ?? '';
+    $notes = $data['notes'] ?? '';
     
-    $sql = "INSERT INTO kit_wishlist (name, brandid, obtained, priorityid, link, notes) 
-            VALUES ('$name', $brandid, 0, $priorityid, '$link', '$notes')";
-    
-    return $conn->query($sql);
+    $stmt = $conn->prepare("INSERT INTO kit_wishlist (name, brandid, obtained, priorityid, link, notes) VALUES (?, ?, 0, ?, ?, ?)");
+    $stmt->bind_param("siiss", $name, $brandid, $priorityid, $link, $notes);
+    return $stmt->execute();
 }
 
 function update_wishlist_item($conn, $data) {
     $id = (int)$data['edit_id'];
-    $name = $conn->real_escape_string($data['kit_name']);
+    $name = $data['kit_name'];
     $brandid = (int)$data['brandid'];
     $priorityid = (int)$data['priorityid'];
     $obtained = (int)($data['obtained'] ?? 0);
-    $link = $conn->real_escape_string($data['link'] ?? '');
-    $notes = $conn->real_escape_string($data['notes'] ?? '');
+    $link = $data['link'] ?? '';
+    $notes = $data['notes'] ?? '';
     
-    $sql = "UPDATE kit_wishlist SET 
-            name = '$name', 
-            brandid = $brandid, 
-            priorityid = $priorityid, 
-            obtained = $obtained,
-            link = '$link', 
-            notes = '$notes' 
-            WHERE wishlistid = $id";
-    
-    return $conn->query($sql);
+    $stmt = $conn->prepare("UPDATE kit_wishlist SET name=?, brandid=?, priorityid=?, obtained=?, link=?, notes=? WHERE wishlistid=?");
+    $stmt->bind_param("siiissi", $name, $brandid, $priorityid, $obtained, $link, $notes, $id);
+    return $stmt->execute();
 }
 
 function delete_wishlist_item($conn, $id) {
-    $id = (int)$id;
-    $sql = "DELETE FROM kit_wishlist WHERE wishlistid = $id";
-    return $conn->query($sql);
+    $stmt = $conn->prepare("DELETE FROM kit_wishlist WHERE wishlistid=?");
+    $stmt->bind_param("i", $id);
+    return $stmt->execute();
 }
 
 function mark_wishlist_obtained($conn, $id) {
-    $id = (int)$id;
-    $sql = "UPDATE kit_wishlist SET obtained = 1 WHERE wishlistid = $id";
-    return $conn->query($sql);
+    $stmt = $conn->prepare("UPDATE kit_wishlist SET obtained=1 WHERE wishlistid=?");
+    $stmt->bind_param("i", $id);
+    return $stmt->execute();
 }
 
 function calculate_wishlist_stats($items) {

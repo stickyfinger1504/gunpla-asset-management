@@ -116,15 +116,15 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const brandData = <?= json_encode($stats['brand_counts']) ?>;
-                const statusData = <?= json_encode($stats['status_counts']) ?>;
+                const brandData = <?= json_encode($stats['brand_counts'], JSON_HEX_TAG) ?>;
+                const statusData = <?= json_encode($stats['status_counts'], JSON_HEX_TAG) ?>;
                 
                 initDoughnutChart('brandChart', Object.keys(brandData), Object.values(brandData));
                 initDoughnutChart('statusChart', Object.keys(statusData), Object.values(statusData));
                 
-                const monthlySpending = <?= json_encode($stats['monthly_spending']) ?>;
-                const monthlyPurchases = <?= json_encode($stats['monthly_purchases']) ?>;
-                const yearlyPurchases = <?= json_encode($stats['yearly_purchases']) ?>;
+                const monthlySpending = <?= json_encode($stats['monthly_spending'], JSON_HEX_TAG) ?>;
+                const monthlyPurchases = <?= json_encode($stats['monthly_purchases'], JSON_HEX_TAG) ?>;
+                const yearlyPurchases = <?= json_encode($stats['yearly_purchases'], JSON_HEX_TAG) ?>;
                 const colors = ChartConfig.colors;
 
                 new Chart(document.getElementById('spendingChart'), {
@@ -273,7 +273,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                             ?>
                             <?php foreach ($kits as $row): ?>
                                 <?php 
-                                    $price_display = $row['pricebought'] ? "Rp. " . number_format($row['pricebought'], 0, ',', '.') : "-";
+                                    $price_display = $row['pricebought'] ? format_currency($row['pricebought']) : "-";
                                     $safe_name = htmlspecialchars($row['name'], ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '-', ENT_QUOTES);
                                     $safe_dates = htmlspecialchars($row['datebought'] ??'-', ENT_QUOTES);
@@ -284,16 +284,16 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
                                     <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
                                     <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'>
-                                        <a href="/kit/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $row['name'] ?></a>
+                                        <a href="/kit/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
                                     </td>
                                     <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
-                                            <?= $row['brand'] ?>
+                                            <?= e($row['brand']) ?>
                                         </span>
                                     </td>
                                     <td data-label="Status" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $status_class ?>">
-                                            <?= $row['status'] ?>
+                                            <?= e($row['status']) ?>
                                         </span>
                                     </td>
                                     <td data-label="Date" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $safe_dates ?></td>
@@ -308,7 +308,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                                 data-status='<?= $row['statusid'] ?>'
                                                 data-date='<?= $row['datebought'] ?>'
                                                 data-price='<?= $row['pricebought'] ?>'
-                                                data-notes='<?= $row['notes'] ?>'
+                                                data-notes='<?= e($row['notes']) ?>'
                                                 onclick='openEditModal(this)'>
                                                 ✏️
                                             </button>

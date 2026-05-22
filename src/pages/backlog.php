@@ -93,8 +93,8 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const statusData = <?= json_encode($stats['status_counts']) ?>;
-                const buildplanData = <?= json_encode($stats['buildplan_counts']) ?>;
+                const statusData = <?= json_encode($stats['status_counts'], JSON_HEX_TAG) ?>;
+                const buildplanData = <?= json_encode($stats['buildplan_counts'], JSON_HEX_TAG) ?>;
                 
                 initDoughnutChart('statusChart', Object.keys(statusData), Object.values(statusData));
                 initDoughnutChart('buildplanChart', Object.keys(buildplanData), Object.values(buildplanData));

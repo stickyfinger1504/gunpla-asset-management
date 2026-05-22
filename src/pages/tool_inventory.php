@@ -88,8 +88,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
     <?php include '../components/charts/init_charts.php'; ?>
     <script>
     (function() {
-        const catData   = <?= json_encode($stats['category_counts']) ?>;
-        const brandData = <?= json_encode($stats['brand_counts']) ?>;
+        const catData   = <?= json_encode($stats['category_counts'], JSON_HEX_TAG) ?>;
+        const brandData = <?= json_encode($stats['brand_counts'], JSON_HEX_TAG) ?>;
         initDoughnutChart('categoryChart', Object.keys(catData),   Object.values(catData));
         initDoughnutChart('brandChart',    Object.keys(brandData), Object.values(brandData));
     })();
@@ -346,19 +346,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
 
 </script>
 
-<script>
-    (function() {
-        var pos = sessionStorage.getItem('tool_inventory_scroll');
-        if (pos) {
-            window.scrollTo(0, parseInt(pos));
-            sessionStorage.removeItem('tool_inventory_scroll');
-        }
-        document.querySelectorAll('form').forEach(function(form) {
-            form.addEventListener('submit', function() {
-                sessionStorage.setItem('tool_inventory_scroll', window.scrollY);
-            });
-        });
-    })();
-</script>
+<script>initScrollRestore('tool_inventory_scroll');</script>
 
 <?php include '../components/layout_footer.php'; ?>

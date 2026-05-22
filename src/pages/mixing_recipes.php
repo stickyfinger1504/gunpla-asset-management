@@ -314,19 +314,6 @@ $has_filters = !empty($_GET['search']);
 
 </script>
 
-<script>
-    (function() {
-        var pos = sessionStorage.getItem('mixing_recipes_scroll');
-        if (pos) {
-            window.scrollTo(0, parseInt(pos));
-            sessionStorage.removeItem('mixing_recipes_scroll');
-        }
-        document.querySelectorAll('form').forEach(function(form) {
-            form.addEventListener('submit', function() {
-                sessionStorage.setItem('mixing_recipes_scroll', window.scrollY);
-            });
-        });
-    })();
-</script>
+<script>initScrollRestore('mixing_recipes_scroll');</script>
 
 <?php include '../components/layout_footer.php'; ?>

@@ -130,8 +130,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const brandData = <?= json_encode($stats['brand_counts']) ?>;
-                const typeData = <?= json_encode($stats['type_counts']) ?>;
+                const brandData = <?= json_encode($stats['brand_counts'], JSON_HEX_TAG) ?>;
+                const typeData = <?= json_encode($stats['type_counts'], JSON_HEX_TAG) ?>;
 
                 initDoughnutChart('brandChart', Object.keys(brandData), Object.values(brandData));
                 initDoughnutChart('typeChart', Object.keys(typeData), Object.values(typeData));
@@ -514,19 +514,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
         })();
     </script>
 
-    <script>
-        (function() {
-            var pos = sessionStorage.getItem('paint_inventory_scroll');
-            if (pos) {
-                window.scrollTo(0, parseInt(pos));
-                sessionStorage.removeItem('paint_inventory_scroll');
-            }
-            document.querySelectorAll('form').forEach(function(form) {
-                form.addEventListener('submit', function() {
-                    sessionStorage.setItem('paint_inventory_scroll', window.scrollY);
-                });
-            });
-        })();
-    </script>
+    <script>initScrollRestore('paint_inventory_scroll');</script>
 
 <?php include '../components/layout_footer.php'; ?>

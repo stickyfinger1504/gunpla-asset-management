@@ -105,8 +105,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const priorityData = <?= json_encode($stats['priority_counts']) ?>;
-                const brandData = <?= json_encode($stats['brand_counts']) ?>;
+                const priorityData = <?= json_encode($stats['priority_counts'], JSON_HEX_TAG) ?>;
+                const brandData = <?= json_encode($stats['brand_counts'], JSON_HEX_TAG) ?>;
                 
                 initDoughnutChart('priorityChart', Object.keys(priorityData), Object.values(priorityData));
                 initDoughnutChart('brandChart', Object.keys(brandData), Object.values(brandData));
@@ -217,10 +217,10 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
                                     <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
-                                    <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $row['name'] ?></td>
+                                    <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'><?= e($row['name']) ?></td>
                                     <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">
-                                            <?= $row['brand'] ?>
+                                            <?= e($row['brand']) ?>
                                         </span>
                                     </td>
                                     <td data-label="Priority" class='px-4 py-3 text-sm whitespace-nowrap'>
@@ -250,7 +250,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                                 data-priority='<?= $row['priorityid'] ?>'
                                                 data-obtained='<?= $row['obtainedid'] ?>'
                                                 data-link='<?= $safe_link ?>'
-                                                data-notes='<?= $row['notes'] ?>'
+                                                data-notes='<?= e($row['notes']) ?>'
                                                 onclick='openEditModal(this)'>
                                                 ✏️
                                             </button>

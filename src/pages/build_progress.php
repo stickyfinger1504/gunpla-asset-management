@@ -22,6 +22,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $msg_text = $action_success ? "✅ Log entry deleted" : "❌ Delete failed";
     }
+    elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'clear_orphaned') {
+        $stmt = $conn->prepare("SELECT imagepath FROM kit_transaction_log WHERE backlogid IS NULL");
+        $stmt->execute();
+        $images = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        $stmt = $conn->prepare("DELETE FROM kit_transaction_log WHERE backlogid IS NULL");
+        $action_success = $stmt->execute();
+
+        if ($action_success) {
+            foreach ($images as $img) {
+                if (!empty($img['imagepath'])) {
+                    delete_image_file($img['imagepath']);
+                }
+            }
+        }
+        $msg_text = $action_success ? "✅ Orphaned logs cleared" : "❌ Error clearing logs";
+    }
     elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'add') {
         $imagepath = '';
         if (!empty($_FILES['image']['name'])) {
@@ -70,6 +87,7 @@ $logs = get_transaction_logs($conn, $_GET);
 $stats = calculate_transaction_stats($logs);
 
 $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
+$has_orphaned = count(array_filter($logs, fn($l) => empty($l['name']))) > 0;
 
 ?>
 <?php include '../components/layout_header.php'; ?>
@@ -138,7 +156,7 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
             <?php include '../components/charts/init_charts.php'; ?>
             <script>
             (function() {
-                const kitData = <?= json_encode($stats['kit_counts']) ?>;
+                const kitData = <?= json_encode($stats['kit_counts'], JSON_HEX_TAG) ?>;
                 initDoughnutChart('kitChart', Object.keys(kitData), Object.values(kitData));
             })();
             </script>
@@ -146,6 +164,14 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
 
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xl font-bold text-gray-700">📋 Log Entries</h3>
+                <?php if ($has_orphaned): ?>
+                <form method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete all orphaned logs?');">
+                    <input type="hidden" name="action_type" value="clear_orphaned">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium transition flex items-center gap-1">
+                        🧹 Clear Error Logs
+                    </button>
+                </form>
+                <?php endif; ?>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
                 <form method="GET">
@@ -210,7 +236,8 @@ $has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
                                     $safe_logname = htmlspecialchars($row['logname'] ?? '-', ENT_QUOTES);
                                     $safe_notes = htmlspecialchars($row['notes'] ?? '', ENT_QUOTES);
                                     $safe_image = htmlspecialchars($row['imagepath'] ?? '', ENT_QUOTES);
-                                    $safe_name = htmlspecialchars($row['name'] ?? '-', ENT_QUOTES);
+                                    $is_orphaned = empty($row['name']);
+                                    $safe_name = $is_orphaned ? '<span class="text-gray-400 italic">Kit Not Found (Deleted)</span>' : htmlspecialchars($row['name'], ENT_QUOTES);
                                     $formatted_date = !empty($row['createdat']) ? date('M j, Y', strtotime($row['createdat'])) : '-';
                                     $formatted_time = !empty($row['createdat']) ? date('H:i', strtotime($row['createdat'])) : '';
                                 ?>

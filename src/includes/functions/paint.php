@@ -89,7 +89,7 @@ function add_paint($conn, $data) {
     $stmt = $conn->prepare(
         "INSERT INTO paint_inventory (name, brand, painttype, thinned, amount, createddate, notes, imagepath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->bind_param("siiissss", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath);
+    $stmt->bind_param("siiiisss", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath);
     return $stmt->execute();
 }
 
@@ -103,7 +103,7 @@ function update_paint($conn, $data) {
     $stmt = $conn->prepare(
         "UPDATE paint_inventory SET name=?, brand=?, painttype=?, thinned=?, amount=?, createddate=?, notes=?, imagepath=? WHERE inventoryid=?"
     );
-    $stmt->bind_param("siiissssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $data['edit_id']);
+    $stmt->bind_param("siiiisssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $data['edit_id']);
     return $stmt->execute();
 }
 

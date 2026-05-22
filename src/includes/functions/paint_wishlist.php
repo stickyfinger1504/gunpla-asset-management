@@ -102,7 +102,7 @@ function update_paint_wishlist_item($conn, $data) {
     $stmt = $conn->prepare(
         "UPDATE paint_wishlist SET name=?, brandid=?, priorityid=?, obtained=?, painttypeid=?, link=?, notes=? WHERE wishlistid=?"
     );
-    $stmt->bind_param("siiisssi", $data['name'], $data['brandid'], $data['priorityid'], $obtained, $painttypeid, $link, $notes, $data['edit_id']);
+    $stmt->bind_param("siiiissi", $data['name'], $data['brandid'], $data['priorityid'], $obtained, $painttypeid, $link, $notes, $data['edit_id']);
     return $stmt->execute();
 }
 
