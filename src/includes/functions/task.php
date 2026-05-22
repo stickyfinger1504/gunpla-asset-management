@@ -63,6 +63,7 @@ function get_tasks_for_kit($conn, int $inventoryid) {
 }
 
 function add_task($conn, $data) {
+    if (empty($data['description'])) return false;
     $backlogid = !empty($data['backlogid']) ? (int)$data['backlogid'] : null;
     $description = $data['description'];
     $imagepath = $data['imagepath'] ?? null;
@@ -73,6 +74,7 @@ function add_task($conn, $data) {
 }
 
 function update_task($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['description'])) return false;
     $taskid = (int)$data['edit_id'];
     $backlogid = !empty($data['backlogid']) ? (int)$data['backlogid'] : null;
     $description = $data['description'];

@@ -268,7 +268,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     $status_class = get_brand_color_palette($row['statusid']);
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= e($row['id']) ?></td>
                                     <td data-label="Kit Name" class='px-4 py-3 text-sm font-semibold text-gray-800'>
                                         <a href="/kit/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
                                     </td>

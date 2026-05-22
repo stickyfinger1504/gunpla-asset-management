@@ -78,6 +78,7 @@ function get_wishlist_priorities($conn) {
 }
 
 function add_wishlist_item($conn, $data) {
+    if (empty($data['kit_name']) || empty($data['brandid']) || empty($data['priorityid'])) return false;
     $name = $data['kit_name'];
     $brandid = (int)$data['brandid'];
     $priorityid = (int)$data['priorityid'];
@@ -90,6 +91,7 @@ function add_wishlist_item($conn, $data) {
 }
 
 function update_wishlist_item($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['kit_name']) || empty($data['brandid']) || empty($data['priorityid'])) return false;
     $id = (int)$data['edit_id'];
     $name = $data['kit_name'];
     $brandid = (int)$data['brandid'];

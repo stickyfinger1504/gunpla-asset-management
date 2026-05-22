@@ -77,6 +77,7 @@ function get_inventory_kits($conn) {
 }
 
 function add_backlog_item($conn, $data) {
+    if (empty($data['inventoryid']) || empty($data['buildplanid']) || empty($data['statusid'])) return false;
     $inventoryid = (int)$data['inventoryid'];
     $buildplanid = (int)$data['buildplanid'];
     $status = (int)$data['statusid'];
@@ -89,6 +90,7 @@ function add_backlog_item($conn, $data) {
 }
 
 function update_backlog_item($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['inventoryid']) || empty($data['buildplanid']) || empty($data['statusid'])) return false;
     $id = (int)$data['edit_id'];
     $inventoryid = (int)$data['inventoryid'];
     $buildplanid = (int)$data['buildplanid'];
@@ -108,9 +110,9 @@ function delete_backlog_item($conn, $id) {
     $result = $stmt->get_result();
     $images = $result->fetch_all(MYSQLI_ASSOC);
 
-    $id = (int)$id;
-    $sql = "DELETE FROM kit_backlog_plan WHERE backlogid = $id";
-    $success = $conn->query($sql);
+    $stmt = $conn->prepare("DELETE FROM kit_backlog_plan WHERE backlogid = ?");
+    $stmt->bind_param("i", $id);
+    $success = $stmt->execute();
 
     if ($success) {
         foreach ($images as $img) {

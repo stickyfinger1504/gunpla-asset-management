@@ -211,7 +211,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     };
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= e($row['id']) ?></td>
                                     <td data-label="Paint Name" class='px-4 py-3 text-sm font-semibold text-gray-800'><?= $safe_name ?></td>
                                     <td data-label="Brand" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <?php if (!empty($row['brand'])): ?>
@@ -234,7 +234,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                         </span>
                                         <?php else: ?>-<?php endif; ?>
                                     </td>
-                                    <td data-label="Obtained" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= $row['obtained'] ?></td>
+                                    <td data-label="Obtained" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= e($row['obtained']) ?></td>
                                     <td data-label="Link" class='px-4 py-3 text-sm text-gray-600'>
                                         <?php if (!empty($row['link'])): ?>
                                             <a href="<?= $safe_link ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>

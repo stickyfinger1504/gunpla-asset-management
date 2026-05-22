@@ -82,6 +82,7 @@ function get_paint_wishlist_priorities($conn) {
 }
 
 function add_paint_wishlist_item($conn, $data) {
+    if (empty($data['name']) || empty($data['brandid']) || empty($data['priorityid'])) return false;
     $painttypeid = !empty($data['painttypeid']) ? (int)$data['painttypeid'] : null;
     $link = !empty($data['link']) ? $data['link'] : null;
     $notes = !empty($data['notes']) ? $data['notes'] : null;
@@ -94,6 +95,7 @@ function add_paint_wishlist_item($conn, $data) {
 }
 
 function update_paint_wishlist_item($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['name']) || empty($data['brandid']) || empty($data['priorityid'])) return false;
     $obtained = (int)($data['obtained'] ?? 0);
     $painttypeid = !empty($data['painttypeid']) ? (int)$data['painttypeid'] : null;
     $link = !empty($data['link']) ? $data['link'] : null;

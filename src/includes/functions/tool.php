@@ -74,6 +74,8 @@ function get_tool_inventory($conn, $filters = []) {
 }
 
 function add_tool($conn, $data) {
+    if (empty($data['name'])) return false;
+
     $brand     = !empty($data['brand'])       ? (int)$data['brand']       : null;
     $category  = !empty($data['category'])    ? (int)$data['category']    : null;
     $status    = !empty($data['status'])      ? (int)$data['status']      : null;
@@ -97,6 +99,8 @@ function add_tool($conn, $data) {
 }
 
 function update_tool($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['name'])) return false;
+
     $brand     = !empty($data['brand'])       ? (int)$data['brand']       : null;
     $category  = !empty($data['category'])    ? (int)$data['category']    : null;
     $status    = !empty($data['status'])      ? (int)$data['status']      : null;

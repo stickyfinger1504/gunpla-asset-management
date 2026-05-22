@@ -250,7 +250,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                     $amount_class = get_paint_amount_class($amount_label);
                                 ?>
                                 <tr class='hover:bg-gray-50 border-b border-gray-100'>
-                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= $row['id'] ?></td>
+                                    <td data-label="ID" class='px-4 py-3 text-sm font-bold text-gray-500 whitespace-nowrap'><?= e($row['id']) ?></td>
                                     <td data-label="Paint Name" class='px-4 py-3 text-sm font-semibold'>
                                         <a href="/paint/<?= $row['actualid'] ?>" class="text-blue-600 hover:underline"><?= $safe_name ?></a>
                                     </td>
@@ -267,7 +267,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                     <td data-label="Thinned" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= e($row['thinned'] ?? '-') ?></td>
                                     <td data-label="Amount" class='px-4 py-3 text-sm whitespace-nowrap'>
                                         <span class="px-2 py-1 text-xs font-bold rounded-full <?= $amount_class ?>">
-                                            <?= $amount_label ?>
+                                            <?= e($amount_label) ?>
                                         </span>
                                     </td>
                                     <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate' title='<?= $safe_notes ?>'><?= $safe_notes ?></td>
@@ -346,7 +346,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
 
                                         <div class="mt-2">
                                             <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= $amount_class ?>">
-                                                <?= $amount_label ?>
+                                                <?= e($amount_label) ?>
                                             </span>
                                         </div>
                                     </div>

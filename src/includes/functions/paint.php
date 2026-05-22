@@ -80,6 +80,8 @@ function get_paint_inventory($conn, $filters = []) {
 }
 
 function add_paint($conn, $data) {
+    if (empty($data['name']) || empty($data['brand']) || empty($data['painttype'])) return false;
+
     $thinned = !empty($data['thinned']) ? (int)$data['thinned'] : null;
     $amount = !empty($data['amount']) ? (int)$data['amount'] : null;
     $notes = !empty($data['notes']) ? $data['notes'] : null;
@@ -94,6 +96,8 @@ function add_paint($conn, $data) {
 }
 
 function update_paint($conn, $data) {
+    if (empty($data['edit_id']) || empty($data['name']) || empty($data['brand']) || empty($data['painttype'])) return false;
+
     $thinned = !empty($data['thinned']) ? (int)$data['thinned'] : null;
     $amount = !empty($data['amount']) ? (int)$data['amount'] : null;
     $notes = (isset($data['notes']) && $data['notes'] !== '') ? $data['notes'] : null;

@@ -86,6 +86,8 @@ function get_kit_inventory($conn, $filters = []) {
 }
 
 function add_kit($conn, $data) {
+    if (empty($data["kit_name"]) || empty($data["brandid"]) || empty($data["statusid"])) return false;
+    
     $datebought = !empty($data["datebought"]) ? $data["datebought"] : null;
     $pricebought = !empty($data["pricebought"]) ? $data["pricebought"] : null;
     $notes = !empty($data["notes"]) ? $data['notes'] : null;
@@ -96,6 +98,8 @@ function add_kit($conn, $data) {
 }
 
 function update_kit($conn, $data) {
+    if (empty($data["edit_id"]) || empty($data["kit_name"]) || empty($data["brandid"]) || empty($data["statusid"])) return false;
+    
     $datebought = !empty($data["datebought"]) ? $data["datebought"] : null;
     $pricebought = !empty($data["pricebought"]) ? $data["pricebought"] : null;
     $notes = (isset($data["notes"]) && $data["notes"] !== '') ? $data['notes'] : null;

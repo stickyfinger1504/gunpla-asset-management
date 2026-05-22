@@ -235,7 +235,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                                 <?php endif; ?>
                             </td>
                             <td data-label="Qty" class="px-4 py-3 text-sm text-center <?= $qty_class ?>">
-                                <?= $qty ?><?= !empty($row['unit']) ? ' ' . e($row['unit']) : '' ?>
+                                <?= e($qty) ?><?= !empty($row['unit']) ? ' ' . e($row['unit']) : '' ?>
                             </td>
                             <td data-label="Price" class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
                                 <?= $row['pricebought'] ? format_currency($row['pricebought']) : '-' ?>
