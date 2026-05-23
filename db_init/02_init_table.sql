@@ -33,7 +33,7 @@ CREATE TABLE `kit_backlog_plan` (
   `backlogid` int NOT NULL AUTO_INCREMENT,
   `inventoryid` int DEFAULT NULL,
   `buildplanid` int DEFAULT NULL,
-  `status` varchar(10) DEFAULT NULL,
+  `status` int DEFAULT NULL,
   `notes` varchar(300) DEFAULT NULL,
   `references` varchar(300) DEFAULT NULL,
   PRIMARY KEY (`backlogid`),

@@ -89,7 +89,7 @@ $page_title = $kit['name'];
         <p class="text-sm text-yellow-700">
             Priority: <?= e($wishlist['priority'] ?? '-') ?>
             <?php if (!empty($wishlist['link'])): ?>
-                • <a href="<?= e($wishlist['link']) ?>" target="_blank" class="underline">Original Link</a>
+                • <a href="<?= e($wishlist['link']) ?>" target="_blank" rel="noopener noreferrer" class="underline">Original Link</a>
             <?php endif; ?>
         </p>
     </div>
@@ -117,7 +117,7 @@ $page_title = $kit['name'];
                 <p class="text-sm text-gray-600"><?= e($bl['notes']) ?></p>
                 <?php endif; ?>
                 <?php if (!empty($bl['references'])): ?>
-                <a href="<?= e($bl['references']) ?>" target="_blank" class="text-sm text-blue-500 hover:underline mt-1 inline-block">🔗 Reference</a>
+                <a href="<?= e($bl['references']) ?>" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline mt-1 inline-block">🔗 Reference</a>
                 <?php endif; ?>
             </div>
             <?php endforeach; ?>
@@ -152,7 +152,7 @@ $page_title = $kit['name'];
                     <?= e($task['description']) ?>
                 </span>
                 <?php if (!empty($task['imagepath'])): ?>
-                <a href="<?= e($task['imagepath']) ?>" target="_blank" class="flex-shrink-0">
+                <a href="<?= e($task['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="flex-shrink-0">
                     <img src="<?= e($task['imagepath']) ?>" alt="Reference"
                          class="w-10 h-10 object-cover rounded border hover:opacity-80 transition"
                          loading="lazy">
@@ -218,7 +218,7 @@ $page_title = $kit['name'];
                                     </p>
                                 </div>
                                 <?php if (!empty($event['imagepath'])): ?>
-                                <a href="<?= e($event['imagepath']) ?>" target="_blank" class="ml-3 flex-shrink-0">
+                                <a href="<?= e($event['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="ml-3 flex-shrink-0">
                                     <img src="<?= e($event['imagepath']) ?>" alt="Build photo"
                                          class="w-14 h-14 object-cover rounded border hover:opacity-80 transition"
                                          loading="lazy">
@@ -249,7 +249,7 @@ $page_title = $kit['name'];
                             Task created:
                             <?= e($event['label']) ?>
                             <?php if (!empty($event['imagepath'])): ?>
-                            <a href="<?= e($event['imagepath']) ?>" target="_blank" class="ml-1">
+                            <a href="<?= e($event['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="ml-1">
                                 <img src="<?= e($event['imagepath']) ?>" alt="Ref"
                                      class="w-6 h-6 object-cover rounded inline-block align-middle border"
                                      loading="lazy">

@@ -187,7 +187,7 @@ $filter_kits = $filter_kits_result ? $filter_kits_result->fetch_all(MYSQLI_ASSOC
                             </span>
 
                             <?php if (!empty($task['imagepath'])): ?>
-                            <a href="<?= e($task['imagepath']) ?>" target="_blank" class="flex-shrink-0">
+                            <a href="<?= e($task['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="flex-shrink-0">
                                 <img src="<?= e($task['imagepath']) ?>" alt="Reference"
                                      class="w-10 h-10 object-cover rounded border hover:opacity-80 transition"
                                      loading="lazy">

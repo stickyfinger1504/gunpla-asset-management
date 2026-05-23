@@ -40,7 +40,7 @@ $amount_class = get_paint_amount_class($amount_label);
 
             <?php if (!empty($paint['imagepath'])): ?>
             <div class="flex-shrink-0">
-                <a href="<?= e($paint['imagepath']) ?>" target="_blank">
+                <a href="<?= e($paint['imagepath']) ?>" target="_blank" rel="noopener noreferrer">
                     <img src="<?= e($paint['imagepath']) ?>" alt="<?= e($paint['name']) ?>"
                          class="w-48 h-48 object-cover rounded-lg border shadow-sm hover:opacity-90 transition"
                          loading="lazy">
@@ -112,7 +112,7 @@ $amount_class = get_paint_amount_class($amount_label);
         <p class="text-sm text-yellow-700">
             Priority: <?= e($wishlist['priority'] ?? '-') ?>
             <?php if (!empty($wishlist['link'])): ?>
-                • <a href="<?= e($wishlist['link']) ?>" target="_blank" class="underline">Original Link</a>
+                • <a href="<?= e($wishlist['link']) ?>" target="_blank" rel="noopener noreferrer" class="underline">Original Link</a>
             <?php endif; ?>
             <?php if (!empty($wishlist['notes'])): ?>
                 • <?= e($wishlist['notes']) ?>

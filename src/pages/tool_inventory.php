@@ -208,7 +208,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                         <tr class="hover:bg-gray-50 border-b border-gray-100">
                             <td data-label="Name" class="px-4 py-3 text-sm font-semibold text-gray-800">
                                 <?php if (!empty($row['imagepath'])): ?>
-                                <a href="<?= e($row['imagepath']) ?>" target="_blank" class="mr-2">
+                                <a href="<?= e($row['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="mr-2">
                                     <img src="<?= e($row['imagepath']) ?>" alt="Tool"
                                          class="w-8 h-8 object-cover rounded inline-block align-middle border">
                                 </a>

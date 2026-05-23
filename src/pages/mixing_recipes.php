@@ -186,7 +186,7 @@ $has_filters = !empty($_GET['search']);
 
 
                 <?php if (!empty($recipe['imagepath'])): ?>
-                <a href="<?= e($recipe['imagepath']) ?>" target="_blank" class="ml-4 flex-shrink-0">
+                <a href="<?= e($recipe['imagepath']) ?>" target="_blank" rel="noopener noreferrer" class="ml-4 flex-shrink-0">
                     <img src="<?= e($recipe['imagepath']) ?>" alt="Color swatch"
                          class="w-20 h-20 object-cover rounded-lg border hover:opacity-80 transition"
                          loading="lazy">

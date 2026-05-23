@@ -16,6 +16,17 @@ function get_statuses($conn) {
     return $result->fetch_all(MYSQLI_ASSOC);
 }
 
+function get_category_id_by_label($conn, $section, $module, $label) {
+    $stmt = $conn->prepare("SELECT id FROM dim_category WHERE section=? AND module=? AND label=? LIMIT 1");
+    $stmt->bind_param("sss", $section, $module, $label);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc()['id'];
+    }
+    return null;
+}
+
 function get_archived_status_id($conn) {
     $label = 'archived';
     
@@ -106,7 +117,45 @@ function update_kit($conn, $data) {
 
     $stmt = $conn->prepare("UPDATE kit_inventory SET name=?, status=?, datebought=?, pricebought=?, notes=?, brandid=? WHERE inventoryid=?");
     $stmt->bind_param("sisisii", $data["kit_name"], $data["statusid"], $datebought, $pricebought, $notes, $data["brandid"], $data['edit_id']);
-    return $stmt->execute();
+    $success = $stmt->execute();
+
+    if ($success) {
+        $kit_done_id = get_category_id_by_label($conn, 'kitinventory', 'status', 'Done');
+        if ((int)$data['statusid'] === $kit_done_id) {
+            $in_progress_backlog_id = get_category_id_by_label($conn, 'backlogplan', 'status', 'In Progress');
+            $done_backlog_id = get_category_id_by_label($conn, 'backlogplan', 'status', 'Done');
+            
+            if ($in_progress_backlog_id && $done_backlog_id) {
+                // Find "In Progress" backlog plan
+                $b_stmt = $conn->prepare("SELECT backlogid FROM kit_backlog_plan WHERE inventoryid = ? AND status = ? LIMIT 1");
+                $b_stmt->bind_param("ii", $data['edit_id'], $in_progress_backlog_id);
+                $b_stmt->execute();
+                $b_res = $b_stmt->get_result();
+                $b_row = $b_res->fetch_assoc();
+                
+                $completed_backlog_id = null;
+                if ($b_row) {
+                    $completed_backlog_id = $b_row['backlogid'];
+                    $upd_b_stmt = $conn->prepare("UPDATE kit_backlog_plan SET status = ? WHERE backlogid = ?");
+                    $upd_b_stmt->bind_param("ii", $done_backlog_id, $completed_backlog_id);
+                    $upd_b_stmt->execute();
+                }
+                
+                // Detach other plans
+                if ($completed_backlog_id !== null) {
+                    $det_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ? AND backlogid != ?");
+                    $det_stmt->bind_param("ii", $data['edit_id'], $completed_backlog_id);
+                    $det_stmt->execute();
+                } else {
+                    $det_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ?");
+                    $det_stmt->bind_param("i", $data['edit_id']);
+                    $det_stmt->execute();
+                }
+            }
+        }
+    }
+
+    return $success;
 }
 
 function delete_kit($conn, $id) {

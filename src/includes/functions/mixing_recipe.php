@@ -82,6 +82,13 @@ function get_recipe($conn, int $recipeid): ?array {
 
 function add_recipe($conn, $data, $items) {
     if (empty($data['name']) || empty($items)) return false;
+    
+    // Check for duplicate paintids
+    $paint_ids = array_column($items, 'paintid');
+    if (count($paint_ids) !== count(array_unique($paint_ids))) {
+        return false;
+    }
+    
     $conn->begin_transaction();
     try {
         $notes = !empty($data['notes']) ? $data['notes'] : null;
@@ -114,6 +121,13 @@ function add_recipe($conn, $data, $items) {
 
 function update_recipe($conn, $data, $items) {
     if (empty($data['edit_id']) || empty($data['name']) || empty($items)) return false;
+    
+    // Check for duplicate paintids
+    $paint_ids = array_column($items, 'paintid');
+    if (count($paint_ids) !== count(array_unique($paint_ids))) {
+        return false;
+    }
+    
     $conn->begin_transaction();
     try {
         $notes = !empty($data['notes']) ? $data['notes'] : null;

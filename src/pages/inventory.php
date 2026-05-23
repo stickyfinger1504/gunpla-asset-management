@@ -212,15 +212,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                             </select>
                         </div>
                         <div class="flex-1 w-full">
-                            <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
-                            <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                                <option value="date_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_desc') ? 'selected' : '' ?>>Date Bought (Newest)</option>
-                                <option value="date_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_asc') ? 'selected' : '' ?>>Date Bought (Oldest)</option>
-                                <option value="price_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_desc') ? 'selected' : '' ?>>Price (Highest)</option>
-                                <option value="price_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'price_asc') ? 'selected' : '' ?>>Price (Lowest)</option>
-                            </select>
-                        </div>
-                        <div class="flex-1 w-full">
                             <label class="block text-xs font-bold text-gray-500 uppercase">Filter Status</label>
                             <select name="filter_status" class="w-full mt-1 p-2 border border-gray-300 rounded">
                                 <option value="">All Statuses</option>

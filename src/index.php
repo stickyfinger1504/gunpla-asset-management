@@ -28,24 +28,11 @@ $dynamicRoutes = [
         $_GET['id'] = $matches[1];
         return 'pages/kit_detail.php';
     },
-    '#^/kit/(\d+)/edit$#' => function($matches) {
-        $_GET['id'] = $matches[1];
-        return 'pages/kit_edit.php';
-    },
     '#^/paint/(\d+)$#' => function($matches) {
         $_GET['id'] = $matches[1];
         return 'pages/paint_detail.php';
     },
-    
-    // API endpoints (for future use)
-    '#^/api/kits$#' => function($matches) {
-        return 'api/kits.php';
-    },
-    
-    '#^/api/kit/(\d+)$#' => function($matches) {
-        $_GET['id'] = $matches[1];
-        return 'api/kit.php';
-    },
+
 ];
 
 // Try to match a dynamic route

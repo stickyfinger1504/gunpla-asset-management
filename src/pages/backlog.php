@@ -209,7 +209,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                                     <td data-label="Notes" class='px-4 py-3 text-sm text-gray-600'><?= $safe_notes ?></td>
                                     <td data-label="References" class='px-4 py-3 text-sm text-gray-600'>
                                         <?php if (!empty($row['references'])): ?>
-                                            <a href="<?= $safe_refs ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>
+                                            <a href="<?= $safe_refs ?>" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">🔗 Link</a>
                                         <?php else: ?>
                                             -
                                         <?php endif; ?>

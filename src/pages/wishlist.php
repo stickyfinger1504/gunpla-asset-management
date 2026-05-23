@@ -221,7 +221,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                                     <td data-label="Obtained" class='px-4 py-3 text-sm text-gray-600 whitespace-nowrap'><?= e($row['obtained']) ?></td>
                                     <td data-label="Link" class='px-4 py-3 text-sm text-gray-600'>
                                         <?php if (!empty($row['link'])): ?>
-                                            <a href="<?= $safe_link ?>" target="_blank" class="text-blue-500 hover:underline">🔗 Link</a>
+                                            <a href="<?= $safe_link ?>" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">🔗 Link</a>
                                         <?php else: ?>
                                             -
                                         <?php endif; ?>

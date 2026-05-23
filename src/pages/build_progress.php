@@ -107,7 +107,7 @@ $has_orphaned = count(array_filter($logs, fn($l) => empty($l['name']))) > 0;
                 <h3 class="text-lg font-bold text-gray-700 mb-3">🆕 Latest Update</h3>
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col md:flex-row">
                     <?php if (!empty($latest_image)): ?>
-                    <a href="<?= $latest_image ?>" target="_blank" class="md:w-48 flex-shrink-0">
+                    <a href="<?= $latest_image ?>" target="_blank" rel="noopener noreferrer" class="md:w-48 flex-shrink-0">
                         <img src="<?= $latest_image ?>" alt="Latest build photo" 
                              class="w-full h-48 md:h-full object-cover hover:opacity-90 transition">
                     </a>
@@ -251,7 +251,7 @@ $has_orphaned = count(array_filter($logs, fn($l) => empty($l['name']))) > 0;
                                     </td>
                                     <td data-label="Image" class='px-4 py-3 text-sm'>
                                         <?php if (!empty($row['imagepath'])): ?>
-                                            <a href="<?= $safe_image ?>" target="_blank" title="Click to view full size">
+                                            <a href="<?= $safe_image ?>" target="_blank" rel="noopener noreferrer" title="Click to view full size">
                                                 <img src="<?= $safe_image ?>" alt="Build photo" 
                                                      class="w-12 h-12 object-cover rounded border hover:opacity-80 transition cursor-pointer"
                                                      loading="lazy">

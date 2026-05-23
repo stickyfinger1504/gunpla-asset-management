@@ -326,7 +326,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                 ?>
                                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
                                     <?php if (!empty($row['imagepath'])): ?>
-                                    <a href="<?= e($row['imagepath']) ?>" target="_blank">
+                                    <a href="<?= e($row['imagepath']) ?>" target="_blank" rel="noopener noreferrer">
                                         <div class="aspect-square bg-gray-100 overflow-hidden">
                                             <img src="<?= e($row['imagepath']) ?>" alt="<?= $safe_name ?>"
                                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform"
