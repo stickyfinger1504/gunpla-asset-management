@@ -140,17 +140,6 @@ function update_kit($conn, $data) {
                     $upd_b_stmt->bind_param("ii", $done_backlog_id, $completed_backlog_id);
                     $upd_b_stmt->execute();
                 }
-                
-                // Detach other plans
-                if ($completed_backlog_id !== null) {
-                    $det_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ? AND backlogid != ?");
-                    $det_stmt->bind_param("ii", $data['edit_id'], $completed_backlog_id);
-                    $det_stmt->execute();
-                } else {
-                    $det_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ?");
-                    $det_stmt->bind_param("i", $data['edit_id']);
-                    $det_stmt->execute();
-                }
             }
         }
     }

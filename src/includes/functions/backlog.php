@@ -117,9 +117,6 @@ function add_backlog_item($conn, $data) {
                 $upd_stmt->bind_param("ii", $kit_done_id, $inventoryid);
                 $upd_stmt->execute();
             }
-            $detach_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ? AND backlogid != ?");
-            $detach_stmt->bind_param("ii", $inventoryid, $new_backlogid);
-            $detach_stmt->execute();
         }
     }
 
@@ -185,9 +182,6 @@ function update_backlog_item($conn, $data) {
                 $upd_stmt->bind_param("ii", $kit_done_id, $inventoryid);
                 $upd_stmt->execute();
             }
-            $detach_stmt = $conn->prepare("UPDATE kit_backlog_plan SET inventoryid = NULL WHERE inventoryid = ? AND backlogid != ?");
-            $detach_stmt->bind_param("ii", $inventoryid, $id);
-            $detach_stmt->execute();
         }
     }
 
