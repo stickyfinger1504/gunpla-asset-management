@@ -1,7 +1,5 @@
 <?php
 require '../includes/bootstrap.php';
-require_once '../includes/functions/backlog.php';
-
 $current_section = 'kits';
 $current_page = 'backlog';
 $page_title = 'Backlog Plan';

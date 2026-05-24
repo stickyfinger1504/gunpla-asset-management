@@ -109,8 +109,12 @@ function get_transaction_logs($conn, $filters = []) {
 }
 
 function get_backlog_items_for_dropdown($conn) {
-    $sql = "SELECT actualid, name FROM vw_kit_backlog_plan WHERE status = 12 ORDER BY name ASC";
-    $result = $conn->query($sql);
+    $in_progress_id = get_category_id_by_label($conn, 'backlogplan', 'status', 'In Progress');
+    if (!$in_progress_id) return [];
+    $stmt = $conn->prepare("SELECT actualid, name FROM vw_kit_backlog_plan WHERE status = ? ORDER BY name ASC");
+    $stmt->bind_param("i", $in_progress_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 

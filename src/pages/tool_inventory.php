@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: /tool_inventory'); exit;
         }
         // On edit, delete the old image
-        if ($_POST['action_type'] === 'edit' && !empty($_POST['existing_imagepath'])) {
+        if (($_POST['action_type'] ?? '') === 'edit' && !empty($_POST['existing_imagepath'])) {
             delete_image_file($_POST['existing_imagepath'], TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
         }
         $_POST['imagepath'] = $uploaded['path'];

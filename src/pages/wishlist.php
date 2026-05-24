@@ -1,7 +1,5 @@
 <?php
 require '../includes/bootstrap.php';
-require_once '../includes/functions/wishlist.php';
-
 $current_section = 'kits';
 $current_page = 'wishlist';
 $page_title = 'Wishlist';
