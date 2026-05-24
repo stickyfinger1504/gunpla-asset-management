@@ -214,6 +214,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                                     </td>
                                     <td data-label="Actions" class='px-4 py-3 text-sm'>
                                         <div class='flex items-center space-x-2'>
+                                            <a href="/pages/blueprint.php?backlogid=<?= $row['actualid'] ?>" class="p-1 hover:bg-gray-200 rounded text-lg" title="Blueprint">🖌️</a>
                                             <button type='button' class='p-1 hover:bg-gray-200 rounded text-lg' title='Edit'
                                                 data-id='<?= $row['actualid'] ?>'
                                                 data-inventoryid='<?= $row['inventoryid'] ?>'

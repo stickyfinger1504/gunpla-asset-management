@@ -47,3 +47,5 @@ define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/g
 define('MAX_IMAGE_SIZE', 10 * 1024 * 1024); // 10MB per image
 define('TOOL_UPLOAD_DIR',        __DIR__ . '/../assets/tool_images/');
 define('TOOL_UPLOAD_URL_PREFIX', '/assets/tool_images/');
+define('BLUEPRINT_UPLOAD_DIR',        __DIR__ . '/../assets/blueprint_images/');
+define('BLUEPRINT_UPLOAD_URL_PREFIX', '/assets/blueprint_images/');

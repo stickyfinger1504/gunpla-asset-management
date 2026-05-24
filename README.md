@@ -13,6 +13,7 @@ A self-hosted, comprehensive asset management system designed for gunpla builder
 * **Task Lists**: Break down complex builds into granular, manageable tasks.
 * **Transaction Logs**: Document every step of your build with notes and photo uploads.
 * **Status Tracking**: Real-time progress updates for every active project.
+* **Blueprint Editor**: Sketch, annotate, and visually plan builds on an interactive digital canvas.
 
 ### Paint & Supplies
 * **Paint Inventory**: Track your stock levels, paint types (Lacquer, Acrylic, etc.), and brands.
