@@ -145,15 +145,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="flex-1 w-full">
-                <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
-                <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                    <option value="date_desc" <?= (($_GET['sortby'] ?? '') === 'date_desc') ? 'selected' : '' ?>>Date Added (Newest)</option>
-                    <option value="date_asc"  <?= (($_GET['sortby'] ?? '') === 'date_asc')  ? 'selected' : '' ?>>Date Added (Oldest)</option>
-                    <option value="name_asc"  <?= (($_GET['sortby'] ?? '') === 'name_asc')  ? 'selected' : '' ?>>Name (A-Z)</option>
-                    <option value="name_desc" <?= (($_GET['sortby'] ?? '') === 'name_desc') ? 'selected' : '' ?>>Name (Z-A)</option>
-                </select>
-            </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                 <?php if ($has_filters): ?>
