@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (isset($_POST['toggle_id'])) {
         $action_success = toggle_task($conn, (int)$_POST['toggle_id']);
-        $query = $_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : '';
+        $query = ($_SERVER['QUERY_STRING'] ?? '') ? '?' . $_SERVER['QUERY_STRING'] : '';
         header("Location: /tasks" . $query);
         exit;
     }

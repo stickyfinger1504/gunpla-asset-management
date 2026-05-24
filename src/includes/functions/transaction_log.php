@@ -116,8 +116,8 @@ function get_backlog_items_for_dropdown($conn) {
 
 function add_transaction_log($conn, $data) {
     $logid = generate_log_id();
-    $backlogid = (int)$data['backlogid'];
-    $logname = $data['logname'];
+    $backlogid = (int)($data['backlogid'] ?? 0);
+    $logname = $data['logname'] ?? '';
     $notes = $data['notes'] ?? '';
     $imagepath = $data['imagepath'] ?? '';
 
@@ -130,9 +130,9 @@ function add_transaction_log($conn, $data) {
 }
 
 function update_transaction_log($conn, $data) {
-    $logid = $data['edit_id'];
-    $backlogid = (int)$data['backlogid'];
-    $logname = $data['logname'];
+    $logid = $data['edit_id'] ?? '';
+    $backlogid = (int)($data['backlogid'] ?? 0);
+    $logname = $data['logname'] ?? '';
     $notes = $data['notes'] ?? '';
     $imagepath = $data['imagepath'] ?? '';
 
