@@ -8,3 +8,5 @@ backups/*
 !backups/.gitkeep
 src/assets/tool_images/*
 !src/assets/tool_images/.gitkeep
+src/assets/blueprint_images/*
+!src/assets/blueprint_images/.gitkeep
