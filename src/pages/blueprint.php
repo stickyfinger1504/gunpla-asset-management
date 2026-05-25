@@ -20,6 +20,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     <title>Blueprint Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script async src="/assets/js/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();" type="text/javascript"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #f3f4f6; font-family: sans-serif; }
         #desktop-ui { display: flex; flex-direction: column; height: 100vh; }
@@ -75,6 +76,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         <button class="btn" id="btn-forward" title="Bring Forward">⏫ Front</button>
         <button class="btn" id="btn-backward" title="Send Backward">⏬ Back</button>
         <button class="btn danger" id="btn-delete">🗑️ Delete</button>
+        <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart</button>
         <button class="btn" id="btn-undo" title="Ctrl+Z">↩️ Undo</button>
         <button class="btn" id="btn-redo" title="Ctrl+Y">↪️ Redo</button>
         <button class="btn danger" id="btn-clear">💣 Clear All</button>
@@ -85,9 +87,50 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     <div id="canvas-container">
         <canvas id="c"></canvas>
     </div>
+<div id="tuning-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:8px; display:flex; gap:20px;">
+        <div>
+            <!-- Live Preview Canvas -->
+            <canvas id="tuning-canvas" style="max-width:500px; max-height:500px; border:1px solid #ccc;"></canvas>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:15px; width:250px;">
+            <h3 class="text-xl font-bold">Lineart Tuning</h3>
+            <label>Flattening (Bilateral): <span id="val-blur">9</span>
+                <input type="range" id="tune-blur" min="1" max="25" step="2" value="9" class="w-full cursor-pointer">
+            </label>
+            <label>Detail (Canny Threshold): <span id="val-thresh">50</span>
+                <input type="range" id="tune-thresh" min="10" max="250" value="50" class="w-full cursor-pointer">
+            </label>
+            <label>Line Healing (Closing): <span id="val-heal">2</span>
+                <input type="range" id="tune-heal" min="0" max="10" value="2" class="w-full cursor-pointer">
+            </label>
+            <label>Ink Thickness: <span id="val-thick">1</span>
+                <input type="range" id="tune-thick" min="1" max="5" value="1" class="w-full cursor-pointer">
+            </label>
+            <div style="margin-top:auto; display:flex; gap:10px;">
+                <button class="btn danger flex-1" onclick="document.getElementById('tuning-modal').style.display='none'">Cancel</button>
+                <button class="btn save flex-1" id="btn-apply-tune">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="install-terminal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction:column;">
+    <div style="width: 600px; max-width: 90%; background: #121212; border: 1px solid #333; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; font-family: monospace;">
+        <div style="background: #252526; padding: 8px 15px; border-bottom: 1px solid #111; display: flex; align-items: center; justify-content: space-between;">
+            <div style="color: #999; font-size: 12px; font-weight: bold; letter-spacing: 1px;">>_ SYSTEM TERMINAL</div>
+            <div style="color: #666; font-size: 11px;">OpenCV Installer</div>
+        </div>
+        <div id="terminal-output" style="padding: 20px; color: #0f0; min-height: 200px; white-space: pre-wrap; font-size: 14px; line-height: 1.5;"></div>
+    </div>
 </div>
 
 <script>
+    let cvReady = false;
+    let cvError = false;
+    function onOpenCvReady() { cvReady = true; }
+    function onOpenCvError() { cvError = true; }
+
     // Initialize Canvas
     const container = document.getElementById('canvas-container');
     const canvas = new fabric.Canvas('c', {
@@ -439,6 +482,204 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             active.forEach((obj) => canvas.remove(obj));
         }
     };
+
+    // OpenCV Lineart Logic
+    let tuneSrcMat = null;
+    let targetActiveObj = null;
+
+    document.getElementById('btn-lineart').onclick = async function() {
+        if (cvError || !cvReady) {
+            if (confirm("The Lineart Engine (OpenCV) is not installed. It is an optional 8MB download. Would you like to install it now?")) {
+                const btn = document.getElementById('btn-lineart');
+                btn.innerHTML = '⏳ Downloading Engine...';
+                btn.disabled = true;
+                
+                const term = document.getElementById('install-terminal');
+                const out = document.getElementById('terminal-output');
+                term.style.display = 'flex';
+                out.innerHTML = '';
+                
+                const log = (msg) => { 
+                    out.innerHTML = out.innerHTML.replace(/<span class="spinner">.*?<\/span>/g, '... [OK]');
+                    out.innerHTML += '> ' + msg + ' <span class="spinner">|</span>\n'; 
+                };
+                
+                const frames = ['|', '/', '-', '\\'];
+                let fIdx = 0;
+                const spinnerInterval = setInterval(() => {
+                    const spans = out.getElementsByClassName('spinner');
+                    if (spans.length > 0) {
+                        spans[spans.length - 1].innerText = frames[fIdx];
+                        fIdx = (fIdx + 1) % frames.length;
+                    }
+                }, 100);
+                
+                log('Initializing OpenCV Installer');
+                await new Promise(r => setTimeout(r, 800));
+                
+                log('Establishing connection to docs.opencv.org');
+                await new Promise(r => setTimeout(r, 600));
+                
+                log('Downloading opencv.js (8.3 MB)');
+                out.innerHTML += '  (This may take several seconds depending on your connection)\n';
+                
+                // We let the actual API do the heavy lifting in the background
+                try {
+                    const res = await fetch('/api/install_opencv.php');
+                    const data = await res.json();
+                    
+                    clearInterval(spinnerInterval);
+                    out.innerHTML = out.innerHTML.replace(/<span class="spinner">.*?<\/span>/g, '... [OK]');
+                    
+                    if (data.success) {
+                        out.innerHTML += '\n> ✅ Download complete!\n';
+                        out.innerHTML += '> Writing to local filesystem at /assets/js/opencv.js...\n';
+                        await new Promise(r => setTimeout(r, 800));
+                        out.innerHTML += '> Installation successful! Reloading engine...\n';
+                        await new Promise(r => setTimeout(r, 1000));
+                        location.reload();
+                    } else {
+                        out.innerHTML += '\n> ❌ Installation failed: ' + data.message + '\n';
+                        btn.innerHTML = '🪄 Generate Lineart';
+                        btn.disabled = false;
+                        setTimeout(() => { term.style.display = 'none'; out.innerHTML = ''; }, 3000);
+                    }
+                } catch (e) {
+                    clearInterval(spinnerInterval);
+                    out.innerHTML = out.innerHTML.replace(/<span class="spinner">.*?<\/span>/g, '... [FAIL]');
+                    out.innerHTML += '\n> ❌ Network error while communicating with local installer.\n';
+                    btn.innerHTML = '🪄 Generate Lineart';
+                    btn.disabled = false;
+                    setTimeout(() => { term.style.display = 'none'; out.innerHTML = ''; }, 3000);
+                }
+            }
+            return;
+        }
+
+        targetActiveObj = canvas.getActiveObject();
+        if (!targetActiveObj || targetActiveObj.type !== 'image') return;
+
+        // Open modal
+        document.getElementById('tuning-modal').style.display = 'flex';
+        
+        // Extract original image to OpenCV Mat
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = targetActiveObj.width;
+        tempCanvas.height = targetActiveObj.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(targetActiveObj.getElement(), 0, 0, targetActiveObj.width, targetActiveObj.height);
+        
+        if (tuneSrcMat) tuneSrcMat.delete(); // Free memory if opened previously
+        tuneSrcMat = cv.imread(tempCanvas);
+        
+        runTuningPipeline();
+    };
+
+    // The 4-Layer Refinement Pipeline
+    function runTuningPipeline() {
+        if (!tuneSrcMat) return;
+        let dst = new cv.Mat();
+        let colorMat = new cv.Mat();
+        
+        // Pre-Step: Strip Alpha (RGBA -> RGB) because Bilateral Filter requires 3 channels
+        cv.cvtColor(tuneSrcMat, colorMat, cv.COLOR_RGBA2RGB, 0);
+        
+        // LAYER 1: Bilateral Filter (The Cel-Shader)
+        // Flattens smooth lighting gradients into solid colors without blurring the armor edges
+        let blurVal = parseInt(document.getElementById('tune-blur').value);
+        if (blurVal > 1) {
+            let temp = new cv.Mat();
+            cv.bilateralFilter(colorMat, temp, blurVal, 75, 75, cv.BORDER_DEFAULT);
+            temp.copyTo(colorMat);
+            temp.delete();
+        }
+        
+        // Convert the flattened color image to Grayscale for Canny
+        cv.cvtColor(colorMat, dst, cv.COLOR_RGB2GRAY, 0);
+        colorMat.delete(); // Free memory
+        
+        // LAYER 2: Canny Edge Detection
+        let thresh = parseInt(document.getElementById('tune-thresh').value);
+        cv.Canny(dst, dst, thresh, thresh * 2, 3, false);
+        
+        // LAYER 3: Morphological Closing (Line Healing)
+        // Canny produces white lines on a black background. 
+        // This bridges any gaps and reconnects dotted/broken lines together.
+        let healVal = parseInt(document.getElementById('tune-heal').value);
+        if (healVal > 0) {
+            let MHeal = cv.Mat.ones(healVal, healVal, cv.CV_8U);
+            cv.morphologyEx(dst, dst, cv.MORPH_CLOSE, MHeal);
+            MHeal.delete();
+        }
+        
+        // Pre-Layer 4: Invert Colors (We want black ink on white background)
+        cv.bitwise_not(dst, dst);
+        
+        // LAYER 4: Ink Thickness
+        // Because the ink is now black on a white canvas, we use EROSION to eat away the white background, which thickens the black lines!
+        let thickVal = parseInt(document.getElementById('tune-thick').value);
+        if (thickVal > 1) {
+            let MThick = cv.Mat.ones(thickVal, thickVal, cv.CV_8U);
+            cv.erode(dst, dst, MThick, new cv.Point(-1, -1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+            MThick.delete();
+        }
+        
+        // Push result to the live preview canvas
+        cv.imshow('tuning-canvas', dst);
+        dst.delete(); // Free memory
+    }
+
+    // Bind the Sliders
+    ['blur', 'thresh', 'heal', 'thick'].forEach(id => {
+        document.getElementById('tune-' + id).addEventListener('input', function() {
+            document.getElementById('val-' + id).innerText = this.value;
+            runTuningPipeline();
+        });
+    });
+
+    // Apply the Tuned Image to the Blueprint
+    document.getElementById('btn-apply-tune').onclick = function() {
+        const previewCanvas = document.getElementById('tuning-canvas');
+        const dataURL = previewCanvas.toDataURL('image/png');
+        
+        fabric.Image.fromURL(dataURL, function(newImg) {
+            newImg.set({
+                left: targetActiveObj.left,
+                top: targetActiveObj.top,
+                scaleX: targetActiveObj.scaleX,
+                scaleY: targetActiveObj.scaleY,
+                angle: targetActiveObj.angle
+            });
+            
+            canvas.remove(targetActiveObj);
+            canvas.add(newImg);
+            canvas.setActiveObject(newImg);
+            saveHistory();
+            
+            document.getElementById('tuning-modal').style.display = 'none';
+        });
+    };
+
+    // Show lineart button only for images
+    canvas.on('selection:created', function(e) {
+        const obj = e.selected[0];
+        if (obj && obj.type === 'image') {
+            document.getElementById('btn-lineart').style.display = 'inline-block';
+        }
+    });
+
+    canvas.on('selection:cleared', function() {
+        document.getElementById('btn-lineart').style.display = 'none';
+    });
+
+    canvas.on('selection:updated', function(e) {
+        const obj = e.selected[0];
+        if (obj && obj.type === 'image') {
+            document.getElementById('btn-lineart').style.display = 'inline-block';
+        } else {
+            document.getElementById('btn-lineart').style.display = 'none';
+        }
+    });
 
     let isDrawingArrow = false;
     let arrowLine, arrowHead;
