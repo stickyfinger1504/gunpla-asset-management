@@ -32,7 +32,8 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             background-size: 24px 24px;
             background-color: #f9fafb;
         }
-        .toolbar { padding: 10px; background: #1f2937; color: white; display: flex; gap: 10px; align-items: center; }
+        .toolbar { padding: 10px; background: #1f2937; color: white; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .tool-group { display: flex; gap: 5px; align-items: center; background: #374151; padding: 5px 10px; border-radius: 6px; border: 1px solid #4b5563; }
         .btn { padding: 5px 15px; background: #3b82f6; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; }
         .btn:hover { background: #2563eb; }
         .btn.danger { background: #ef4444; }
@@ -56,32 +57,67 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
 
 <div id="desktop-ui">
     <div class="toolbar">
-        <a href="/backlog" class="btn" style="background:#4b5563;">⬅ Back</a>
-        <button class="btn" id="btn-select">↖️ Select</button>
-        <button class="btn" id="btn-draw">🖌️ Free Draw</button>
-        <button class="btn" id="btn-arrow">↗️ Arrow</button>
-        <input type="color" id="brush-color" value="#000000" class="h-8 w-10 border-0 cursor-pointer" title="Brush Color">
-        <input type="range" id="brush-size" min="1" max="50" value="5" class="w-24 cursor-pointer" title="Brush Size">
-        <label class="text-white text-sm ml-2 flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" id="fill-toggle" checked> Fill Shape
-        </label>
-        <button class="btn" id="btn-text">📝 Add Text</button>
-        <button class="btn" style="background:#eab308; color:black;" id="btn-sticky">🟨 Sticky Note</button>
-        <button class="btn" id="btn-rect">🟦 Add Box</button>
-        <button class="btn" id="btn-circle">🔵 Circle</button>
-        <button class="btn" id="btn-triangle">🔺 Triangle</button>
-        <button class="btn" id="btn-image" style="background:#8b5cf6;">🖼️ Attach Image</button>
-        <input type="file" id="image-upload" accept="image/*" style="display:none;">
-        <button class="btn" id="btn-grid" title="Toggle Grid">🎛️ Grid</button>
-        <button class="btn" id="btn-forward" title="Bring Forward">⏫ Front</button>
-        <button class="btn" id="btn-backward" title="Send Backward">⏬ Back</button>
-        <button class="btn danger" id="btn-delete">🗑️ Delete</button>
-        <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart</button>
-        <button class="btn" id="btn-undo" title="Ctrl+Z">↩️ Undo</button>
-        <button class="btn" id="btn-redo" title="Ctrl+Y">↪️ Redo</button>
-        <button class="btn danger" id="btn-clear">💣 Clear All</button>
-        <button class="btn" id="btn-download" style="background:#14b8a6;">⬇️ Download PNG</button>
-        <button class="btn save" id="btn-save">💾 Save Blueprint</button>
+        <div class="tool-group">
+            <a href="/backlog" class="btn" style="background:#4b5563;">⬅ Back</a>
+        </div>
+        <div class="tool-group">
+            <button class="btn" id="btn-select">↖️ Select</button>
+            <button class="btn" id="btn-lasso" style="background:#f97316;">✂️ Lasso Snip</button>
+            <button class="btn" id="btn-draw">🖌️ Free Draw</button>
+            <button class="btn" id="btn-arrow">↗️ Arrow</button>
+            <button class="btn" id="btn-text">📝 Text</button>
+            <button class="btn" style="background:#eab308; color:black;" id="btn-sticky">🟨 Sticky</button>
+        </div>
+        <div class="tool-group">
+            <button class="btn" id="btn-rect">🟦 Box</button>
+            <button class="btn" id="btn-circle">🔵 Circle</button>
+            <button class="btn" id="btn-triangle">🔺 Triangle</button>
+        </div>
+        <div class="tool-group">
+            <input type="color" id="brush-color" value="#000000" class="h-8 w-10 border-0 cursor-pointer" title="Brush Color">
+            <input type="range" id="brush-size" min="1" max="50" value="5" class="w-24 cursor-pointer" title="Brush Size">
+            <label class="text-white text-sm ml-2 flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="fill-toggle" checked> Fill
+            </label>
+        </div>
+        <div class="tool-group">
+            <button class="btn" id="btn-image" style="background:#8b5cf6;">🖼️ Attach Image</button>
+            <input type="file" id="image-upload" accept="image/*" style="display:none;">
+            <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart</button>
+        </div>
+        <div class="tool-group" id="group-transform" style="display:none;">
+            <button class="btn" id="btn-flip-x">↔️ Flip X</button>
+            <button class="btn" id="btn-flip-y">↕️ Flip Y</button>
+        </div>
+        <div class="tool-group" id="group-text-format" style="display:none;">
+            <button class="btn" id="btn-text-bold" style="font-weight:bold;">B</button>
+            <button class="btn" id="btn-text-italic" style="font-style:italic; font-family:serif;">I</button>
+            <button class="btn" id="btn-text-underline" style="text-decoration:underline;">U</button>
+            <button class="btn" id="btn-text-strike" style="text-decoration:line-through;">S</button>
+        </div>
+        <div class="tool-group">
+            <button class="btn" id="btn-forward" title="Bring Forward">⏫</button>
+            <button class="btn" id="btn-backward" title="Send Backward">⏬</button>
+            <button class="btn" id="btn-grid" title="Toggle Grid">🎛️ Grid</button>
+            <button class="btn danger" id="btn-delete">🗑️ Delete</button>
+        </div>
+        <div class="tool-group" style="margin-left: auto;">
+            <button class="btn" id="btn-undo" title="Ctrl+Z">↩️</button>
+            <button class="btn" id="btn-redo" title="Ctrl+Y">↪️</button>
+            <button class="btn danger" id="btn-clear">💣 Clear</button>
+            <button class="btn" id="btn-download" style="background:#14b8a6;">⬇️ PNG</button>
+            <button class="btn save" id="btn-save">💾 Save Blueprint</button>
+        </div>
+    </div>
+
+    <!-- Floating Lasso Controls -->
+    <div id="lasso-controls" style="display:none; position:absolute; top:80px; left:50%; transform:translateX(-50%); background:#1f2937; padding:10px; border-radius:8px; border:2px solid #f97316; z-index:100; gap:10px; align-items:center;">
+        <span style="color:white; font-weight:bold;">✂️ Click points around the part to snip</span>
+        <label style="color:white; font-size:14px; cursor:pointer;"><input type="checkbox" id="lasso-freehand-toggle"> Freehand Mode</label>
+        <label style="color:white; font-size:14px; cursor:pointer;"><input type="checkbox" id="lasso-ai-toggle" checked> Run AI</label>
+        <button class="btn" id="btn-lasso-undo" style="background:#8b5cf6;">↩️ Undo Point</button>
+        <button class="btn save" id="btn-lasso-finish">✅ Finish Snip</button>
+        <button class="btn danger" id="btn-lasso-cancel">❌ Cancel</button>
     </div>
     
     <div id="canvas-container">
@@ -153,14 +189,33 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     let history = [];
     let historyIndex = -1;
     let isHistoryProcessing = false;
+    
+    // Unsaved Changes tracking
+    let hasUnsavedChanges = false;
+    let lastSavedHistoryIndex = 0;
+
+    function checkUnsavedChanges() {
+        hasUnsavedChanges = (historyIndex !== lastSavedHistoryIndex);
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
 
     function saveHistory() {
         if (isHistoryProcessing) return;
         if (historyIndex < history.length - 1) {
             history = history.slice(0, historyIndex + 1);
+            if (lastSavedHistoryIndex > historyIndex) {
+                lastSavedHistoryIndex = -1; // Last saved state is overwritten
+            }
         }
         history.push(JSON.stringify(canvas));
         historyIndex++;
+        checkUnsavedChanges();
     }
 
     function undo() {
@@ -170,6 +225,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             canvas.loadFromJSON(history[historyIndex], () => {
                 canvas.renderAll();
                 isHistoryProcessing = false;
+                checkUnsavedChanges();
             });
         }
     }
@@ -181,6 +237,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             canvas.loadFromJSON(history[historyIndex], () => {
                 canvas.renderAll();
                 isHistoryProcessing = false;
+                checkUnsavedChanges();
             });
         }
     }
@@ -192,14 +249,31 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     canvas.on('object:modified', saveHistory);
     canvas.on('object:removed', saveHistory);
 
+    document.getElementById('btn-lasso-undo').onclick = () => {
+        if (lassoPoints.length > 0) {
+            lassoPoints.pop();
+            let circle = lassoCircles.pop();
+            canvas.remove(circle);
+            if (lassoLines.length > 0) {
+                let line = lassoLines.pop();
+                canvas.remove(line);
+            }
+            canvas.renderAll();
+        }
+    };
+
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key.toLowerCase() === 'z') {
             e.preventDefault();
-            undo();
+            if (isLassoMode) {
+                document.getElementById('btn-lasso-undo').click();
+            } else {
+                undo();
+            }
         }
         if (e.ctrlKey && e.key.toLowerCase() === 'y') {
             e.preventDefault();
-            redo();
+            if (!isLassoMode) redo();
         }
     });
 
@@ -218,12 +292,24 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     }
 
     // Tools
+
     document.getElementById('btn-select').onclick = (e) => {
         canvas.isDrawingMode = false;
         canvas.selection = true;
         document.getElementById('btn-draw').style.background = '#3b82f6';
         e.target.style.background = '#fbbf24';
     };
+
+    document.getElementById('btn-draw').onclick = (e) => {
+        canvas.isDrawingMode = !canvas.isDrawingMode;
+        e.target.style.background = canvas.isDrawingMode ? '#fbbf24' : '#3b82f6';
+        document.getElementById('btn-select').style.background = '#3b82f6';
+        
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        canvas.freeDrawingBrush.color = document.getElementById('brush-color').value;
+        canvas.freeDrawingBrush.width = parseInt(document.getElementById('brush-size').value, 10);
+    };
+
 
     function syncGridToCamera() {
         const wrapper = document.querySelector('.canvas-container');
@@ -298,12 +384,6 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
-
-    document.getElementById('btn-draw').onclick = (e) => {
-        canvas.isDrawingMode = !canvas.isDrawingMode;
-        e.target.style.background = canvas.isDrawingMode ? '#fbbf24' : '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
     };
 
     document.getElementById('brush-color').addEventListener('input', function() {
@@ -665,21 +745,230 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         const obj = e.selected[0];
         if (obj && obj.type === 'image') {
             document.getElementById('btn-lineart').style.display = 'inline-block';
+            document.getElementById('group-transform').style.display = 'flex';
+        }
+        if (obj && (obj.type === 'i-text' || obj.type === 'textbox')) {
+            document.getElementById('group-text-format').style.display = 'flex';
+        } else {
+            document.getElementById('group-text-format').style.display = 'none';
         }
     });
 
     canvas.on('selection:cleared', function() {
         document.getElementById('btn-lineart').style.display = 'none';
+        document.getElementById('group-transform').style.display = 'none';
+        document.getElementById('group-text-format').style.display = 'none';
     });
 
     canvas.on('selection:updated', function(e) {
         const obj = e.selected[0];
         if (obj && obj.type === 'image') {
             document.getElementById('btn-lineart').style.display = 'inline-block';
+            document.getElementById('group-transform').style.display = 'flex';
         } else {
             document.getElementById('btn-lineart').style.display = 'none';
+            document.getElementById('group-transform').style.display = 'none';
+        }
+        if (obj && (obj.type === 'i-text' || obj.type === 'textbox')) {
+            document.getElementById('group-text-format').style.display = 'flex';
+        } else {
+            document.getElementById('group-text-format').style.display = 'none';
         }
     });
+
+    // Text Formatting Logic
+    function toggleTextStyle(prop, value, inactiveValue) {
+        let obj = canvas.getActiveObject();
+        if (!obj || (obj.type !== 'i-text' && obj.type !== 'textbox')) return;
+        
+        if (obj.selectionStart !== obj.selectionEnd) {
+            let styleObj = {};
+            // Check if first selected character has the property (simple toggle logic)
+            let currentStyles = obj.getSelectionStyles();
+            let isSet = currentStyles.length > 0 && currentStyles[0][prop] === value;
+            styleObj[prop] = isSet ? inactiveValue : value;
+            obj.setSelectionStyles(styleObj);
+        } else {
+            obj.set(prop, obj[prop] === value ? inactiveValue : value);
+        }
+        canvas.renderAll();
+        saveHistory();
+    }
+
+    document.getElementById('btn-text-bold').onclick = () => toggleTextStyle('fontWeight', 'bold', 'normal');
+    document.getElementById('btn-text-italic').onclick = () => toggleTextStyle('fontStyle', 'italic', 'normal');
+    document.getElementById('btn-text-underline').onclick = () => toggleTextStyle('underline', true, false);
+    document.getElementById('btn-text-strike').onclick = () => toggleTextStyle('linethrough', true, false);
+
+    // The Flip Logic
+    document.getElementById('btn-flip-x').onclick = () => {
+        let obj = canvas.getActiveObject();
+        if(obj) { obj.set('flipX', !obj.flipX); canvas.renderAll(); saveHistory(); }
+    };
+    
+    document.getElementById('btn-flip-y').onclick = () => {
+        let obj = canvas.getActiveObject();
+        if(obj) { obj.set('flipY', !obj.flipY); canvas.renderAll(); saveHistory(); }
+    };
+    let isLassoMode = false;
+    let lassoPoints = [];
+    let lassoLines = [];
+    let lassoCircles = [];
+    let lassoTargetObj = null;
+
+    document.getElementById('btn-lasso').onclick = (e) => {
+        const activeObj = canvas.getActiveObject();
+        if (!activeObj || activeObj.type !== 'image') {
+            alert("Please select an Image to snip from first!");
+            return;
+        }
+        
+        lassoTargetObj = activeObj;
+        isLassoMode = true;
+        canvas.selection = false;
+        canvas.isDrawingMode = false;
+        
+        // Lock all objects so they don't move while drawing
+        canvas.getObjects().forEach(o => { o.set({ selectable: false, evented: false }); });
+        
+        // Reset drawing memory
+        lassoPoints = [];
+        lassoLines.forEach(l => canvas.remove(l));
+        lassoCircles.forEach(c => canvas.remove(c));
+        lassoLines = [];
+        lassoCircles = [];
+        
+        document.getElementById('lasso-controls').style.display = 'flex';
+        document.getElementById('btn-select').style.background = '#3b82f6';
+        e.target.style.background = '#fbbf24';
+    };
+
+    document.getElementById('btn-lasso-cancel').onclick = () => {
+        isLassoMode = false;
+        lassoLines.forEach(l => canvas.remove(l));
+        lassoCircles.forEach(c => canvas.remove(c));
+        if (window.lassoClosingLine) { canvas.remove(window.lassoClosingLine); window.lassoClosingLine = null; }
+        canvas.getObjects().forEach(o => { o.set({ selectable: true, evented: true }); });
+        
+        document.getElementById('lasso-controls').style.display = 'none';
+        document.getElementById('btn-lasso').style.background = '#f97316';
+        document.getElementById('btn-select').click();
+    };
+
+    document.getElementById('btn-lasso-finish').onclick = async () => {
+        if (lassoPoints.length < 3) {
+            alert("Please click at least 3 points to form a shape!");
+            return;
+        }
+        
+        if (window.lassoClosingLine) { canvas.remove(window.lassoClosingLine); window.lassoClosingLine = null; }
+        canvas.getObjects().forEach(o => { o.set({ selectable: true, evented: true }); });
+        
+        let finishBtn = document.getElementById('btn-lasso-finish');
+        let useAI = document.getElementById('lasso-ai-toggle').checked && localStorage.getItem('imgly_approved');
+        finishBtn.innerHTML = useAI ? '⏳ AI Removing Background...' : '⏳ Extracting Snippet...';
+        finishBtn.disabled = true;
+        
+        let minX = Math.min(...lassoPoints.map(p => p.x));
+        let maxX = Math.max(...lassoPoints.map(p => p.x));
+        let minY = Math.min(...lassoPoints.map(p => p.y));
+        let maxY = Math.max(...lassoPoints.map(p => p.y));
+        
+        let polygon = new fabric.Polygon(lassoPoints, { absolutePositioned: true });
+        
+        lassoTargetObj.clone(async function(clone) {
+            let width = maxX - minX;
+            let height = maxY - minY;
+            
+            // 1. RECTANGULAR CROP (For AI) - No clipPath!
+            let staticCanvasRect = new fabric.StaticCanvas(null, { width: width, height: height });
+            clone.set({ left: clone.left - minX, top: clone.top - minY });
+            staticCanvasRect.add(clone);
+            staticCanvasRect.renderAll();
+            let rectDataUrl = staticCanvasRect.toDataURL('image/png');
+            
+            // 2. POLYGONAL CROP (For Fallback)
+            let staticCanvasPoly = new fabric.StaticCanvas(null, { width: width, height: height });
+            clone.set({ clipPath: polygon });
+            polygon.set({ left: polygon.left - minX, top: polygon.top - minY });
+            staticCanvasPoly.add(clone);
+            staticCanvasPoly.renderAll();
+            let polyDataUrl = staticCanvasPoly.toDataURL('image/png');
+            
+            // AI Opt-In Check
+            let userApprovedAI = localStorage.getItem('imgly_approved');
+            if (!userApprovedAI) {
+                const wantsAI = confirm("✨ First Time Setup ✨\n\nWould you like to use the AI Background Removal model to perfectly extract your snippet? \n\nThis requires a one-time download of a 40MB AI model that runs locally in your browser (no data is sent to the cloud!).\n\nClick OK to download and run the AI, or Cancel to just place the raw polygon shape.");
+                if (wantsAI) {
+                    localStorage.setItem('imgly_approved', 'true');
+                    userApprovedAI = true;
+                }
+            }
+
+            if (userApprovedAI && document.getElementById('lasso-ai-toggle').checked) {
+                try {
+                    // Dynamically import imgly ESM module via esm.sh to resolve lodash CommonJS dependencies correctly
+                    const imglyModule = await import('https://esm.sh/@imgly/background-removal@1.4.3');
+                    const imglyRemoveBackground = imglyModule.default || imglyModule.removeBackground;
+
+                    // FEED THE RECTANGULAR CROP TO IMGLY ONNX AI
+                    let aiConfig = {
+                        publicPath: 'https://unpkg.com/@imgly/background-removal-data@1.4.3/dist/'
+                    };
+                    let imageBlob = await imglyRemoveBackground(rectDataUrl, aiConfig);
+                    let aiDataUrl = URL.createObjectURL(imageBlob);
+                    
+                    fabric.Image.fromURL(aiDataUrl, function(aiImg) {
+                        // BAKE THE POLYGON CLIP ONTO THE AI RESULT
+                        let staticCanvasFinal = new fabric.StaticCanvas(null, { width: width, height: height });
+                        aiImg.set({ clipPath: polygon });
+                        staticCanvasFinal.add(aiImg);
+                        staticCanvasFinal.renderAll();
+                        let finalBakeUrl = staticCanvasFinal.toDataURL('image/png');
+                        
+                        fabric.Image.fromURL(finalBakeUrl, function(finalImg) {
+                            finalImg.set({ left: minX + 50, top: minY + 50 });
+                            canvas.add(finalImg);
+                            canvas.setActiveObject(finalImg);
+                            saveHistory();
+                            
+                            finishBtn.innerHTML = '✅ Finish Snip';
+                            finishBtn.disabled = false;
+                            document.getElementById('btn-lasso-cancel').click();
+                        });
+                    });
+                } catch (err) {
+                    console.error("AI Background Removal Failed:", err);
+                    alert("AI Background Removal failed: " + (err.message || err) + "\n\n(this usually happens if the first download was interrupted). Placing raw snippet instead.");
+                    
+                    // Fallback to the raw snippet
+                    fabric.Image.fromURL(polyDataUrl, function(img) {
+                        img.set({ left: minX + 50, top: minY + 50 });
+                        canvas.add(img);
+                        canvas.setActiveObject(img);
+                        saveHistory();
+                        
+                        finishBtn.innerHTML = '✅ Finish Snip';
+                        finishBtn.disabled = false;
+                        document.getElementById('btn-lasso-cancel').click();
+                    });
+                }
+            } else {
+                // User opted out, use raw snippet directly
+                fabric.Image.fromURL(polyDataUrl, function(img) {
+                    img.set({ left: minX + 50, top: minY + 50 });
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                    saveHistory();
+                    
+                    finishBtn.innerHTML = '✅ Finish Snip';
+                    finishBtn.disabled = false;
+                    document.getElementById('btn-lasso-cancel').click();
+                });
+            }
+        });
+    };
+
 
     let isDrawingArrow = false;
     let arrowLine, arrowHead;
@@ -726,6 +1015,59 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             return;
         }
 
+        // --- NEW LASSO LOGIC ---
+        if (isLassoMode) {
+            const pointer = canvas.getPointer(evt);
+            
+            // Check for poly snap close
+            if (!document.getElementById('lasso-freehand-toggle').checked && lassoPoints.length >= 3) {
+                let dx = pointer.x - lassoPoints[0].x;
+                let dy = pointer.y - lassoPoints[0].y;
+                if (Math.sqrt(dx*dx + dy*dy) < 15) {
+                    let p1 = lassoPoints[lassoPoints.length - 1];
+                    let p2 = lassoPoints[0];
+                    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
+                        stroke: 'red', strokeWidth: 2, selectable: false, evented: false, excludeFromExport: true
+                    });
+                    lassoLines.push(line);
+                    canvas.add(line);
+                    if (window.lassoClosingLine) {
+                        canvas.remove(window.lassoClosingLine);
+                        window.lassoClosingLine = null;
+                    }
+                    canvas.renderAll();
+                    document.getElementById('btn-lasso-finish').click();
+                    return;
+                }
+            }
+
+            if (document.getElementById('lasso-freehand-toggle').checked) {
+                window.isLassoDrawing = true;
+            }
+            lassoPoints.push({x: pointer.x, y: pointer.y});
+            
+            // Draw a dot
+            let circle = new fabric.Circle({
+                radius: 3, fill: 'red', left: pointer.x, top: pointer.y,
+                originX: 'center', originY: 'center', selectable: false, evented: false, excludeFromExport: true
+            });
+            lassoCircles.push(circle);
+            canvas.add(circle);
+            
+            // Draw a line to the previous point
+            if (lassoPoints.length > 1) {
+                let p1 = lassoPoints[lassoPoints.length - 2];
+                let p2 = lassoPoints[lassoPoints.length - 1];
+                let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
+                    stroke: 'red', strokeWidth: 2, selectable: false, evented: false, excludeFromExport: true
+                });
+                lassoLines.push(line);
+                canvas.add(line);
+            }
+            return; // prevent panning/selecting
+        }
+        // --- END NEW LASSO LOGIC ---
+
         if (evt.altKey === true || evt.button === 1) {
             this.isDragging = true;
             this.selection = false;
@@ -736,6 +1078,36 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     });
     
     canvas.on('mouse:move', function(opt) {
+        if (isLassoMode) {
+            const pointer = canvas.getPointer(opt.e);
+            
+            // Draw visual closing line back to start
+            if (lassoPoints.length > 0) {
+                if (!window.lassoClosingLine) {
+                    window.lassoClosingLine = new fabric.Line([pointer.x, pointer.y, lassoPoints[0].x, lassoPoints[0].y], {
+                        stroke: 'rgba(255,0,0,0.5)', strokeWidth: 1, strokeDashArray: [5, 5], selectable: false, evented: false, excludeFromExport: true
+                    });
+                    canvas.add(window.lassoClosingLine);
+                } else {
+                    window.lassoClosingLine.set({ x1: pointer.x, y1: pointer.y, x2: lassoPoints[0].x, y2: lassoPoints[0].y });
+                }
+            }
+            
+            // Freehand mode tracing
+            if (window.isLassoDrawing) {
+                lassoPoints.push({x: pointer.x, y: pointer.y});
+                let p1 = lassoPoints[lassoPoints.length - 2];
+                let p2 = lassoPoints[lassoPoints.length - 1];
+                let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
+                    stroke: 'red', strokeWidth: 2, selectable: false, evented: false, excludeFromExport: true
+                });
+                lassoLines.push(line);
+                canvas.add(line);
+            }
+            canvas.renderAll();
+            return;
+        }
+
         if (isDrawingArrow && arrowLine) {
             const pointer = canvas.getPointer(opt.e);
             arrowLine.set({ x2: pointer.x, y2: pointer.y });
@@ -762,6 +1134,28 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     });
     
     canvas.on('mouse:up', function(opt) {
+        if (isLassoMode && window.isLassoDrawing) {
+            window.isLassoDrawing = false;
+            
+            // Snappy point: automatically close the loop
+            if (lassoPoints.length > 2) {
+                let p1 = lassoPoints[lassoPoints.length - 1];
+                let p2 = lassoPoints[0];
+                let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
+                    stroke: 'red', strokeWidth: 2, selectable: false, evented: false, excludeFromExport: true
+                });
+                lassoLines.push(line);
+                canvas.add(line);
+            }
+            if (window.lassoClosingLine) {
+                canvas.remove(window.lassoClosingLine);
+                window.lassoClosingLine = null;
+            }
+            canvas.renderAll();
+            
+            return;
+        }
+
         if (isDrawingArrow && arrowLine && arrowHead) {
             if (arrowLine.x1 !== arrowLine.x2 || arrowLine.y1 !== arrowLine.y2) {
                 arrowLine.set({selectable: true});
@@ -813,6 +1207,8 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             const result = await res.json();
             if (result.success) {
                 btn.innerHTML = '✅ Saved!';
+                lastSavedHistoryIndex = historyIndex;
+                checkUnsavedChanges();
                 setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
             } else {
                 alert('Failed to save!');
