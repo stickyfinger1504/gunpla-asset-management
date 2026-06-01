@@ -11,6 +11,13 @@ if (!$backlogid) {
 
 $blueprint = get_blueprint_by_backlog($conn, $backlogid);
 $saved_data = $blueprint['canvas_data'] ?? 'null';
+
+require_once '../includes/functions/paint.php';
+require_once '../includes/functions/mixing_recipe.php';
+
+// Fetch the user's paint inventory and custom recipes
+$all_paints = get_paint_inventory($conn);
+$all_recipes = get_recipes($conn);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,8 +89,9 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         </div>
         <div class="tool-group">
             <button class="btn" id="btn-image" style="background:#8b5cf6;">🖼️ Attach Image</button>
+            <button class="btn" id="btn-paint-plan" style="background:#ec4899;">🎨 Paint Plan</button>
             <input type="file" id="image-upload" accept="image/*" style="display:none;">
-            <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart</button>
+            <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart (Beta)</button>
         </div>
         <div class="tool-group" id="group-transform" style="display:none;">
             <button class="btn" id="btn-flip-x">↔️ Flip X</button>
@@ -120,6 +128,55 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         <button class="btn danger" id="btn-lasso-cancel">❌ Cancel</button>
     </div>
     
+    <!-- Paint Plan Sidebar -->
+    <div id="paint-sidebar" style="display:none; position:absolute; top:60px; right:0; width:300px; height:calc(100vh - 60px); background:#1f2937; border-left:1px solid #374151; z-index:200; flex-direction:column; box-shadow: -4px 0 15px rgba(0,0,0,0.3);">
+        <div style="padding:15px; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:white; font-size:18px; font-weight:bold;">🎨 Paint Inventory</h2>
+            <button id="btn-close-paints" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer;">✖</button>
+        </div>
+        <div style="padding:10px 15px; border-bottom:1px solid #374151;">
+            <input type="text" id="paint-search" placeholder="Search paints..." style="width:100%; padding:8px; border-radius:4px; border:1px solid #4b5563; background:#374151; color:white; outline:none; margin-bottom: 8px;">
+            <button class="btn" id="btn-smart-match" style="width:100%; background:#14b8a6; display:none;">✨ Smart Match Color</button>
+        </div>
+        <div style="flex-grow:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px;">
+            
+            <h3 style="color:#9ca3af; font-size:14px; text-transform:uppercase;">Custom Recipes</h3>
+            <?php foreach ($all_recipes as $recipe): ?>
+                <div class="paint-chip" style="background:#374151; padding:10px; border-radius:6px; cursor:pointer; border:1px solid #4b5563; transition: background 0.2s;" 
+                     onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#374151'"
+                     onclick="addPaintLabelToCanvas('Recipe: <?= htmlspecialchars(addslashes($recipe['name'])) ?>', '#eab308')">
+                    <div style="color:white; font-weight:bold; font-size:14px;"><?= htmlspecialchars($recipe['name']) ?></div>
+                    <div style="color:#9ca3af; font-size:12px;">Mixing Recipe</div>
+                </div>
+            <?php endforeach; ?>
+
+            <h3 style="color:#9ca3af; font-size:14px; text-transform:uppercase; margin-top:10px;">Single Paints</h3>
+            <?php foreach ($all_paints as $paint): ?>
+                <?php 
+                    $hex = !empty($paint['color_hex']) ? $paint['color_hex'] : '#374151'; 
+                    $textColor = (hexdec(substr($hex, 1, 2)) * 0.299 + hexdec(substr($hex, 3, 2)) * 0.587 + hexdec(substr($hex, 5, 2)) * 0.114) > 186 ? '#000000' : '#ffffff';
+                ?>
+                <div class="paint-chip" style="background:<?= $hex ?>; padding:10px; border-radius:6px; cursor:pointer; border:1px solid #4b5563; transition: transform 0.2s; display:flex; align-items:center; gap:10px;" 
+                     onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
+                     onclick="addPaintLabelToCanvas('<?= htmlspecialchars(addslashes($paint['brand'] ?? 'Unknown')) ?>: <?= htmlspecialchars(addslashes($paint['name'])) ?>', '<?= $hex ?>', '<?= htmlspecialchars(addslashes($paint['imagepath'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($paint['finish'] ?? '')) ?>')">
+                    <?php if (!empty($paint['imagepath'])): ?>
+                        <img src="<?= htmlspecialchars($paint['imagepath']) ?>" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.3);">
+                    <?php else: ?>
+                        <div style="width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); background:<?= $hex ?>;"></div>
+                    <?php endif; ?>
+                    <div style="flex:1;">
+                        <div style="color:<?= $textColor ?>; font-weight:bold; font-size:14px;"><?= htmlspecialchars($paint['name']) ?></div>
+                        <div style="color:<?= $textColor ?>; font-size:12px; opacity:0.8;"><?= htmlspecialchars($paint['brand'] ?? 'Unknown Brand') ?> <?= !empty($paint['finish']) ? ' | ' . htmlspecialchars($paint['finish']) : '' ?></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            
+            <?php if (empty($all_paints) && empty($all_recipes)): ?>
+                <div style="color:#9ca3af; font-size:14px; text-align:center; margin-top:20px;">Your paint inventory is empty!</div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <div id="canvas-container">
         <canvas id="c"></canvas>
     </div>
@@ -162,6 +219,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
 </div>
 
 <script>
+    const ALL_PAINTS = <?= json_encode($all_paints); ?>;
     let cvReady = false;
     let cvError = false;
     function onOpenCvReady() { cvReady = true; }
@@ -205,8 +263,10 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         }
     });
 
+    let isLassoOperation = false;
+
     function saveHistory() {
-        if (isHistoryProcessing) return;
+        if (isHistoryProcessing || isLassoOperation) return;
         if (historyIndex < history.length - 1) {
             history = history.slice(0, historyIndex + 1);
             if (lastSavedHistoryIndex > historyIndex) {
@@ -844,6 +904,7 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
     };
 
     document.getElementById('btn-lasso-cancel').onclick = () => {
+        isLassoOperation = true;
         isLassoMode = false;
         lassoLines.forEach(l => canvas.remove(l));
         lassoCircles.forEach(c => canvas.remove(c));
@@ -852,6 +913,8 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
         
         document.getElementById('lasso-controls').style.display = 'none';
         document.getElementById('btn-lasso').style.background = '#f97316';
+        isLassoOperation = false;
+        saveHistory();
         document.getElementById('btn-select').click();
     };
 
@@ -959,7 +1022,6 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
                     img.set({ left: minX + 50, top: minY + 50 });
                     canvas.add(img);
                     canvas.setActiveObject(img);
-                    saveHistory();
                     
                     finishBtn.innerHTML = '✅ Finish Snip';
                     finishBtn.disabled = false;
@@ -1221,6 +1283,242 @@ $saved_data = $blueprint['canvas_data'] ?? 'null';
             btn.disabled = false;
         }
     };
+    // Toggle Sidebar Visibility
+    document.getElementById('btn-paint-plan').onclick = () => {
+        const sidebar = document.getElementById('paint-sidebar');
+        sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    document.getElementById('btn-close-paints').onclick = () => {
+        document.getElementById('paint-sidebar').style.display = 'none';
+    };
+
+    // Add Paint Label to Canvas
+    function addPaintLabelToCanvas(text, bgColor, imagepath, finish) {
+        canvas.isDrawingMode = false;
+        document.getElementById('btn-draw').style.background = '#3b82f6';
+        document.getElementById('btn-select').style.background = '#fbbf24';
+
+        let hex = bgColor || '#1f2937';
+        let cardWidth = 180;
+        let imgHeight = 180;
+
+        let titleText = new fabric.Textbox(text, {
+            width: cardWidth - 24,
+            fontSize: 14,
+            fontFamily: 'sans-serif',
+            fontWeight: 'bold',
+            fill: '#111111',
+            textAlign: 'left',
+            originX: 'center', originY: 'top',
+            left: 0,
+            top: imgHeight + 12,
+            splitByGrapheme: false
+        });
+
+        let subText = new fabric.Text((finish ? finish + ' | ' : '') + hex.toUpperCase(), {
+            fontSize: 11,
+            fontFamily: 'sans-serif',
+            fill: '#666666',
+            originX: 'left', originY: 'top',
+            left: -cardWidth / 2 + 12,
+            top: titleText.top + titleText.height + 6
+        });
+
+        let textTotalHeight = titleText.height + subText.height + 30;
+        let cardHeight = imgHeight + textTotalHeight;
+
+        titleText.set('top', titleText.top - cardHeight / 2);
+        subText.set('top', subText.top - cardHeight / 2);
+
+        let shadowRect = new fabric.Rect({
+            width: cardWidth, height: cardHeight,
+            fill: '#ffffff',
+            rx: 12, ry: 12,
+            originX: 'center', originY: 'center',
+            shadow: new fabric.Shadow({
+                color: 'rgba(0,0,0,0.15)',
+                blur: 12, offsetX: 0, offsetY: 6
+            })
+        });
+
+        let topColor = new fabric.Rect({
+            width: cardWidth, height: imgHeight,
+            fill: hex,
+            originX: 'center', originY: 'top',
+            top: -cardHeight / 2
+        });
+
+        let clipRect = new fabric.Rect({
+            width: cardWidth, height: cardHeight,
+            rx: 12, ry: 12,
+            originX: 'center', originY: 'center'
+        });
+
+        function addGroupToCanvas(items) {
+            let contentGroup = new fabric.Group(items, {
+                originX: 'center', originY: 'center',
+                clipPath: clipRect
+            });
+
+            let finalGroup = new fabric.Group([shadowRect, contentGroup], {
+                left: canvas.width / 2 - cardWidth / 2,
+                top: canvas.height / 2 - cardHeight / 2
+            });
+
+            canvas.add(finalGroup);
+            canvas.setActiveObject(finalGroup);
+            saveHistory();
+        }
+
+        if (imagepath) {
+            fabric.Image.fromURL(imagepath, function(img, isError) {
+                if (!isError && img) {
+                    let scale = Math.max(cardWidth / img.width, imgHeight / img.height);
+                    img.set({
+                        originX: 'center', originY: 'top',
+                        left: 0, top: -cardHeight / 2,
+                        scaleX: scale, scaleY: scale
+                    });
+                    addGroupToCanvas([topColor, img, titleText, subText]);
+                } else {
+                    addGroupToCanvas([topColor, titleText, subText]);
+                }
+            });
+        } else {
+            addGroupToCanvas([topColor, titleText, subText]);
+        }
+    }
+
+    // Smart Match Logic
+    document.getElementById('btn-smart-match').addEventListener('click', () => {
+        let activeObj = canvas.getActiveObject();
+        if (!activeObj) {
+            alert('Please select an object on the canvas first to pick a color.');
+            return;
+        }
+        
+        let targetR, targetG, targetB;
+
+        if (activeObj.type === 'image') {
+            let imgElement = activeObj.getElement();
+            if (!imgElement) {
+                alert("Cannot extract color from this image.");
+                return;
+            }
+            let tempCanvas = document.createElement('canvas');
+            let ctx = tempCanvas.getContext('2d', { willReadFrequently: true });
+            tempCanvas.width = imgElement.naturalWidth || imgElement.width || activeObj.width;
+            tempCanvas.height = imgElement.naturalHeight || imgElement.height || activeObj.height;
+            ctx.drawImage(imgElement, 0, 0, tempCanvas.width, tempCanvas.height);
+            
+            try {
+                let imgData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                let pixels = imgData.data;
+                let sumR = 0, sumG = 0, sumB = 0, count = 0;
+                
+                for (let i = 0; i < pixels.length; i += 4) {
+                    if (pixels[i + 3] > 10) { // Ignore transparent or almost-transparent pixels
+                        sumR += pixels[i];
+                        sumG += pixels[i + 1];
+                        sumB += pixels[i + 2];
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    targetR = Math.round(sumR / count);
+                    targetG = Math.round(sumG / count);
+                    targetB = Math.round(sumB / count);
+                } else {
+                    alert("Image is completely transparent. Cannot extract color.");
+                    return;
+                }
+            } catch (e) {
+                alert("Could not extract pixel data. The image might be cross-origin tainted.");
+                return;
+            }
+        } else {
+            let targetColor = null;
+            if (activeObj.fill && typeof activeObj.fill === 'string' && activeObj.fill.startsWith('#') && activeObj.fill !== '#00000000' && activeObj.fill !== 'transparent') {
+                targetColor = activeObj.fill;
+            } else if (activeObj.stroke && typeof activeObj.stroke === 'string' && activeObj.stroke.startsWith('#')) {
+                targetColor = activeObj.stroke;
+            } else {
+                alert("Selected object doesn't have a solid hex fill or stroke color, nor is it an image.");
+                return;
+            }
+
+            targetR = parseInt(targetColor.slice(1, 3), 16);
+            targetG = parseInt(targetColor.slice(3, 5), 16);
+            targetB = parseInt(targetColor.slice(5, 7), 16);
+        }
+
+        let bestMatch = null;
+        let bestDist = Infinity;
+
+        ALL_PAINTS.forEach(paint => {
+            if (paint.color_hex) {
+                let r = parseInt(paint.color_hex.slice(1, 3), 16);
+                let g = parseInt(paint.color_hex.slice(3, 5), 16);
+                let b = parseInt(paint.color_hex.slice(5, 7), 16);
+
+                let dist = Math.sqrt(Math.pow(r - targetR, 2) + Math.pow(g - targetG, 2) + Math.pow(b - targetB, 2));
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestMatch = paint;
+                }
+            }
+        });
+
+        if (bestMatch) {
+            document.getElementById('paint-search').value = bestMatch.name;
+            const event = new Event('input');
+            document.getElementById('paint-search').dispatchEvent(event);
+        } else {
+            alert("No paints with assigned color_hex found in inventory.");
+        }
+    });
+
+    canvas.on('selection:created', toggleSmartMatch);
+    canvas.on('selection:updated', toggleSmartMatch);
+    canvas.on('selection:cleared', toggleSmartMatch);
+
+    function toggleSmartMatch() {
+        let activeObj = canvas.getActiveObject();
+        let btn = document.getElementById('btn-smart-match');
+        let hasColor = false;
+        
+        if (activeObj) {
+            if (activeObj.type === 'image') {
+                hasColor = true;
+            } else if (activeObj.fill && typeof activeObj.fill === 'string' && activeObj.fill.startsWith('#') && activeObj.fill !== '#00000000' && activeObj.fill !== 'transparent') {
+                hasColor = true;
+            } else if (activeObj.stroke && typeof activeObj.stroke === 'string' && activeObj.stroke.startsWith('#')) {
+                hasColor = true;
+            }
+        }
+
+        if (hasColor) {
+            btn.style.display = 'block';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+
+    // Paint Search Filter
+    document.getElementById('paint-search').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const chips = document.querySelectorAll('.paint-chip');
+        chips.forEach(chip => {
+            const text = chip.innerText.toLowerCase();
+            if (text.includes(query)) {
+                chip.style.display = 'block';
+            } else {
+                chip.style.display = 'none';
+            }
+        });
+    });
 </script>
 
 </body>

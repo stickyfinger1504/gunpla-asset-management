@@ -304,14 +304,6 @@ $has_filters = !empty($_GET['search']);
         document.getElementById('editModal').style.display = 'none';
     }
 
-
-    window.onclick = function(event) {
-        const addModal = document.getElementById('addModal');
-        const editModal = document.getElementById('editModal');
-        if (event.target == addModal) closeAddModal();
-        if (event.target == editModal) closeEditModal();
-    }
-
 </script>
 
 <script>initScrollRestore('mixing_recipes_scroll');</script>

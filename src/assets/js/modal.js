@@ -37,8 +37,4 @@ function initScrollRestore(storageKey) {
     });
 }
 
-// Backdrop click to close modals
-window.addEventListener('click', function(event) {
-    if (event.target == document.getElementById('addModal')) closeAddModal();
-    if (event.target == document.getElementById('editModal')) closeEditModal();
-});
+// Backdrop click to close modals has been disabled globally.

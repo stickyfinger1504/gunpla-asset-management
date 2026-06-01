@@ -16,6 +16,12 @@ function get_paint_types($conn) {
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 
+function get_paint_finishes($conn) {
+    $sql = "SELECT id, label FROM dim_category WHERE section = 'paintlist' AND module = 'finish' ORDER BY label ASC";
+    $result = $conn->query($sql);
+    return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+}
+
 function get_thinned_statuses($conn) {
     $sql = "SELECT id, label FROM dim_category WHERE section = 'paintlist' AND module = 'thinnedstatus' ORDER BY label ASC";
     $result = $conn->query($sql);
@@ -84,14 +90,17 @@ function add_paint($conn, $data) {
 
     $thinned = !empty($data['thinned']) ? (int)$data['thinned'] : null;
     $amount = !empty($data['amount']) ? (int)$data['amount'] : null;
-    $notes = !empty($data['notes']) ? $data['notes'] : null;
-    $createddate = !empty($data['createddate']) ? $data['createddate'] : null;
+    $notes = (isset($data['notes']) && $data['notes'] !== '') ? $data['notes'] : null;
+    $createddate = !empty($data['createddate']) ? $data['createddate'] : date('Y-m-d H:i:s');
     $imagepath = !empty($data['imagepath']) ? $data['imagepath'] : null;
+    $color_hex = !empty($data['color_hex']) ? $data['color_hex'] : null;
+    $finishid = !empty($data['finishid']) ? (int)$data['finishid'] : null;
 
     $stmt = $conn->prepare(
-        "INSERT INTO paint_inventory (name, brand, painttype, thinned, amount, createddate, notes, imagepath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO paint_inventory (name, brand, painttype, thinned, amount, createddate, notes, imagepath, color_hex, finishid) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->bind_param("siiiisss", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath);
+    $stmt->bind_param("siiiissssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $color_hex, $finishid);
     return $stmt->execute();
 }
 
@@ -103,11 +112,13 @@ function update_paint($conn, $data) {
     $notes = (isset($data['notes']) && $data['notes'] !== '') ? $data['notes'] : null;
     $createddate = !empty($data['createddate']) ? $data['createddate'] : null;
     $imagepath = !empty($data['imagepath']) ? $data['imagepath'] : null;
+    $color_hex = !empty($data['color_hex']) ? $data['color_hex'] : null;
+    $finishid = !empty($data['finishid']) ? (int)$data['finishid'] : null;
 
     $stmt = $conn->prepare(
-        "UPDATE paint_inventory SET name=?, brand=?, painttype=?, thinned=?, amount=?, createddate=?, notes=?, imagepath=? WHERE inventoryid=?"
+        "UPDATE paint_inventory SET name=?, brand=?, painttype=?, thinned=?, amount=?, createddate=?, notes=?, imagepath=?, color_hex=?, finishid=? WHERE inventoryid=?"
     );
-    $stmt->bind_param("siiiisssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $data['edit_id']);
+    $stmt->bind_param("siiiisssssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $color_hex, $finishid, $data['edit_id']);
     return $stmt->execute();
 }
 

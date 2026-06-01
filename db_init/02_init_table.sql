@@ -107,11 +107,14 @@ CREATE TABLE paint_inventory (
     lastupdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     notes VARCHAR(300) DEFAULT NULL,
     imagepath VARCHAR(255) DEFAULT NULL,
+    color_hex VARCHAR(7) DEFAULT NULL,
+    finishid INT DEFAULT NULL,
     PRIMARY KEY (inventoryid),
     CONSTRAINT fk_p_inventory_brand FOREIGN KEY (brand) REFERENCES dim_brand (id),
     CONSTRAINT fk_p_inventory_painttype FOREIGN KEY (painttype) REFERENCES dim_category (id),
     CONSTRAINT fk_p_inventory_thinned FOREIGN KEY (thinned) REFERENCES dim_category (id),
-    CONSTRAINT fk_p_inventory_amount FOREIGN KEY (amount) REFERENCES dim_category (id)
+    CONSTRAINT fk_p_inventory_amount FOREIGN KEY (amount) REFERENCES dim_category (id),
+    CONSTRAINT fk_p_inventory_finish FOREIGN KEY (finishid) REFERENCES dim_category (id)
 );
 
 

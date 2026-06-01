@@ -75,6 +75,22 @@ $close_fn = $is_edit ? 'closeEditModal()' : 'closeAddModal()';
                 <input type="date" name="createddate" <?= $is_edit ? 'id="modal_createddate"' : '' ?> class="w-full mt-1 p-2 border border-gray-300 rounded">
             </div>
 
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Color Hex:</label>
+                    <input type="color" name="color_hex" <?= $is_edit ? 'id="modal_color_hex"' : 'id="add_color_hex"' ?> class="w-full mt-1 h-10 border border-gray-300 rounded cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600">Finish:</label>
+                    <select name="finishid" <?= $is_edit ? 'id="modal_finishid"' : 'id="add_finishid"' ?> class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">-- N/A --</option>
+                        <?php foreach($paint_finishes as $pf): ?>
+                            <option value="<?= $pf['id'] ?>"><?= htmlspecialchars($pf['label']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
             <div>
                 <label class="block text-sm font-semibold text-gray-600">Notes:</label>
                 <textarea name="notes" <?= $is_edit ? 'id="modal_notes"' : '' ?> rows="3" <?= $is_edit ? '' : 'placeholder="Color code, usage notes..."' ?> class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
@@ -88,7 +104,9 @@ $close_fn = $is_edit ? 'closeEditModal()' : 'closeAddModal()';
                         <span class="text-xs text-gray-500">Current image (upload new to replace)</span>
                     </div>
                 <?php endif; ?>
-                <input type="file" name="image" accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded text-sm">
+                <input type="file" name="image" <?= $is_edit ? 'id="edit_image_upload"' : 'id="add_image_upload"' ?> accept="image/*" class="w-full mt-1 p-2 border border-gray-300 rounded text-sm">
+                <!-- Hidden canvas for OpenCV processing -->
+                <canvas <?= $is_edit ? 'id="edit_cv_canvas"' : 'id="add_cv_canvas"' ?> style="display:none;"></canvas>
             </div>
 
             <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">

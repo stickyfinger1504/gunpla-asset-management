@@ -147,6 +147,7 @@ with calculatedpaint as(
 	c.label as painttype_label,
 	d.label as thinned_label,
 	e.label as amount_label,
+	f.label as finish_label,
     ROW_NUMBER() OVER (
     PARTITION BY a.brand
     ORDER BY a.createddate
@@ -159,6 +160,7 @@ with calculatedpaint as(
     AND d.module = 'thinnedstatus'
 	LEFT JOIN dim_category e on a.amount=e.id AND e.section = 'paintlist'
     AND e.module = 'amount'
+	LEFT JOIN dim_category f on a.finishid=f.id AND f.section = 'paintlist' AND f.module = 'finish'
 	)
 	SELECT 
 		a.inventoryid as actualid,
@@ -172,6 +174,9 @@ with calculatedpaint as(
 		a.thinned as thinnedid,
 		a.amount_label as amount,
 		a.amount as amountid,
+		a.finish_label as finish,
+		a.finishid,
+		a.color_hex,
 		a.createddate,
 		a.lastupdate,
 		a.notes,

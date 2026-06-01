@@ -317,14 +317,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             document.getElementById('editModal').classList.add('hidden');
             document.getElementById('editModal').style.display = 'none';
         }
-
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const editModal = document.getElementById('editModal');
-            if (event.target == addModal) closeAddModal();
-            if (event.target == editModal) closeEditModal();
-        }
-
+        // Click outside to close is disabled.
     </script>
 
     <script>initScrollRestore('paint_wishlist_scroll');</script>

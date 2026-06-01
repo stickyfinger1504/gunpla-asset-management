@@ -57,6 +57,7 @@ $message = get_flash_message();
 
 $paint_brands = get_paint_brands($conn);
 $paint_types = get_paint_types($conn);
+$paint_finishes = get_paint_finishes($conn);
 $thinned_statuses = get_thinned_statuses($conn);
 $amount_levels = get_amount_levels($conn);
 $paints = get_paint_inventory($conn, $_GET);
@@ -65,6 +66,7 @@ $stats = calculate_paint_stats($paints);
 $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']) || !empty($_GET['filter_amount']) || !empty($_GET['search']);
 ?>
 <?php include '../components/layout_header.php'; ?>
+<script async src="/assets/js/opencv.js"></script>
 
         <div class="max-w-7xl mx-auto w-full">
             <h1 class="page-title font-bold text-gray-700 text-center mb-8">🎨 Paint Inventory</h1>
@@ -201,15 +203,6 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
-                        <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="date_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_desc') ? 'selected' : '' ?>>Date Added (Newest)</option>
-                            <option value="date_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'date_asc') ? 'selected' : '' ?>>Date Added (Oldest)</option>
-                            <option value="name_asc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'name_asc') ? 'selected' : '' ?>>Name (A-Z)</option>
-                            <option value="name_desc" <?= (isset($_GET['sortby']) && $_GET['sortby'] == 'name_desc') ? 'selected' : '' ?>>Name (Z-A)</option>
-                        </select>
-                    </div>
                     <div class="flex gap-2">
                         <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
                         <?php if ($has_filters): ?>
@@ -281,6 +274,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                                 data-painttype='<?= $row['painttypeid'] ?>'
                                                 data-thinned='<?= $row['thinnedid'] ?? '' ?>'
                                                 data-amount='<?= $row['amountid'] ?? '' ?>'
+                                                data-color_hex='<?= htmlspecialchars($row['color_hex'] ?? '') ?>'
+                                                data-finishid='<?= $row['finishid'] ?? '' ?>'
                                                 data-createddate='<?= !empty($row['createddate']) ? date('Y-m-d', strtotime($row['createddate'])) : '' ?>'
                                                 data-notes='<?= htmlspecialchars($row['notes'] ?? '', ENT_QUOTES) ?>'
                                                 data-imagepath='<?= htmlspecialchars($row['imagepath'] ?? '', ENT_QUOTES) ?>'
@@ -359,6 +354,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                                             data-painttype='<?= $row['painttypeid'] ?>'
                                             data-thinned='<?= $row['thinnedid'] ?? '' ?>'
                                             data-amount='<?= $row['amountid'] ?? '' ?>'
+                                            data-color_hex='<?= htmlspecialchars($row['color_hex'] ?? '') ?>'
+                                            data-finishid='<?= $row['finishid'] ?? '' ?>'
                                             data-createddate='<?= !empty($row['createddate']) ? date('Y-m-d', strtotime($row['createddate'])) : '' ?>'
                                             data-notes='<?= htmlspecialchars($row['notes'] ?? '', ENT_QUOTES) ?>'
                                             data-imagepath='<?= htmlspecialchars($row['imagepath'] ?? '', ENT_QUOTES) ?>'
@@ -392,7 +389,105 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
     <?php $mode = 'add'; include '../components/paint_inventory_modal.php'; ?>
     <?php $mode = 'edit'; include '../components/paint_inventory_modal.php'; ?>
 
+
     <script>
+        function toggleFilterBar(btn) {
+            const body = document.querySelector('.filter-bar-body');
+            body.classList.toggle('is-open');
+            btn.innerHTML = body.classList.contains('is-open') ? '▲ Filters' : '▼ Filters';
+        }
+
+        // OpenCV Smart Extractor Logic
+        function handleImageUpload(inputEl, canvasId, hexInputId, finishSelectId) {
+            if (!inputEl.files || !inputEl.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById(canvasId);
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    if (typeof cv === 'undefined' || !cv.Mat) {
+                        alert("The Smart Extractor (OpenCV) is still loading in the background. Please wait a few seconds and try selecting the image again.");
+                        return;
+                    }
+
+                    try {
+                        let src = cv.imread(canvas);
+                        let gray = new cv.Mat();
+                        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                        // Threshold to find spoon (assuming non-background)
+                        let thresh = new cv.Mat();
+                        cv.threshold(gray, thresh, 50, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
+
+                        // check corners to see what the background is
+                        let corner1 = thresh.ucharPtr(0, 0)[0];
+                        let corner2 = thresh.ucharPtr(0, thresh.cols - 1)[0];
+                        let corner3 = thresh.ucharPtr(thresh.rows - 1, 0)[0];
+                        let corner4 = thresh.ucharPtr(thresh.rows - 1, thresh.cols - 1)[0];
+                        let bgVal = (corner1 + corner2 + corner3 + corner4) / 4 > 127 ? 255 : 0;
+                        
+                        if (bgVal === 255) {
+                            cv.bitwise_not(thresh, thresh);
+                        }
+
+                        // Calculate average color within the mask
+                        let mean = cv.mean(src, thresh);
+                        
+                        // Set Hex Color
+                        let r = Math.round(mean[0]);
+                        let g = Math.round(mean[1]);
+                        let b = Math.round(mean[2]);
+                        let hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                        document.getElementById(hexInputId).value = hex;
+
+                        // Calculate standard deviation of lightness to guess finish
+                        let hsv = new cv.Mat();
+                        cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+                        cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+                        
+                        let stddev = new cv.Mat();
+                        let meanHsv = new cv.Mat();
+                        cv.meanStdDev(hsv, meanHsv, stddev, thresh);
+                        
+                        let vStdDev = stddev.data64F[2];
+                        console.log("Extracted Lightness Variance (StdDev):", vStdDev);
+                        
+                        // Metallic threshold (lowered for better detection)
+                        if (vStdDev > 20) {
+                            // Find 'Metallic' option in dropdown
+                            let select = document.getElementById(finishSelectId);
+                            if (select) {
+                                for (let i = 0; i < select.options.length; i++) {
+                                    if (select.options[i].text === 'Metallic') {
+                                        select.selectedIndex = i;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        src.delete(); gray.delete(); thresh.delete(); hsv.delete(); stddev.delete(); meanHsv.delete();
+                    } catch (err) {
+                        console.error("OpenCV processing error:", err);
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(inputEl.files[0]);
+        }
+
+        document.getElementById('add_image_upload')?.addEventListener('change', function() {
+            handleImageUpload(this, 'add_cv_canvas', 'add_color_hex', 'add_finishid');
+        });
+        document.getElementById('edit_image_upload')?.addEventListener('change', function() {
+            handleImageUpload(this, 'edit_cv_canvas', 'modal_color_hex', 'modal_finishid');
+        });
+
         function openAddModal() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').style.display = 'flex';
@@ -410,6 +505,8 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
             document.getElementById('modal_painttype').value = button.getAttribute('data-painttype');
             document.getElementById('modal_thinned').value = button.getAttribute('data-thinned');
             document.getElementById('modal_amount').value = button.getAttribute('data-amount');
+            document.getElementById('modal_color_hex').value = button.getAttribute('data-color_hex') || '#000000';
+            document.getElementById('modal_finishid').value = button.getAttribute('data-finishid');
             document.getElementById('modal_createddate').value = button.getAttribute('data-createddate');
             document.getElementById('modal_notes').value = button.getAttribute('data-notes');
 
@@ -432,14 +529,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
             document.getElementById('editModal').classList.add('hidden');
             document.getElementById('editModal').style.display = 'none';
         }
-
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const editModal = document.getElementById('editModal');
-            if (event.target == addModal) closeAddModal();
-            if (event.target == editModal) closeEditModal();
-        }
-
+        // Click outside to close is disabled.
 
         function setView(mode) {
             const tableView = document.getElementById('table-view');
