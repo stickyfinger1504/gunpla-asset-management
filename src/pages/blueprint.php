@@ -27,6 +27,7 @@ $all_recipes = get_recipes($conn);
     <title>Blueprint Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script async src="/assets/js/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();" type="text/javascript"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #f3f4f6; font-family: sans-serif; }
@@ -63,6 +64,10 @@ $all_recipes = get_recipes($conn);
 </div>
 
 <div id="desktop-ui">
+    <!-- Place this somewhere visible -->
+    <div id="ai_loading_indicator" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow animate-pulse z-50">
+        Loading 30MB AI Model & Processing...
+    </div>
     <div class="toolbar">
         <div class="tool-group">
             <a href="/backlog" class="btn" style="background:#4b5563;">⬅ Back</a>
@@ -91,7 +96,7 @@ $all_recipes = get_recipes($conn);
             <button class="btn" id="btn-image" style="background:#8b5cf6;">🖼️ Attach Image</button>
             <button class="btn" id="btn-paint-plan" style="background:#ec4899;">🎨 Paint Plan</button>
             <input type="file" id="image-upload" accept="image/*" style="display:none;">
-            <button class="btn" id="btn-lineart" style="display:none; background:#ec4899;">🪄 Generate Lineart (Beta)</button>
+            <button class="btn" id="btn-lineart" style="background:#ec4899;">🪄 Generate Lineart (beta)</button>
         </div>
         <div class="tool-group" id="group-transform" style="display:none;">
             <button class="btn" id="btn-flip-x">↔️ Flip X</button>
@@ -501,6 +506,7 @@ $all_recipes = get_recipes($conn);
             fontFamily: 'sans-serif'
         });
         canvas.add(text);
+        canvas.viewportCenterObject(text);
         canvas.setActiveObject(text);
     };
 
@@ -520,6 +526,7 @@ $all_recipes = get_recipes($conn);
             splitByGrapheme: false
         });
         canvas.add(sticky);
+        canvas.viewportCenterObject(sticky);
         canvas.setActiveObject(sticky);
     };
 
@@ -558,6 +565,7 @@ $all_recipes = get_recipes($conn);
             width: 100, height: 100 
         });
         canvas.add(rect);
+        canvas.viewportCenterObject(rect);
         canvas.setActiveObject(rect);
     };
 
@@ -573,6 +581,7 @@ $all_recipes = get_recipes($conn);
             strokeWidth: parseInt(document.getElementById('brush-size').value, 10) || 3
         });
         canvas.add(circle);
+        canvas.viewportCenterObject(circle);
         canvas.setActiveObject(circle);
     };
 
@@ -588,6 +597,7 @@ $all_recipes = get_recipes($conn);
             strokeWidth: parseInt(document.getElementById('brush-size').value, 10) || 3
         });
         canvas.add(triangle);
+        canvas.viewportCenterObject(triangle);
         canvas.setActiveObject(triangle);
     };
 
@@ -608,6 +618,7 @@ $all_recipes = get_recipes($conn);
             fabric.Image.fromURL(data, function(img) {
                 if (img.width > 800) img.scaleToWidth(800);
                 canvas.add(img);
+                canvas.viewportCenterObject(img);
                 canvas.setActiveObject(img);
                 document.getElementById('image-upload').value = ''; 
             });
@@ -627,6 +638,7 @@ $all_recipes = get_recipes($conn);
     let tuneSrcMat = null;
     let targetActiveObj = null;
 
+    /* --- DISABLED FOR NOW (USING ONNX INSTEAD) ---
     document.getElementById('btn-lineart').onclick = async function() {
         if (cvError || !cvReady) {
             if (confirm("The Lineart Engine (OpenCV) is not installed. It is an optional 8MB download. Would you like to install it now?")) {
@@ -714,6 +726,7 @@ $all_recipes = get_recipes($conn);
         
         runTuningPipeline();
     };
+    --------------------------------------------- */
 
     // The 4-Layer Refinement Pipeline
     function runTuningPipeline() {
@@ -1254,7 +1267,7 @@ $all_recipes = get_recipes($conn);
         btn.disabled = true;
 
         const jsonData = JSON.stringify(canvas.toJSON());
-        const base64Image = canvas.toDataURL('png');
+        const base64Image = canvas.toDataURL({format: 'jpeg', quality: 0.8});
 
         try {
             const res = await fetch('/api/save_blueprint.php', {
@@ -1266,19 +1279,30 @@ $all_recipes = get_recipes($conn);
                     image: base64Image
                 })
             });
-            const result = await res.json();
-            if (result.success) {
-                btn.innerHTML = '✅ Saved!';
-                lastSavedHistoryIndex = historyIndex;
-                checkUnsavedChanges();
-                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-            } else {
-                alert('Failed to save!');
+            const text = await res.text();
+            try {
+                // Defensive parsing: strip any PHP Warnings that might appear before the JSON payload
+                const jsonStart = text.indexOf('{');
+                const cleanJson = jsonStart !== -1 ? text.substring(jsonStart) : text;
+                const result = JSON.parse(cleanJson);
+                if (result.success) {
+                    btn.innerHTML = '✅ Saved!';
+                    lastSavedHistoryIndex = historyIndex;
+                    checkUnsavedChanges();
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                } else {
+                    alert('Failed to save: ' + (result.error || 'Unknown error'));
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (parseErr) {
+                alert('Server returned invalid data: ' + text.substring(0, 200));
+                console.error("Raw response:", text);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         } catch (err) {
-            alert('Error communicating with server.');
+            alert('Network error communicating with server: ' + err.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
@@ -1518,6 +1542,327 @@ $all_recipes = get_recipes($conn);
                 chip.style.display = 'none';
             }
         });
+    });
+
+    let onnxSession = null;
+
+    // 1. User Consent & Model Loading
+    async function initLineartEngine() {
+        if (onnxSession) return true;
+        
+        // Point ONNX to the CDN for its WebAssembly binaries
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+        
+        // UX: Ask user before downloading payload
+        let lineartApproved = localStorage.getItem('lineart_approved');
+        if (!lineartApproved) {
+            const wantsToDownload = confirm("The Semantic Lineart Engine requires a one-time download of a 17MB AI Model to your browser cache. Proceed?");
+            if (!wantsToDownload) return false;
+            localStorage.setItem('lineart_approved', 'true');
+        }
+
+        let indicator = document.getElementById('ai_loading_indicator');
+        indicator.textContent = "Loading AI Model...";
+        indicator.classList.remove('hidden');
+        
+        try {
+            onnxSession = await ort.InferenceSession.create('/assets/models/lineart.onnx', { executionProviders: ['wasm'] });
+            return true;
+        } catch (err) {
+            console.warn("Model not found locally. Attempting to download from server...", err);
+            indicator.textContent = "Downloading High-Quality Model to Server (17MB)... Please wait.";
+            
+            try {
+                let downloadReq = await fetch('/api/download_model.php');
+                let downloadRes = await downloadReq.json();
+                
+                if (downloadRes.success) {
+                    indicator.textContent = "Model downloaded! Initializing Inference Engine...";
+                    onnxSession = await ort.InferenceSession.create('/assets/models/lineart.onnx', { executionProviders: ['wasm'] });
+                    return true;
+                } else {
+                    throw new Error("Download API returned false.");
+                }
+            } catch (downloadErr) {
+                alert("Failed to load AI Model: " + err.message + "\n\nAdditionally, auto-download failed: " + downloadErr.message);
+                console.error(downloadErr);
+                return false;
+            }
+        } finally {
+            indicator.classList.add('hidden');
+        }
+    }
+
+    // 2. Image Preprocessing (Pixels to Tensor)
+    function preprocessImageToTensor(imageElement, width=512, height=512) {
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = width;
+        tmpCanvas.height = height;
+        const ctx = tmpCanvas.getContext('2d');
+        ctx.drawImage(imageElement, 0, 0, width, height);
+        const imgData = ctx.getImageData(0, 0, width, height).data;
+
+        // Create Float32Array for ONNX [1, 3, height, width] (CHW format)
+        const floatData = new Float32Array(3 * width * height);
+        
+        for (let i = 0; i < width * height; i++) {
+            // Normalize 0-255 to 0.0-1.0
+            floatData[i] = imgData[i * 4] / 255.0;                        // R
+            floatData[width * height + i] = imgData[i * 4 + 1] / 255.0;   // G
+            floatData[2 * width * height + i] = imgData[i * 4 + 2] / 255.0; // B
+        }
+        
+        return new ort.Tensor('float32', floatData, [1, 3, height, width]);
+    }
+
+    // 3. Tensor to Image Postprocessing
+    function postprocessTensorToCanvas(tensorData, width, height) {
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = width;
+        outCanvas.height = height;
+        const ctx = outCanvas.getContext('2d');
+        const imgData = ctx.createImageData(width, height);
+        
+        // Find min and max for contrast normalization
+        let min_val = 1.0;
+        let max_val = 0.0;
+        for (let i = 0; i < width * height; i++) {
+            if (tensorData[i] < min_val) min_val = tensorData[i];
+            if (tensorData[i] > max_val) max_val = tensorData[i];
+        }
+        
+        // Prevent division by zero
+        if (max_val - min_val < 0.0001) max_val = min_val + 0.0001;
+
+        for (let i = 0; i < width * height; i++) {
+            // Normalize to full 0.0-1.0 range
+            let prob = (tensorData[i] - min_val) / (max_val - min_val);
+            
+            // Apply a slight gamma curve to boost mid-tones (makes faint edges darker)
+            prob = Math.pow(prob, 0.45); 
+
+            // Invert: 1.0 (edge) becomes 0 (black), 0.0 (bg) becomes 255 (white)
+            let val = (1.0 - prob) * 255.0; 
+            
+            imgData.data[i * 4] = val;     // R
+            imgData.data[i * 4 + 1] = val; // G
+            imgData.data[i * 4 + 2] = val; // B
+            imgData.data[i * 4 + 3] = 255; // Alpha
+        }
+        ctx.putImageData(imgData, 0, 0);
+        return outCanvas.toDataURL("image/png");
+    }
+
+    // 4. Main Event Listener
+    document.getElementById('btn-lineart').addEventListener('click', async () => {
+        // Find the active uploaded image on the canvas (or the background image)
+        targetActiveObj = canvas.getActiveObject();
+        if (!targetActiveObj || targetActiveObj.type !== 'image') {
+            return alert("Please select an uploaded Gunpla photo on the canvas first!");
+        }
+
+        const engineReady = await initLineartEngine();
+        if (!engineReady) return;
+
+        const indicator = document.getElementById('ai_loading_indicator');
+        indicator.textContent = "Drawing Semantic Lineart...";
+        indicator.classList.remove('hidden');
+
+        try {
+            // Convert Fabric Image to HTML Image Element
+            const rawImg = targetActiveObj.getElement();
+            
+            // OPTION 3: OpenCV CLAHE Pre-processing (Enhance Contrast & Shadows)
+            let enhancedCanvas = rawImg;
+            if (typeof cv !== 'undefined') {
+                try {
+                    enhancedCanvas = document.createElement('canvas');
+                    enhancedCanvas.width = rawImg.width || rawImg.naturalWidth;
+                    enhancedCanvas.height = rawImg.height || rawImg.naturalHeight;
+                    
+                    let src = cv.imread(rawImg);
+                    let lab = new cv.Mat();
+                    cv.cvtColor(src, lab, cv.COLOR_RGBA2RGB);
+                    cv.cvtColor(lab, lab, cv.COLOR_RGB2Lab);
+                    
+                    let labPlanes = new cv.MatVector();
+                    cv.split(lab, labPlanes);
+                    
+                    // Apply CLAHE to the L (Lightness) channel
+                    let clahe = cv.createCLAHE(4.0, new cv.Size(8, 8));
+                    let lChannel = labPlanes.get(0);
+                    clahe.apply(lChannel, lChannel);
+                    
+                    cv.merge(labPlanes, lab);
+                    cv.cvtColor(lab, src, cv.COLOR_Lab2RGBA);
+                    
+                    cv.imshow(enhancedCanvas, src);
+                    
+                    src.delete(); lab.delete(); labPlanes.delete(); clahe.delete(); lChannel.delete();
+                } catch(e) {
+                    console.warn("CLAHE preprocessing failed, falling back to raw image", e);
+                    enhancedCanvas = rawImg;
+                }
+            }
+            // Option 2: Microscope Tiling Inference (Full-Resolution)
+            const tileSize = 512;
+            const stride = 256; // 50% overlap to perfectly hide edge seams
+            
+            let baseW = enhancedCanvas.width;
+            let baseH = enhancedCanvas.height;
+            
+            // Full resolution accumulation buffers
+            let accumulatedData = new Float32Array(baseW * baseH);
+            let weightBuffer = new Float32Array(baseW * baseH);
+            
+            // Advanced Blending Mask (Flat center, linear fade on outer 64 pixels to hide NN padding artifacts)
+            function getWeight(x, y, tileSize) {
+                let fade = 64.0;
+                let wx = 1.0;
+                let wy = 1.0;
+                if (x < fade) wx = Math.max(0.01, x / fade);
+                else if (x > tileSize - fade) wx = Math.max(0.01, (tileSize - x) / fade);
+                
+                if (y < fade) wy = Math.max(0.01, y / fade);
+                else if (y > tileSize - fade) wy = Math.max(0.01, (tileSize - y) / fade);
+                
+                return wx * wy;
+            }
+            
+            // Calculate number of tiles
+            const xTiles = Math.ceil(baseW / stride);
+            const yTiles = Math.ceil(baseH / stride);
+            const totalTiles = xTiles * yTiles;
+            let tilesProcessed = 0;
+            
+            // Temporary canvas for extracting tiles
+            const tileCanvas = document.createElement('canvas');
+            tileCanvas.width = tileSize;
+            tileCanvas.height = tileSize;
+            const tileCtx = tileCanvas.getContext('2d');
+            
+            for (let y = 0; y < baseH; y += stride) {
+                for (let x = 0; x < baseW; x += stride) {
+                    
+                    // Snap to edge logic
+                    let startX = x;
+                    let startY = y;
+                    
+                    if (startX + tileSize > baseW) startX = Math.max(0, baseW - tileSize);
+                    if (startY + tileSize > baseH) startY = Math.max(0, baseH - tileSize);
+                    
+                    // Update indicator
+                    tilesProcessed++;
+                    indicator.textContent = `Microscope AI slicing tile ${tilesProcessed} of ${totalTiles}...`;
+                    
+                    // Extract tile
+                    tileCtx.fillStyle = "white";
+                    tileCtx.fillRect(0, 0, tileSize, tileSize);
+                    tileCtx.drawImage(enhancedCanvas, startX, startY, tileSize, tileSize, 0, 0, tileSize, tileSize);
+                    
+                    // Run AI on Tile
+                    const tensor = preprocessImageToTensor(tileCanvas, tileSize, tileSize);
+                    const feeds = {};
+                    feeds[onnxSession.inputNames[0]] = tensor;
+                    const results = await onnxSession.run(feeds);
+                    
+                    // Process output probabilities
+                    const outputData = results[onnxSession.outputNames[0]].data;
+                    
+                    // Accumulate back into main buffer
+                    for (let ty = 0; ty < tileSize; ty++) {
+                        for (let tx = 0; tx < tileSize; tx++) {
+                            let gx = startX + tx;
+                            let gy = startY + ty;
+                            
+                            if (gx >= baseW || gy >= baseH) continue;
+                            
+                            let w = getWeight(tx, ty, tileSize);
+                            let val = outputData[ty * tileSize + tx];
+                            
+                            let globalIdx = gy * baseW + gx;
+                            accumulatedData[globalIdx] += (val * w);
+                            weightBuffer[globalIdx] += w;
+                        }
+                    }
+                }
+            }
+            
+            indicator.textContent = "Stitching full-resolution traces...";
+            
+            // Normalize & Output Full Resolution Image
+            let minVal = 99999, maxVal = -99999;
+            for (let i = 0; i < baseW * baseH; i++) {
+                if (weightBuffer[i] > 0) {
+                    accumulatedData[i] /= weightBuffer[i];
+                    if (accumulatedData[i] < minVal) minVal = accumulatedData[i];
+                    if (accumulatedData[i] > maxVal) maxVal = accumulatedData[i];
+                }
+            }
+            
+            let finalCanvas = document.createElement('canvas');
+            finalCanvas.width = baseW;
+            finalCanvas.height = baseH;
+            let fctx = finalCanvas.getContext('2d');
+            let fImgData = fctx.createImageData(baseW, baseH);
+            
+            // Gamma curve logic
+            const gamma = 0.5;
+            for (let i = 0; i < baseW * baseH; i++) {
+                let norm = (accumulatedData[i] - minVal) / (maxVal - minVal + 1e-5);
+                norm = Math.pow(norm, gamma);
+                
+                let val = Math.floor(norm * 255); // Inverted output to fix black bg / white lines
+                
+                fImgData.data[i * 4] = val;
+                fImgData.data[i * 4 + 1] = val;
+                fImgData.data[i * 4 + 2] = val;
+                fImgData.data[i * 4 + 3] = 255;
+            }
+            fctx.putImageData(fImgData, 0, 0);
+            const dataUrl = finalCanvas.toDataURL("image/png");
+            
+            fabric.Image.fromURL(dataUrl, (aiImg) => {
+                aiImg.set({
+                    left: targetActiveObj.left,
+                    top: targetActiveObj.top,
+                    scaleX: targetActiveObj.scaleX, // Now matching 1:1, no upscaling needed
+                    scaleY: targetActiveObj.scaleY,
+                    angle: targetActiveObj.angle
+                });
+                
+                canvas.remove(targetActiveObj);
+                canvas.add(aiImg);
+                canvas.setActiveObject(aiImg);
+                
+                document.getElementById('ai_loading_indicator').classList.add('hidden');
+            });
+            
+            /* -- OpenCV Tuning Modal Fallback (Commented Out) --
+            const img = new Image();
+            img.onload = () => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = primaryW;
+                tempCanvas.height = primaryH;
+                const ctx = tempCanvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                if (tuneSrcMat) tuneSrcMat.delete();
+                tuneSrcMat = cv.imread(tempCanvas);
+                
+                document.getElementById('tuning-modal').style.display = 'flex';
+                document.getElementById('ai_loading_indicator').classList.add('hidden');
+                
+                runTuningPipeline();
+            };
+            img.src = lineartDataUrl;
+            */
+            
+        } catch (err) {
+            alert("Neural Network Inference failed: " + err.message);
+            console.error(err);
+            document.getElementById('ai_loading_indicator').classList.add('hidden');
+        }
     });
 </script>
 
