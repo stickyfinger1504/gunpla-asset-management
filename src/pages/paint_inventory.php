@@ -457,16 +457,23 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_painttype']
                         let vStdDev = stddev.data64F[2];
                         console.log("Extracted Lightness Variance (StdDev):", vStdDev);
                         
-                        // Metallic threshold (lowered for better detection)
-                        if (vStdDev > 20) {
-                            // Find 'Metallic' option in dropdown
-                            let select = document.getElementById(finishSelectId);
-                            if (select) {
-                                for (let i = 0; i < select.options.length; i++) {
-                                    if (select.options[i].text === 'Metallic') {
-                                        select.selectedIndex = i;
-                                        break;
-                                    }
+                        let predictedFinish = null;
+                        if (vStdDev > 35) {
+                            predictedFinish = 'Metallic';
+                        } else if (vStdDev < 15) {
+                            predictedFinish = 'Matte';
+                        } else {
+                            predictedFinish = 'Gloss';
+                        }
+                        
+                        console.log("Predicted Finish:", predictedFinish);
+
+                        let select = document.getElementById(finishSelectId);
+                        if (select && predictedFinish) {
+                            for (let i = 0; i < select.options.length; i++) {
+                                if (select.options[i].text === predictedFinish) {
+                                    select.selectedIndex = i;
+                                    break;
                                 }
                             }
                         }
