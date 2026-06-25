@@ -158,12 +158,12 @@ $all_recipes = get_recipes($conn);
             <h3 style="color:#9ca3af; font-size:14px; text-transform:uppercase; margin-top:10px;">Single Paints</h3>
             <?php foreach ($all_paints as $paint): ?>
                 <?php 
-                    $hex = !empty($paint['color_hex']) ? $paint['color_hex'] : '#374151'; 
+                    $hex = !empty($paint['color_hex']) ? htmlspecialchars($paint['color_hex'], ENT_QUOTES) : '#374151'; 
                     $textColor = (hexdec(substr($hex, 1, 2)) * 0.299 + hexdec(substr($hex, 3, 2)) * 0.587 + hexdec(substr($hex, 5, 2)) * 0.114) > 186 ? '#000000' : '#ffffff';
                 ?>
                 <div class="paint-chip" style="background:<?= $hex ?>; padding:10px; border-radius:6px; cursor:pointer; border:1px solid #4b5563; transition: transform 0.2s; display:flex; align-items:center; gap:10px;" 
                      onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
-                     onclick="addPaintLabelToCanvas('<?= htmlspecialchars(addslashes($paint['brand'] ?? 'Unknown')) ?>: <?= htmlspecialchars(addslashes($paint['name'])) ?>', '<?= $hex ?>', '<?= htmlspecialchars(addslashes($paint['imagepath'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($paint['finish'] ?? '')) ?>')">
+                     onclick="addPaintLabelToCanvas('<?= htmlspecialchars(addslashes($paint['brand'] ?? 'Unknown')) ?>: <?= htmlspecialchars(addslashes($paint['name'])) ?>', '<?= htmlspecialchars(addslashes($hex)) ?>', '<?= htmlspecialchars(addslashes($paint['imagepath'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($paint['finish'] ?? '')) ?>')">
                     <?php if (!empty($paint['imagepath'])): ?>
                         <img src="<?= htmlspecialchars($paint['imagepath']) ?>" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.3);">
                     <?php else: ?>
@@ -224,7 +224,7 @@ $all_recipes = get_recipes($conn);
 </div>
 
 <script>
-    const ALL_PAINTS = <?= json_encode($all_paints); ?>;
+    const ALL_PAINTS = <?= json_encode($all_paints, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     let cvReady = false;
     let cvError = false;
     function onOpenCvReady() { cvReady = true; }
@@ -343,7 +343,7 @@ $all_recipes = get_recipes($conn);
     });
 
     // Load Existing Data
-    const existingData = <?= $saved_data ?: 'null' ?>;
+    const existingData = <?= !empty($blueprint['canvas_data']) ? json_encode(json_decode($blueprint['canvas_data']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : 'null' ?>;
     if (existingData) {
         isHistoryProcessing = true;
         canvas.loadFromJSON(existingData, () => {
@@ -1812,7 +1812,7 @@ $all_recipes = get_recipes($conn);
                 let norm = (accumulatedData[i] - minVal) / (maxVal - minVal + 1e-5);
                 norm = Math.pow(norm, gamma);
                 
-                let val = Math.floor(norm * 255); // Inverted output to fix black bg / white lines
+                let val = Math.floor((1.0 - norm) * 255); // Inverted output to fix black bg / white lines
                 
                 fImgData.data[i * 4] = val;
                 fImgData.data[i * 4 + 1] = val;

@@ -118,7 +118,7 @@ function update_paint($conn, $data) {
     $stmt = $conn->prepare(
         "UPDATE paint_inventory SET name=?, brand=?, painttype=?, thinned=?, amount=?, createddate=?, notes=?, imagepath=?, color_hex=?, finishid=? WHERE inventoryid=?"
     );
-    $stmt->bind_param("siiiisssssi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $color_hex, $finishid, $data['edit_id']);
+    $stmt->bind_param("siiiisssisi", $data['name'], $data['brand'], $data['painttype'], $thinned, $amount, $createddate, $notes, $imagepath, $color_hex, $finishid, $data['edit_id']);
     return $stmt->execute();
 }
 

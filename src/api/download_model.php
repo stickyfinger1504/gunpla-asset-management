@@ -1,7 +1,15 @@
 <?php
 // download_model.php
 // This script downloads the ONNX model files from HuggingFace if they don't exist locally
+require_once '../includes/bootstrap.php';
 
+// Ensure user is authenticated
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(403);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Unauthorized access.']);
+    exit;
+}
 $model_dir = '../assets/models';
 if (!is_dir($model_dir)) {
     mkdir($model_dir, 0777, true);
