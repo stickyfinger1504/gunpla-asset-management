@@ -13,13 +13,17 @@ A self-hosted, comprehensive asset management system designed for gunpla builder
 * **Task Lists**: Break down complex builds into granular, manageable tasks.
 * **Transaction Logs**: Document every step of your build with notes and photo uploads.
 * **Status Tracking**: Real-time progress updates for every active project.
-* **Blueprint Editor**: Sketch, annotate, and visually plan builds on an interactive digital canvas, featuring AI background removal, lasso cropping, and smart color matching.
+* **Blueprint Editor**: Sketch, annotate, and visually plan builds on an interactive digital canvas, featuring ONNX deep-learning lineart generation, AI background removal, lasso cropping, and smart color matching.
 
 ### Paint & Supplies
 * **Paint Inventory**: Track your stock levels, paint types, and brands. Includes OpenCV-powered image analysis to automatically extract color hex codes and predict paint finishes (Matte, Gloss, Metallic). 
   > **Note on Smart Finish Detection**: The OpenCV finish detector is currently calibrated specifically for the default finishes (`Matte`, `Gloss`, `Metallic`) using hardcoded lightness variance (standard deviation) thresholds. If you manually add new custom finish types to the database, the automated image analysis will not be able to detect or assign them. You will need to manually select custom finishes from the dropdown when adding new paints.
-* **Mixing Recipes**: Store and manage custom paint ratios with visual references.
+* **Mixing Recipes**: Store and manage custom paint ratios with visual references. Includes an intelligent Recipe Scaler to dynamically calculate ingredient volumes.
 * **Paint Wishlist**: Track specific colors or supplies needed for future projects.
+
+### Tools & Equipment
+* **Tool Inventory**: Track your hobby tools, their condition, and purchase history.
+* **Maintenance Logs**: Keep a detailed history of tool usage (linked to specific builds) and routine maintenance with photo uploads.
 
 ## Tech Stack
 * **Backend**: PHP with a custom dynamic router.
