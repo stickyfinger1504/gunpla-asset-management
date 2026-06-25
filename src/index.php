@@ -32,6 +32,10 @@ $dynamicRoutes = [
         $_GET['id'] = $matches[1];
         return 'pages/paint_detail.php';
     },
+    '#^/tool/(\d+)$#' => function($matches) {
+        $_GET['id'] = $matches[1];
+        return 'pages/tool_detail.php';
+    },
 
 ];
 

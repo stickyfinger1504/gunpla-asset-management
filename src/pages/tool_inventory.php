@@ -204,7 +204,7 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['filter_category'])
                                          class="w-8 h-8 object-cover rounded inline-block align-middle border">
                                 </a>
                                 <?php endif; ?>
-                                <?= $safe_name ?>
+                                <a href="/tool/<?= $row['actualid'] ?>" class="text-blue-500 hover:underline"><?= $safe_name ?></a>
                             </td>
                             <td data-label="Brand" class="px-4 py-3 text-sm whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-bold rounded-full <?= $brand_class ?>">

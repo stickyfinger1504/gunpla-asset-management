@@ -200,6 +200,11 @@ $has_filters = !empty($_GET['search']);
                         onclick="openEditRecipeModal(this)">
                     ✏️ Edit
                 </button>
+                <button type="button" class="text-sm text-green-500 hover:text-green-700 ml-2"
+                        data-recipe='<?= htmlspecialchars(json_encode($recipe), ENT_QUOTES) ?>'
+                        onclick="openScaleModal(this)">
+                    📏 Scale
+                </button>
                 <form method="POST" class="inline" onsubmit='return confirm("Delete <?= e($recipe['name']) ?>?");'>
                     <input type="hidden" name="deleteid" value="<?= $recipe['recipeid'] ?>">
                     <button type="submit" class="text-sm text-red-500 hover:text-red-700">🗑️ Delete</button>
@@ -225,9 +230,111 @@ $has_filters = !empty($_GET['search']);
 
 <?php $mode = 'edit'; include '../components/mixing_recipe_modal.php'; ?>
 
-
+<!-- Scale Modal Swatch -->
+<div id="scaleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 justify-center items-center p-4">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md overflow-hidden">
+        <div class="bg-green-500 text-white px-4 py-3 flex justify-between items-center">
+            <h3 class="font-bold flex items-center gap-1">📏 Recipe Scaler: <span id="scale-recipe-name"></span></h3>
+            <button onclick="closeScaleModal()" class="text-white hover:text-gray-200 text-xl font-bold">×</button>
+        </div>
+        <div class="p-4 space-y-4">
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Target Volume</label>
+                    <input type="number" id="scale-volume" value="10" min="0.1" step="any" oninput="calculateScaledRecipe()" class="w-full border border-gray-300 p-2 rounded text-sm">
+                </div>
+                <div class="w-28">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Unit</label>
+                    <select id="scale-unit" onchange="calculateScaledRecipe()" class="w-full border border-gray-300 p-2 rounded text-sm">
+                        <option value="ml">ml</option>
+                        <option value="drops">Drops</option>
+                        <option value="parts">Parts</option>
+                        <option value="oz">oz</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ingredients</h4>
+                <div id="scale-ingredients-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+            <div id="scale-thinner-area" class="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800 hidden">
+                <span class="font-bold">💧 Thinner Calculation:</span>
+                <p id="scale-thinner-result" class="mt-1"></p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
+    let currentScaleRecipe = null;
+
+    function openScaleModal(button) {
+        currentScaleRecipe = JSON.parse(button.getAttribute('data-recipe'));
+        document.getElementById('scale-recipe-name').textContent = currentScaleRecipe.name;
+        document.getElementById('scale-volume').value = 10; // Default target
+        
+        calculateScaledRecipe();
+
+        document.getElementById('scaleModal').classList.remove('hidden');
+        document.getElementById('scaleModal').style.display = 'flex';
+    }
+
+    function closeScaleModal() {
+        document.getElementById('scaleModal').classList.add('hidden');
+        document.getElementById('scaleModal').style.display = 'none';
+        currentScaleRecipe = null;
+    }
+
+    function calculateScaledRecipe() {
+        if (!currentScaleRecipe) return;
+        
+        const volume = parseFloat(document.getElementById('scale-volume').value) || 0;
+        const unit = document.getElementById('scale-unit').value;
+        const listContainer = document.getElementById('scale-ingredients-list');
+        listContainer.innerHTML = '';
+
+        if (volume <= 0) return;
+
+        // Render scaled quantities
+        currentScaleRecipe.items.forEach(item => {
+            const calculatedQty = ((item.percentage / 100) * volume).toFixed(2);
+            const row = document.createElement('div');
+            row.className = 'flex justify-between items-center text-sm border-b pb-1 border-gray-100';
+            row.innerHTML = `
+                <span class="text-gray-700 font-medium">${item.paint_name || 'Unknown Paint'}</span>
+                <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-800 font-semibold">${calculatedQty} ${unit} <span class="text-xs text-gray-400">(${item.percentage}%)</span></span>
+            `;
+            listContainer.appendChild(row);
+        });
+
+        // Parse Thinner Ratios (e.g. "1:1", "1:1.5", "1:2")
+        const thinnerArea = document.getElementById('scale-thinner-area');
+        const thinnerRatioStr = currentScaleRecipe.thinner_ratio;
+        
+        if (thinnerRatioStr && thinnerRatioStr.trim() !== '') {
+            thinnerArea.classList.remove('hidden');
+            const ratioPattern = /([0-9.]+):([0-9.]+)/;
+            const match = thinnerRatioStr.match(ratioPattern);
+            
+            if (match) {
+                const paintRatio = parseFloat(match[1]);
+                const thinnerRatio = parseFloat(match[2]);
+                if (paintRatio > 0) {
+                    const multiplier = thinnerRatio / paintRatio;
+                    const calculatedThinner = (volume * multiplier).toFixed(2);
+                    document.getElementById('scale-thinner-result').innerHTML = 
+                        `Using a <strong>${thinnerRatioStr}</strong> ratio, add <strong>${calculatedThinner} ${unit}</strong> of thinner for a total mix of <strong>${(volume + parseFloat(calculatedThinner)).toFixed(2)} ${unit}</strong>.`;
+                }
+            } else {
+                // Fallback if not standard numbers
+                document.getElementById('scale-thinner-result').innerHTML = 
+                    `Thinner ratio is set to <strong>${thinnerRatioStr}</strong>. Scale manually as needed.`;
+            }
+        } else {
+            thinnerArea.classList.add('hidden');
+        }
+    }
+
     const paintOptionsHTML = `
         <option value="">-- Select Paint --</option>
         <?php foreach($paint_dropdown as $p): ?>

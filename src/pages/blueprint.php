@@ -1812,7 +1812,7 @@ $all_recipes = get_recipes($conn);
                 let norm = (accumulatedData[i] - minVal) / (maxVal - minVal + 1e-5);
                 norm = Math.pow(norm, gamma);
                 
-                let val = Math.floor((1.0 - norm) * 255); // Inverted output to fix black bg / white lines
+                let val = Math.floor(norm * 255); // Reverted output to keep white bg / black lines
                 
                 fImgData.data[i * 4] = val;
                 fImgData.data[i * 4 + 1] = val;

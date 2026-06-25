@@ -171,3 +171,62 @@ function calculate_tool_stats($tools) {
 
     return $stats;
 }
+
+function generate_tool_log_id(): string {
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40); // Version 4
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80); // Variant 1
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
+}
+
+function get_tool_by_id($conn, $id) {
+    $stmt = $conn->prepare("SELECT * FROM vw_tool_inventory WHERE actualid = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
+function get_tool_logs($conn, $tool_id) {
+    $sql = "SELECT tl.*, bp.name as kit_name, bp.inventory_id
+            FROM tool_log tl
+            LEFT JOIN vw_kit_backlog_plan bp ON tl.backlogid = bp.actualid
+            WHERE tl.toolid = ?
+            ORDER BY tl.log_date DESC, tl.logid DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $tool_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function add_tool_log($conn, $data) {
+    $logid = generate_tool_log_id();
+    $toolid = (int)$data['toolid'];
+    $log_type = $data['log_type'];
+    $log_date = !empty($data['log_date']) ? $data['log_date'] : date('Y-m-d');
+    $notes = !empty($data['notes']) ? $data['notes'] : null;
+    $backlogid = !empty($data['backlogid']) ? (int)$data['backlogid'] : null;
+    $imagepath = !empty($data['imagepath']) ? $data['imagepath'] : null;
+
+    $stmt = $conn->prepare(
+        "INSERT INTO tool_log (logid, toolid, log_type, log_date, notes, imagepath, backlogid) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    $stmt->bind_param("sisssss", $logid, $toolid, $log_type, $log_date, $notes, $imagepath, $backlogid);
+    return $stmt->execute();
+}
+
+function delete_tool_log($conn, $log_id) {
+    $stmt = $conn->prepare("SELECT imagepath FROM tool_log WHERE logid = ?");
+    $stmt->bind_param("s", $log_id);
+    $stmt->execute();
+    $old = $stmt->get_result()->fetch_assoc();
+
+    $stmt = $conn->prepare("DELETE FROM tool_log WHERE logid = ?");
+    $stmt->bind_param("s", $log_id);
+    $success = $stmt->execute();
+
+    if ($success && !empty($old['imagepath'])) {
+        delete_image_file($old['imagepath'], TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
+    }
+    return $success;
+}
