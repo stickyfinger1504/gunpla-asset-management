@@ -24,6 +24,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $action_success = update_kit($conn, $_POST);
         $msg_text = $action_success ? "✅ Kit updated successfully" : "❌ Error updating kit";
     }
+    elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'quick_start') {
+        $kit_id = (int)($_POST['kit_id'] ?? 0);
+        $kit_in_progress_id = get_category_id_by_label($conn, 'kitinventory', 'status', 'In Progress');
+        if ($kit_id && $kit_in_progress_id) {
+            $stmt = $conn->prepare("UPDATE kit_inventory SET status = ? WHERE inventoryid = ?");
+            $stmt->bind_param("ii", $kit_in_progress_id, $kit_id);
+            $action_success = $stmt->execute();
+
+            $chk = $conn->prepare("SELECT backlogid FROM kit_backlog_plan WHERE inventoryid = ? LIMIT 1");
+            $chk->bind_param("i", $kit_id);
+            $chk->execute();
+            $bp_in_progress = get_category_id_by_label($conn, 'backlogplan', 'status', 'In Progress');
+            if ($chk->get_result()->num_rows === 0) {
+                $default_bp_id = get_category_id_by_label($conn, 'backlogplan', 'buildplan', 'Clean Build');
+                if ($default_bp_id && $bp_in_progress) {
+                    $ins_bp = $conn->prepare("INSERT INTO kit_backlog_plan (inventoryid, buildplanid, status, notes) VALUES (?, ?, ?, 'Started from Workbench Hub')");
+                    $ins_bp->bind_param("iii", $kit_id, $default_bp_id, $bp_in_progress);
+                    $ins_bp->execute();
+                }
+            } else {
+                if ($bp_in_progress) {
+                    $upd_bp = $conn->prepare("UPDATE kit_backlog_plan SET status = ? WHERE inventoryid = ?");
+                    $upd_bp->bind_param("ii", $bp_in_progress, $kit_id);
+                    $upd_bp->execute();
+                }
+            }
+            $msg_text = $action_success ? "🚀 Build started! Kit is now on your cutting mat." : "❌ Error starting build";
+        }
+    }
+    elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'quick_finish') {
+        $kit_id = (int)($_POST['kit_id'] ?? 0);
+        $kit_done_id = get_category_id_by_label($conn, 'kitinventory', 'status', 'Done');
+        if ($kit_id && $kit_done_id) {
+            $stmt = $conn->prepare("UPDATE kit_inventory SET status = ? WHERE inventoryid = ?");
+            $stmt->bind_param("ii", $kit_done_id, $kit_id);
+            $action_success = $stmt->execute();
+
+            $bp_in_progress = get_category_id_by_label($conn, 'backlogplan', 'status', 'In Progress');
+            $bp_done = get_category_id_by_label($conn, 'backlogplan', 'status', 'Done');
+            if ($bp_in_progress && $bp_done) {
+                $upd_bp = $conn->prepare("UPDATE kit_backlog_plan SET status = ? WHERE inventoryid = ? AND status = ?");
+                $upd_bp->bind_param("iii", $bp_done, $kit_id, $bp_in_progress);
+                $upd_bp->execute();
+            }
+            $msg_text = $action_success ? "🎉 Congratulations! Kit marked as Done!" : "❌ Error updating kit";
+        }
+    }
 
     if (isset($msg_text)) {
         set_flash_message($msg_text);
@@ -40,9 +87,69 @@ $kits = get_kit_inventory($conn, $_GET);
 
 $stats = calculate_kit_stats($kits);
 
-
 $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empty($_GET['filter_status']);
 
+// Status ID mapping for dynamic color theme alignment with table badges
+$status_map = [];
+foreach ($statuses as $st) {
+    $status_map[strtolower(trim($st['label']))] = (int)$st['id'];
+}
+$in_progress_id = $status_map['in progress'] ?? null;
+$not_started_id = $status_map['not started'] ?? null;
+$straight_build_id = $status_map['straight build'] ?? null;
+
+if (!function_exists('get_palette_theme')) {
+    function get_palette_theme($palette_class) {
+        if (preg_match('/bg-([a-z]+)-100/', $palette_class, $m)) {
+            $color = $m[1];
+            return [
+                'color' => $color,
+                'badge' => $palette_class,
+                'border' => "border-{$color}-300",
+                'bg_gradient' => "from-white to-{$color}-50/40",
+                'bg_tint' => "bg-{$color}-50",
+                'divider' => "border-{$color}-100",
+                'pulse' => "bg-{$color}-500",
+                'button' => "bg-{$color}-600 hover:bg-{$color}-700 text-white",
+                'text' => "text-{$color}-800"
+            ];
+        }
+        return [
+            'color' => 'blue',
+            'badge' => 'bg-blue-100 text-blue-800',
+            'border' => 'border-blue-300',
+            'bg_gradient' => 'from-white to-blue-50/40',
+            'bg_tint' => 'bg-blue-50',
+            'divider' => 'border-blue-100',
+            'pulse' => 'bg-blue-500',
+            'button' => 'bg-blue-600 hover:bg-blue-700 text-white',
+            'text' => 'text-blue-800'
+        ];
+    }
+}
+
+$in_progress_theme = get_palette_theme(get_brand_color_palette($in_progress_id));
+$not_started_theme = get_palette_theme(get_brand_color_palette($not_started_id));
+$straight_build_palette = $straight_build_id ? get_brand_color_palette($straight_build_id) : 'bg-lime-100 text-lime-800';
+
+// Resolve Workbench Hub datasets
+$all_kits = $has_filters ? get_kit_inventory($conn) : $kits;
+$in_progress_kits = array_values(array_filter($all_kits, fn($k) => strtolower(trim($k['status'] ?? '')) === 'in progress'));
+$not_started_kits = array_values(array_filter($all_kits, fn($k) => strtolower(trim($k['status'] ?? '')) === 'not started'));
+$straight_build_kits = array_values(array_filter($all_kits, fn($k) => strtolower(trim($k['status'] ?? '')) === 'straight build'));
+
+$active_kit = !empty($in_progress_kits) ? $in_progress_kits[0] : null;
+$active_backlog = null;
+if ($active_kit) {
+    $b_stmt = $conn->prepare("SELECT b.backlogid, b.status, c.label as buildplan_label FROM kit_backlog_plan b LEFT JOIN dim_category c ON b.buildplanid = c.id WHERE b.inventoryid = ? ORDER BY b.backlogid DESC LIMIT 1");
+    $b_stmt->bind_param("i", $active_kit['actualid']);
+    $b_stmt->execute();
+    $b_res = $b_stmt->get_result();
+    if ($b_res && $b_row = $b_res->fetch_assoc()) {
+        $active_backlog = $b_row;
+    }
+}
+$next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
 ?>
 <?php include '../components/layout_header.php'; ?>
 
@@ -81,6 +188,195 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
                     $color = 'purple';
                     include '../components/stats/stat_card.php';
                     ?>
+                </div>
+            </div>
+
+            <!-- Workbench Hub -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <span>🛠️</span> Workbench Hub
+                    </h3>
+                    <span class="text-xs text-gray-500 font-medium hidden sm:inline">Active build workbench & backlog pipeline</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Panel 1: Currently on the Mat -->
+                    <div class="bg-gradient-to-br <?= $in_progress_theme['bg_gradient'] ?> border-2 <?= $in_progress_theme['border'] ?> rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold <?= $in_progress_theme['badge'] ?> border <?= $in_progress_theme['border'] ?>">
+                                    <span class="w-2 h-2 rounded-full <?= $in_progress_theme['pulse'] ?> animate-pulse"></span>
+                                    In Progress
+                                </span>
+                                <?php if ($active_kit && !empty($active_kit['datebought'])): ?>
+                                    <span class="text-xs text-gray-500 font-mono">Bought: <?= date('M d, Y', strtotime($active_kit['datebought'])) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if ($active_kit): ?>
+                                <div class="mb-4">
+                                    <h4 class="text-lg font-bold text-gray-900 leading-snug">
+                                        <a href="/kit/<?= $active_kit['actualid'] ?>" class="hover:text-blue-600 transition-colors">
+                                            <?= htmlspecialchars($active_kit['name']) ?>
+                                        </a>
+                                    </h4>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full <?= get_brand_color_palette($active_kit['brandid']) ?>">
+                                            <?= htmlspecialchars($active_kit['brand']) ?>
+                                        </span>
+                                        <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= get_brand_color_palette($active_kit['statusid']) ?>">
+                                            <?= htmlspecialchars($active_kit['status']) ?>
+                                        </span>
+                                        <?php if ($active_backlog && !empty($active_backlog['buildplan_label'])): ?>
+                                            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                📋 <?= htmlspecialchars($active_backlog['buildplan_label']) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                        <?php if (count($in_progress_kits) > 1): ?>
+                                            <span class="text-xs font-medium <?= $in_progress_theme['text'] ?>">
+                                                +<?= count($in_progress_kits) - 1 ?> more active
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="py-6 text-center">
+                                    <div class="text-3xl mb-2">✂️</div>
+                                    <p class="text-sm font-semibold text-gray-700">The cutting mat is clear!</p>
+                                    <p class="text-xs text-gray-500 mt-1">Pick a kit from the queue on the right or your hangar to start building.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($active_kit): ?>
+                            <div class="pt-3 border-t <?= $in_progress_theme['divider'] ?> flex flex-wrap items-center justify-between gap-2 mt-auto">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <?php if ($active_backlog): ?>
+                                        <a href="/blueprint?backlogid=<?= $active_backlog['backlogid'] ?>" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition-colors">
+                                            📐 Blueprint
+                                        </a>
+                                        <a href="/build_progress?filter_backlog=<?= $active_backlog['backlogid'] ?>" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">
+                                            📝 Build Log
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="/backlog" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition-colors">
+                                            📋 Plan Build
+                                        </a>
+                                    <?php endif; ?>
+                                    <a href="/kit/<?= $active_kit['actualid'] ?>" 
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors font-medium">
+                                        Details →
+                                    </a>
+                                </div>
+                                
+                                <form method="POST" onsubmit="return confirm('Complete this build? Marking as Done will update its status across the hangar and backlog.');">
+                                    <input type="hidden" name="action_type" value="quick_finish">
+                                    <input type="hidden" name="kit_id" value="<?= $active_kit['actualid'] ?>">
+                                    <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 border border-emerald-300 rounded-lg transition-all shadow-2xs">
+                                        ✅ Finish Build
+                                    </button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Panel 2: Next in Queue & Backlog Randomizer -->
+                    <div id="queue-panel" class="bg-gradient-to-br <?= $not_started_theme['bg_gradient'] ?> border-2 <?= $not_started_theme['border'] ?> rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span id="queue-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold <?= $not_started_theme['badge'] ?> border <?= $not_started_theme['border'] ?>">
+                                    📦 Next Off the Shelf
+                                </span>
+                                <label class="inline-flex items-center gap-1.5 text-xs text-gray-700 font-medium cursor-pointer select-none bg-white/80 hover:bg-white px-2.5 py-1 rounded-full border border-gray-200 shadow-2xs transition-colors">
+                                    <input type="checkbox" id="toggle-include-straight" onchange="toggleIncludeStraight(this.checked)" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                    <span>+ Straight Builds (<?= count($straight_build_kits) ?>)</span>
+                                </label>
+                            </div>
+                            <span id="queue-count-text" class="text-xs <?= $not_started_theme['text'] ?> font-medium mb-3 block">
+                                <?= count($not_started_kits) ?> unbuilt waiting
+                            </span>
+
+                            <div id="queue-kit-container">
+                                <?php if ($next_kit): ?>
+                                    <div class="mb-4">
+                                        <h4 class="text-lg font-bold text-gray-900 leading-snug">
+                                            <a id="queue-kit-link" href="/kit/<?= $next_kit['actualid'] ?>" class="hover:text-blue-600 transition-colors">
+                                                <?= htmlspecialchars($next_kit['name']) ?>
+                                            </a>
+                                        </h4>
+                                        <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full <?= get_brand_color_palette($next_kit['brandid']) ?>">
+                                                <?= htmlspecialchars($next_kit['brand']) ?>
+                                            </span>
+                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= get_brand_color_palette($next_kit['statusid']) ?>">
+                                                <?= htmlspecialchars($next_kit['status']) ?>
+                                            </span>
+                                            <?php if (!empty($next_kit['pricebought'])): ?>
+                                                <span class="text-xs text-gray-500 font-mono">
+                                                    <?= format_currency($next_kit['pricebought']) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="py-6 text-center">
+                                        <div class="text-3xl mb-2">🎉</div>
+                                        <p class="text-sm font-semibold text-gray-700">Zero Backlog Left!</p>
+                                        <p class="text-xs text-gray-500 mt-1">Every kit in your hangar has been started or completed.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t <?= $not_started_theme['divider'] ?> flex flex-wrap items-center justify-between gap-2 mt-auto">
+                            <form id="queue-start-form" method="POST" <?= !$next_kit ? 'style="display:none;"' : '' ?>>
+                                <input type="hidden" name="action_type" value="quick_start">
+                                <input type="hidden" name="kit_id" id="queue-form-kit-id" value="<?= $next_kit ? $next_kit['actualid'] : '' ?>">
+                                <button id="queue-start-btn" type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-300 rounded-lg transition-all shadow-2xs">
+                                    🚀 Start This Build
+                                </button>
+                            </form>
+
+                            <button id="queue-random-btn" type="button" onclick="rollRandomKit()" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors shadow-2xs ml-auto"
+                                    <?= (count($not_started_kits) <= 1 && count($straight_build_kits) === 0) ? 'style="display:none;"' : '' ?>>
+                                🎲 Pick Random Kit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Random Roll Modal -->
+            <div id="random-roll-modal" style="display:none;" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl transform transition-all border border-gray-100">
+                    <div class="text-4xl mb-2" id="roll-dice-icon">🎲</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-1" id="roll-modal-title">Choosing Next Build...</h3>
+                    <p class="text-xs text-gray-500 mb-4" id="roll-modal-subtitle">Cycling through available kits</p>
+                    
+                    <div id="roll-result-card" class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-5 min-h-[100px] flex flex-col justify-center items-center">
+                        <h4 id="roll-kit-name" class="text-lg font-bold text-gray-800 leading-snug animate-pulse">Rolling...</h4>
+                        <div id="roll-kit-badges" class="flex flex-wrap items-center gap-1.5 mt-2">
+                            <span class="text-xs text-gray-500 font-medium">Please wait...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeRollModal()" class="flex-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                            Close
+                        </button>
+                        <form id="roll-start-form" method="POST" class="flex-1" style="display:none;">
+                            <input type="hidden" name="action_type" value="quick_start">
+                            <input type="hidden" name="kit_id" id="roll-kit-id" value="">
+                            <button type="submit" id="roll-submit-btn" class="w-full px-4 py-2 text-sm font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-300 rounded-lg transition-all shadow-2xs">
+                                🚀 Build This!
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -340,6 +636,168 @@ $has_filters = !empty($_GET['filter_brand']) || !empty($_GET['search']) || !empt
             document.getElementById('editModal').classList.remove('hidden');
             document.getElementById('editModal').style.display = 'flex'; 
         }
+
+        const notStartedKits = <?= json_encode(array_values(array_map(fn($k) => [
+            'actualid' => $k['actualid'],
+            'name' => $k['name'],
+            'brand' => $k['brand'],
+            'brand_badge' => get_brand_color_palette($k['brandid']),
+            'status' => $k['status'],
+            'status_badge' => get_brand_color_palette($k['statusid']),
+            'pricebought' => $k['pricebought']
+        ], $not_started_kits)), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+        const straightBuildKits = <?= json_encode(array_values(array_map(fn($k) => [
+            'actualid' => $k['actualid'],
+            'name' => $k['name'],
+            'brand' => $k['brand'],
+            'brand_badge' => get_brand_color_palette($k['brandid']),
+            'status' => $k['status'],
+            'status_badge' => get_brand_color_palette($k['statusid']),
+            'pricebought' => $k['pricebought']
+        ], $straight_build_kits)), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+        let currentIncludeStraight = false;
+
+        function getActiveQueuePool() {
+            return currentIncludeStraight ? [...notStartedKits, ...straightBuildKits] : notStartedKits;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function updateQueueDisplay() {
+            const pool = getActiveQueuePool();
+            const countEl = document.getElementById('queue-count-text');
+            const container = document.getElementById('queue-kit-container');
+            const form = document.getElementById('queue-start-form');
+            const formKitId = document.getElementById('queue-form-kit-id');
+            const startBtn = document.getElementById('queue-start-btn');
+            const randomBtn = document.getElementById('queue-random-btn');
+
+            if (countEl) {
+                if (currentIncludeStraight) {
+                    countEl.textContent = `${pool.length} kits in queue (${notStartedKits.length} unbuilt, ${straightBuildKits.length} straight builds)`;
+                } else {
+                    countEl.textContent = `${notStartedKits.length} unbuilt waiting`;
+                }
+            }
+
+            if (randomBtn) {
+                randomBtn.style.display = pool.length > 1 ? 'inline-flex' : 'none';
+            }
+
+            if (pool.length === 0) {
+                if (container) {
+                    container.innerHTML = `
+                        <div class="py-6 text-center">
+                            <div class="text-3xl mb-2">🎉</div>
+                            <p class="text-sm font-semibold text-gray-700">Zero Kits in Queue!</p>
+                            <p class="text-xs text-gray-500 mt-1">${currentIncludeStraight ? 'Every kit in your hangar has been completed or is already in progress.' : 'Every unbuilt kit has been started! Toggle "Include Straight Builds" above to customize built kits.'}</p>
+                        </div>`;
+                }
+                if (form) form.style.display = 'none';
+            } else {
+                const item = pool[0];
+                if (container) {
+                    const priceText = item.pricebought ? (typeof ChartConfig !== 'undefined' ? ChartConfig.formatCurrency(item.pricebought) : '$' + item.pricebought) : '';
+                    container.innerHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-lg font-bold text-gray-900 leading-snug">
+                                <a id="queue-kit-link" href="/kit/${item.actualid}" class="hover:text-blue-600 transition-colors">
+                                    ${escapeHtml(item.name)}
+                                </a>
+                            </h4>
+                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full ${item.brand_badge}">
+                                    ${escapeHtml(item.brand)}
+                                </span>
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full ${item.status_badge}">
+                                    ${escapeHtml(item.status)}
+                                </span>
+                                ${priceText ? `<span class="text-xs text-gray-500 font-mono">${priceText}</span>` : ''}
+                            </div>
+                        </div>`;
+                }
+                if (form && formKitId) {
+                    form.style.display = 'block';
+                    formKitId.value = item.actualid;
+                    if (startBtn) {
+                        startBtn.innerHTML = (item.status && item.status.toLowerCase().includes('straight')) ? '🎨 Customize This Build' : '🚀 Start This Build';
+                    }
+                }
+            }
+        }
+
+        function toggleIncludeStraight(include) {
+            currentIncludeStraight = !!include;
+            try {
+                localStorage.setItem('gunpla_include_straight_builds', currentIncludeStraight ? 'true' : 'false');
+            } catch(e) {}
+            updateQueueDisplay();
+        }
+
+        function rollRandomKit() {
+            const pool = getActiveQueuePool();
+            if (!pool || pool.length === 0) return;
+            const modal = document.getElementById('random-roll-modal');
+            const nameEl = document.getElementById('roll-kit-name');
+            const badgesEl = document.getElementById('roll-kit-badges');
+            const formEl = document.getElementById('roll-start-form');
+            const idInput = document.getElementById('roll-kit-id');
+            const submitBtn = document.getElementById('roll-submit-btn');
+            const titleEl = document.getElementById('roll-modal-title');
+            const subEl = document.getElementById('roll-modal-subtitle');
+            const diceEl = document.getElementById('roll-dice-icon');
+
+            modal.style.display = 'flex';
+            formEl.style.display = 'none';
+            nameEl.classList.add('animate-pulse');
+            titleEl.textContent = 'Choosing Next Build...';
+            subEl.textContent = currentIncludeStraight ? 'Cycling through unstarted & straight build kits' : 'Cycling through unstarted hangar kits';
+            diceEl.textContent = '🎲';
+
+            let count = 0;
+            const maxSteps = 16;
+            const interval = setInterval(() => {
+                const randIdx = Math.floor(Math.random() * pool.length);
+                const item = pool[randIdx];
+                nameEl.textContent = item.name;
+                badgesEl.innerHTML = `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${item.brand_badge}">${escapeHtml(item.brand)}</span> <span class="px-2 py-0.5 text-xs font-bold rounded-full ${item.status_badge}">${escapeHtml(item.status)}</span>`;
+                count++;
+
+                if (count >= maxSteps) {
+                    clearInterval(interval);
+                    nameEl.classList.remove('animate-pulse');
+                    titleEl.textContent = '🎉 Destiny Has Spoken!';
+                    subEl.textContent = 'Here is your next build challenge:';
+                    diceEl.textContent = '✨';
+                    idInput.value = item.actualid;
+                    if (submitBtn) {
+                        submitBtn.textContent = (item.status && item.status.toLowerCase().includes('straight')) ? '🎨 Customize This Build!' : '🚀 Build This!';
+                    }
+                    formEl.style.display = 'block';
+                }
+            }, 80);
+        }
+
+        function closeRollModal() {
+            document.getElementById('random-roll-modal').style.display = 'none';
+        }
+
+        // Initialize saved preference
+        try {
+            const savedPref = localStorage.getItem('gunpla_include_straight_builds') === 'true';
+            const chk = document.getElementById('toggle-include-straight');
+            if (chk && savedPref) {
+                chk.checked = true;
+                currentIncludeStraight = true;
+                updateQueueDisplay();
+            }
+        } catch(e) {}
     </script>
 
     <script>initScrollRestore('inventory_scroll');</script>
