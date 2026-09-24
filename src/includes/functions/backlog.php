@@ -9,10 +9,14 @@ function get_backlog_items($conn, $filters = []) {
     $types = "";
     
     if (!empty($filters['search'])) {
-        $search = '%' . $filters['search'] . '%';
-        $sql .= " AND (name LIKE ? OR actualid LIKE ?)";
-        $params[] = $search; $params[] = $search;
-        $types .= "ss";
+        $search = '%' . trim($filters['search']) . '%';
+        $rawNum = is_numeric(trim($filters['search'])) ? (int)trim($filters['search']) : 0;
+        $sql .= " AND (name LIKE ? OR backlogid LIKE ? OR inventory_id LIKE ? OR actualid = ?)";
+        $params[] = $search;
+        $params[] = $search;
+        $params[] = $search;
+        $params[] = $rawNum;
+        $types .= "sssi";
     }
     
     if (!empty($filters['filter_status'])) {

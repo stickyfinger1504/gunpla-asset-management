@@ -33,8 +33,8 @@ $all_recipes = get_recipes($conn);
         body { margin: 0; overflow: hidden; background: #f3f4f6; font-family: sans-serif; }
         #desktop-ui { display: flex; flex-direction: column; height: 100vh; }
         #mobile-warning { display: none; text-align: center; padding: 50px; font-size: 1.5rem; color: #374151; }
-        #canvas-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #e5e7eb; overflow: hidden; }
-        .canvas-container { background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        #canvas-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #e5e7eb; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+        .canvas-container { background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: none; user-select: none; -webkit-user-select: none; }
         .canvas-container.show-grid {
             background-image: radial-gradient(#9ca3af 1.5px, transparent 1.5px);
             background-size: 24px 24px;
@@ -73,28 +73,30 @@ $all_recipes = get_recipes($conn);
             <a href="/backlog" class="btn" style="background:#4b5563;">⬅ Back</a>
         </div>
         <div class="tool-group">
-            <button class="btn" id="btn-select">↖️ Select</button>
-            <button class="btn" id="btn-lasso" style="background:#f97316;">✂️ Lasso Snip</button>
-            <button class="btn" id="btn-draw">🖌️ Free Draw</button>
-            <button class="btn" id="btn-arrow">↗️ Arrow</button>
-            <button class="btn" id="btn-text">📝 Text</button>
-            <button class="btn" style="background:#eab308; color:black;" id="btn-sticky">🟨 Sticky</button>
+            <button class="btn" id="btn-select" title="Select Tool (V)">↖️ Select</button>
+            <button class="btn" id="btn-pan" title="Pan Tool (H)">✋ Pan</button>
+            <button class="btn" id="btn-lasso" style="background:#f97316;" title="Lasso Snip (L)">✂️ Lasso Snip</button>
+            <button class="btn" id="btn-draw" title="Free Draw / Brush (B)">🖌️ Free Draw</button>
+            <button class="btn" id="btn-arrow" title="Arrow Tool (A)">↗️ Arrow</button>
+            <button class="btn" id="btn-text" title="Text Tool (T)">📝 Text</button>
+            <button class="btn" style="background:#eab308; color:black;" id="btn-sticky" title="Sticky Note (S)">🟨 Sticky</button>
         </div>
         <div class="tool-group">
-            <button class="btn" id="btn-rect">🟦 Box</button>
-            <button class="btn" id="btn-circle">🔵 Circle</button>
+            <button class="btn" id="btn-rect" title="Rectangle Box (R)">🟦 Box</button>
+            <button class="btn" id="btn-circle" title="Circle (C)">🔵 Circle</button>
             <button class="btn" id="btn-triangle">🔺 Triangle</button>
         </div>
         <div class="tool-group">
             <input type="color" id="brush-color" value="#000000" class="h-8 w-10 border-0 cursor-pointer" title="Brush Color">
             <input type="range" id="brush-size" min="1" max="50" value="5" class="w-24 cursor-pointer" title="Brush Size">
+            <span id="brush-size-val" class="text-xs text-gray-200 font-mono w-7 text-center">5px</span>
             <label class="text-white text-sm ml-2 flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" id="fill-toggle" checked> Fill
             </label>
         </div>
         <div class="tool-group">
             <button class="btn" id="btn-image" style="background:#8b5cf6;">🖼️ Attach Image</button>
-            <button class="btn" id="btn-paint-plan" style="background:#ec4899;">🎨 Paint Plan</button>
+            <button class="btn" id="btn-paint-plan" style="background:#ec4899;" title="Paint Plan Sidebar (P)">🎨 Paint Plan</button>
             <input type="file" id="image-upload" accept="image/*" style="display:none;">
             <button class="btn" id="btn-lineart" style="background:#ec4899;">🪄 Generate Lineart (beta)</button>
         </div>
@@ -109,17 +111,18 @@ $all_recipes = get_recipes($conn);
             <button class="btn" id="btn-text-strike" style="text-decoration:line-through;">S</button>
         </div>
         <div class="tool-group">
-            <button class="btn" id="btn-forward" title="Bring Forward">⏫</button>
-            <button class="btn" id="btn-backward" title="Send Backward">⏬</button>
-            <button class="btn" id="btn-grid" title="Toggle Grid">🎛️ Grid</button>
-            <button class="btn danger" id="btn-delete">🗑️ Delete</button>
+            <button class="btn" id="btn-forward" title="Bring Forward (])">⏫</button>
+            <button class="btn" id="btn-backward" title="Send Backward ([)">⏬</button>
+            <button class="btn" id="btn-lock" style="background:#4b5563;" title="Lock/Unlock Object">🔒 Lock</button>
+            <button class="btn" id="btn-grid" title="Toggle Grid (G)">🎛️ Grid</button>
+            <button class="btn danger" id="btn-delete" title="Delete Selected (Del / Backspace)">🗑️ Delete</button>
         </div>
         <div class="tool-group" style="margin-left: auto;">
-            <button class="btn" id="btn-undo" title="Ctrl+Z">↩️</button>
-            <button class="btn" id="btn-redo" title="Ctrl+Y">↪️</button>
+            <button class="btn" id="btn-undo" title="Undo (Ctrl+Z)">↩️</button>
+            <button class="btn" id="btn-redo" title="Redo (Ctrl+Y)">↪️</button>
             <button class="btn danger" id="btn-clear">💣 Clear</button>
             <button class="btn" id="btn-download" style="background:#14b8a6;">⬇️ PNG</button>
-            <button class="btn save" id="btn-save">💾 Save Blueprint</button>
+            <button class="btn save" id="btn-save" title="Save Blueprint (Ctrl+S)">💾 Save Blueprint</button>
         </div>
     </div>
 
@@ -237,7 +240,8 @@ $all_recipes = get_recipes($conn);
         height: container.clientHeight - 40,
         isDrawingMode: false,
         backgroundColor: '',
-        fireMiddleClick: true,
+        fireRightClick: true,
+        stopContextMenu: true,
         preserveObjectStacking: true
     });
 
@@ -278,9 +282,240 @@ $all_recipes = get_recipes($conn);
                 lastSavedHistoryIndex = -1; // Last saved state is overwritten
             }
         }
-        history.push(JSON.stringify(canvas));
+        history.push(JSON.stringify(canvas.toJSON(['isArrow', 'isLocked'])));
         historyIndex++;
         checkUnsavedChanges();
+    }
+
+    // Ensure custom properties are included in serialization
+    fabric.Object.prototype.toObject = (function(toObject) {
+        return function(propertiesToInclude) {
+            return toObject.call(this, (propertiesToInclude || []).concat(['isArrow', 'isLocked']));
+        };
+    })(fabric.Object.prototype.toObject);
+
+    // Specifically ensure fabric.Line preserves isArrow and canvas endpoint coordinates
+    fabric.Line.prototype.toObject = (function(toObject) {
+        return function(propertiesToInclude) {
+            const obj = toObject.call(this, (propertiesToInclude || []).concat(['isArrow', 'isLocked']));
+            if (this.isArrow) {
+                obj.isArrow = true;
+                obj.x1 = this.x1;
+                obj.y1 = this.y1;
+                obj.x2 = this.x2;
+                obj.y2 = this.y2;
+                obj.left = this.left;
+                obj.top = this.top;
+                obj.width = this.width;
+                obj.height = this.height;
+                obj.scaleX = 1;
+                obj.scaleY = 1;
+                obj.angle = 0;
+            }
+            return obj;
+        };
+    })(fabric.Line.prototype.toObject);
+
+    // --- Arrow Point Controls & Rendering ---
+    function syncArrowPoints(line) {
+        if (!line || !line.isArrow) return;
+        if (line.group) {
+            const matrix = line.calcTransformMatrix();
+            const halfW = (line.x2 - line.x1) / 2;
+            const halfH = (line.y2 - line.y1) / 2;
+            const p1 = fabric.util.transformPoint({ x: -halfW, y: -halfH }, matrix);
+            const p2 = fabric.util.transformPoint({ x: halfW, y: halfH }, matrix);
+            line.x1 = p1.x;
+            line.y1 = p1.y;
+            line.x2 = p2.x;
+            line.y2 = p2.y;
+            line.left = (line.x1 + line.x2) / 2;
+            line.top = (line.y1 + line.y2) / 2;
+            line.width = Math.max(1, Math.abs(line.x2 - line.x1));
+            line.height = Math.max(1, Math.abs(line.y2 - line.y1));
+        } else {
+            const currentCenterX = (line.x1 + line.x2) / 2;
+            const currentCenterY = (line.y1 + line.y2) / 2;
+            const dx = line.left - currentCenterX;
+            const dy = line.top - currentCenterY;
+            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+                line.x1 += dx;
+                line.x2 += dx;
+                line.y1 += dy;
+                line.y2 += dy;
+            }
+        }
+        line.scaleX = 1;
+        line.scaleY = 1;
+        line.angle = 0;
+        line.setCoords();
+    }
+
+    function arrowControlPosition(pointIndex) {
+        return function(dim, finalMatrix, fabricObject) {
+            const c = fabricObject.canvas || canvas;
+            const vpt = c ? c.viewportTransform : [1, 0, 0, 1, 0, 0];
+            const pt = pointIndex === 0
+                ? { x: fabricObject.x1, y: fabricObject.y1 }
+                : { x: fabricObject.x2, y: fabricObject.y2 };
+            return fabric.util.transformPoint(pt, vpt);
+        };
+    }
+
+    function arrowControlAction(pointIndex) {
+        return function(eventData, transform, x, y) {
+            const line = transform.target;
+            if (pointIndex === 0) {
+                line.x1 = x;
+                line.y1 = y;
+            } else {
+                line.x2 = x;
+                line.y2 = y;
+            }
+            const x1 = line.x1, y1 = line.y1, x2 = line.x2, y2 = line.y2;
+            line.left = (x1 + x2) / 2;
+            line.top = (y1 + y2) / 2;
+            line.width = Math.max(1, Math.abs(x2 - x1));
+            line.height = Math.max(1, Math.abs(y2 - y1));
+            line.scaleX = 1;
+            line.scaleY = 1;
+            line.angle = 0;
+            line.setCoords();
+            return true;
+        };
+    }
+
+    function renderArrow(ctx) {
+        // Local coordinates relative to object center (this.left, this.top)
+        const p1 = { x: this.x1 - this.left, y: this.y1 - this.top };
+        const p2 = { x: this.x2 - this.left, y: this.y2 - this.top };
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 1) return;
+
+        const angle = Math.atan2(dy, dx);
+        const headLength = Math.max(14, Math.min(32, this.strokeWidth * 3.5));
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        const shaftEndX = p2.x - Math.cos(angle) * (headLength * 0.6);
+        const shaftEndY = p2.y - Math.sin(angle) * (headLength * 0.6);
+        ctx.lineTo(shaftEndX, shaftEndY);
+        ctx.lineWidth = this.strokeWidth;
+        ctx.strokeStyle = this.stroke;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        ctx.translate(p2.x, p2.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-headLength, -headLength * 0.45);
+        ctx.lineTo(-headLength * 0.7, 0);
+        ctx.lineTo(-headLength, headLength * 0.45);
+        ctx.closePath();
+        ctx.fillStyle = this.stroke;
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function makeArrow(line) {
+        line.isArrow = true;
+        line.hasBorders = false;
+        line.padding = 10;
+        line.lockScalingX = true;
+        line.lockScalingY = true;
+        line.lockRotation = true;
+        line.objectCaching = false;
+        line.originX = 'center';
+        line.originY = 'center';
+        line._render = renderArrow;
+        
+        line.on('moving', function() {
+            syncArrowPoints(this);
+        });
+
+        line.controls = {
+            p1: new fabric.Control({
+                pointIndex: 0,
+                actionName: 'dragEndpoint',
+                cursorStyle: 'crosshair',
+                positionHandler: arrowControlPosition(0),
+                actionHandler: arrowControlAction(0),
+                render: function(ctx, left, top) {
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(left, top, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }),
+            p2: new fabric.Control({
+                pointIndex: 1,
+                actionName: 'dragEndpoint',
+                cursorStyle: 'crosshair',
+                positionHandler: arrowControlPosition(1),
+                actionHandler: arrowControlAction(1),
+                render: function(ctx, left, top) {
+                    ctx.save();
+                    ctx.fillStyle = '#2563eb';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(left, top, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            })
+        };
+        return line;
+    }
+
+    // --- Rehydrate custom object behaviors ---
+    function rehydrateCanvasObjects() {
+        canvas.getObjects().forEach(obj => {
+            if (obj.isArrow || (obj.type === 'line' && obj.isArrow)) {
+                // Legacy relative coordinate migration check
+                if (Math.abs((obj.x1 + obj.x2) / 2) < 0.1 && (obj.left !== 0 || obj.top !== 0)) {
+                    obj.x1 += obj.left;
+                    obj.y1 += obj.top;
+                    obj.x2 += obj.left;
+                    obj.y2 += obj.top;
+                }
+                obj.set({
+                    left: (obj.x1 + obj.x2) / 2,
+                    top: (obj.y1 + obj.y2) / 2,
+                    width: Math.max(1, Math.abs(obj.x2 - obj.x1)),
+                    height: Math.max(1, Math.abs(obj.y2 - obj.y1)),
+                    scaleX: 1,
+                    scaleY: 1,
+                    angle: 0,
+                    objectCaching: false,
+                    dirty: true
+                });
+                makeArrow(obj);
+                obj.setCoords();
+            }
+            if (obj.isLocked) {
+                obj.set({
+                    lockMovementX: true,
+                    lockMovementY: true,
+                    lockRotation: true,
+                    lockScalingX: true,
+                    lockScalingY: true,
+                    lockUniScaling: true,
+                    hasControls: false
+                });
+            }
+        });
+        canvas.requestRenderAll();
     }
 
     function undo() {
@@ -288,6 +523,7 @@ $all_recipes = get_recipes($conn);
             isHistoryProcessing = true;
             historyIndex--;
             canvas.loadFromJSON(history[historyIndex], () => {
+                rehydrateCanvasObjects();
                 canvas.renderAll();
                 isHistoryProcessing = false;
                 checkUnsavedChanges();
@@ -300,6 +536,7 @@ $all_recipes = get_recipes($conn);
             isHistoryProcessing = true;
             historyIndex++;
             canvas.loadFromJSON(history[historyIndex], () => {
+                rehydrateCanvasObjects();
                 canvas.renderAll();
                 isHistoryProcessing = false;
                 checkUnsavedChanges();
@@ -311,8 +548,218 @@ $all_recipes = get_recipes($conn);
     document.getElementById('btn-redo').onclick = redo;
 
     canvas.on('object:added', saveHistory);
-    canvas.on('object:modified', saveHistory);
+    canvas.on('object:modified', function(e) {
+        if (e.target) {
+            if (e.target.isArrow) {
+                syncArrowPoints(e.target);
+            } else if (e.target.type === 'activeSelection') {
+                e.target.forEachObject(function(obj) {
+                    if (obj.isArrow) syncArrowPoints(obj);
+                });
+            }
+        }
+        saveHistory();
+    });
     canvas.on('object:removed', saveHistory);
+
+    // --- Object Locking Logic ---
+    function toggleLockActiveObject() {
+        const active = canvas.getActiveObject();
+        if (!active) {
+            alert('Please select an object first to lock or unlock it.');
+            return;
+        }
+
+        const willLock = !active.isLocked;
+        active.set({
+            isLocked: willLock,
+            lockMovementX: willLock,
+            lockMovementY: willLock,
+            lockRotation: willLock,
+            lockScalingX: willLock,
+            lockScalingY: willLock,
+            lockUniScaling: willLock,
+            hasControls: !willLock
+        });
+
+        updateLockBtnState(active);
+        canvas.requestRenderAll();
+        saveHistory();
+    }
+
+    function updateLockBtnState(obj) {
+        const btn = document.getElementById('btn-lock');
+        if (!btn) return;
+        if (!obj) {
+            btn.innerHTML = '🔒 Lock';
+            btn.style.background = '#4b5563';
+            return;
+        }
+        if (obj.isLocked) {
+            btn.innerHTML = '🔒 Locked';
+            btn.style.background = '#ef4444';
+        } else {
+            btn.innerHTML = '🔓 Unlock';
+            btn.style.background = '#10b981';
+        }
+    }
+
+    document.getElementById('btn-lock').onclick = toggleLockActiveObject;
+
+    canvas.on('selection:created', (e) => {
+        updateLockBtnState(e.selected ? e.selected[0] : null);
+    });
+    canvas.on('selection:updated', (e) => {
+        updateLockBtnState(e.selected ? e.selected[0] : null);
+    });
+    canvas.on('selection:cleared', () => {
+        updateLockBtnState(null);
+    });
+
+    // --- Modular Blueprint Clipboard System ---
+    let _blueprintClipboard = [];
+
+    function copyActiveObject() {
+        const activeObjects = canvas.getActiveObjects();
+        if (!activeObjects || activeObjects.length === 0) return false;
+
+        const active = canvas.getActiveObject();
+        if (active && active.isEditing) return false;
+
+        _blueprintClipboard = [];
+
+        activeObjects.forEach(obj => {
+            obj.clone(function(cloned) {
+                if (obj.group) {
+                    const matrix = obj.calcTransformMatrix();
+                    if (obj.isArrow) {
+                        const pts = obj.calcLinePoints();
+                        const p1 = fabric.util.transformPoint({ x: pts.x1, y: pts.y1 }, matrix);
+                        const p2 = fabric.util.transformPoint({ x: pts.x2, y: pts.y2 }, matrix);
+                        cloned.set({
+                            x1: p1.x,
+                            y1: p1.y,
+                            x2: p2.x,
+                            y2: p2.y,
+                            group: null
+                        });
+                        cloned._setWidthHeight({});
+                        cloned.setCoords();
+                    } else {
+                        const decomposed = fabric.util.qrDecompose(matrix);
+                        cloned.set({
+                            left: decomposed.translateX,
+                            top: decomposed.translateY,
+                            angle: decomposed.angle,
+                            scaleX: decomposed.scaleX,
+                            scaleY: decomposed.scaleY,
+                            skewX: decomposed.skewX,
+                            skewY: decomposed.skewY,
+                            originX: 'center',
+                            originY: 'center',
+                            group: null
+                        });
+                        cloned.setCoords();
+                    }
+                } else {
+                    cloned.group = null;
+                }
+                _blueprintClipboard.push(cloned);
+            }, ['isArrow', 'isLocked']);
+        });
+
+        return true;
+    }
+
+    function pasteClipboardObject() {
+        if (!_blueprintClipboard || _blueprintClipboard.length === 0) return false;
+
+        const activeObj = canvas.getActiveObject();
+        if (activeObj && activeObj.isEditing) return false;
+
+        canvas.discardActiveObject();
+
+        const pastedObjects = [];
+        let itemsProcessed = 0;
+
+        _blueprintClipboard.forEach(clipItem => {
+            clipItem.clone(function(cloned) {
+                cloned.set({
+                    left: cloned.left + 24,
+                    top: cloned.top + 24,
+                    evented: true
+                });
+
+                if (cloned.isArrow) {
+                    const nx1 = cloned.x1 + 24;
+                    const ny1 = cloned.y1 + 24;
+                    const nx2 = cloned.x2 + 24;
+                    const ny2 = cloned.y2 + 24;
+                    cloned.set({
+                        x1: nx1,
+                        y1: ny1,
+                        x2: nx2,
+                        y2: ny2,
+                        left: (nx1 + nx2) / 2,
+                        top: (ny1 + ny2) / 2,
+                        width: Math.max(1, Math.abs(nx2 - nx1)),
+                        height: Math.max(1, Math.abs(ny2 - ny1)),
+                        scaleX: 1,
+                        scaleY: 1,
+                        angle: 0,
+                        objectCaching: false
+                    });
+                    cloned.setCoords();
+                    makeArrow(cloned);
+                }
+
+                if (cloned.isLocked) {
+                    cloned.set({
+                        isLocked: false,
+                        lockMovementX: false,
+                        lockMovementY: false,
+                        lockRotation: false,
+                        lockScalingX: false,
+                        lockScalingY: false,
+                        lockUniScaling: false,
+                        hasControls: true
+                    });
+                }
+
+                canvas.add(cloned);
+                cloned.setCoords();
+                pastedObjects.push(cloned);
+
+                itemsProcessed++;
+                if (itemsProcessed === _blueprintClipboard.length) {
+                    _blueprintClipboard.forEach(item => {
+                        item.left += 24;
+                        item.top += 24;
+                        if (item.isArrow) {
+                            item.x1 += 24;
+                            item.y1 += 24;
+                            item.x2 += 24;
+                            item.y2 += 24;
+                            item.width = Math.max(1, Math.abs(item.x2 - item.x1));
+                            item.height = Math.max(1, Math.abs(item.y2 - item.y1));
+                            item.setCoords();
+                        }
+                    });
+
+                    if (pastedObjects.length === 1) {
+                        canvas.setActiveObject(pastedObjects[0]);
+                    } else if (pastedObjects.length > 1) {
+                        const sel = new fabric.ActiveSelection(pastedObjects, { canvas: canvas });
+                        canvas.setActiveObject(sel);
+                    }
+                    canvas.requestRenderAll();
+                    saveHistory();
+                }
+            }, ['isArrow', 'isLocked']);
+        });
+
+        return true;
+    }
 
     document.getElementById('btn-lasso-undo').onclick = () => {
         if (lassoPoints.length > 0) {
@@ -328,6 +775,9 @@ $all_recipes = get_recipes($conn);
     };
 
     document.addEventListener('keydown', function(e) {
+        const activeEl = document.activeElement;
+        const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
         if (e.ctrlKey && e.key.toLowerCase() === 'z') {
             e.preventDefault();
             if (isLassoMode) {
@@ -335,10 +785,104 @@ $all_recipes = get_recipes($conn);
             } else {
                 undo();
             }
+            return;
         }
         if (e.ctrlKey && e.key.toLowerCase() === 'y') {
             e.preventDefault();
             if (!isLassoMode) redo();
+            return;
+        }
+
+        const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+
+        // Ctrl+S / Cmd+S: Save Blueprint
+        if (isCtrlOrMeta && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            const saveBtn = document.getElementById('btn-save');
+            if (saveBtn) saveBtn.click();
+            return;
+        }
+
+        // Active text editing detection (prevents single-letter keys while editing IText / Textbox)
+        const activeObj = canvas.getActiveObject();
+        const isEditingText = activeObj && (activeObj.isEditing || (activeObj.type === 'i-text' && activeObj.isEditing));
+
+        if (!isInputFocused && !isEditingText) {
+            // Delete / Backspace: Delete selected object(s)
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (canvas.getActiveObjects().length > 0) {
+                    e.preventDefault();
+                    const delBtn = document.getElementById('btn-delete');
+                    if (delBtn) delBtn.click();
+                    return;
+                }
+            }
+
+            // Escape: Cancel Lasso or revert to Select mode
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (isLassoMode) {
+                    const cancelLasso = document.getElementById('btn-lasso-cancel');
+                    if (cancelLasso) cancelLasso.click();
+                } else {
+                    const selBtn = document.getElementById('btn-select');
+                    if (selBtn) selBtn.click();
+                }
+                return;
+            }
+
+            if (isCtrlOrMeta && e.key.toLowerCase() === 'c') {
+                if (copyActiveObject()) e.preventDefault();
+                return;
+            }
+            if (isCtrlOrMeta && e.key.toLowerCase() === 'v') {
+                if (pasteClipboardObject()) e.preventDefault();
+                return;
+            }
+
+            if (!isCtrlOrMeta && !e.altKey) {
+                const k = e.key.toLowerCase();
+                if (k === 'v') {
+                    const selBtn = document.getElementById('btn-select');
+                    if (selBtn) selBtn.click();
+                } else if (k === 'h') {
+                    const panBtn = document.getElementById('btn-pan');
+                    if (panBtn) panBtn.click();
+                } else if (k === 'b') {
+                    const drawBtn = document.getElementById('btn-draw');
+                    if (drawBtn) drawBtn.click();
+                } else if (k === 'a') {
+                    const arrowBtn = document.getElementById('btn-arrow');
+                    if (arrowBtn) arrowBtn.click();
+                } else if (k === 't') {
+                    const textBtn = document.getElementById('btn-text');
+                    if (textBtn) textBtn.click();
+                } else if (k === 's') {
+                    const stickyBtn = document.getElementById('btn-sticky');
+                    if (stickyBtn) stickyBtn.click();
+                } else if (k === 'r') {
+                    const rectBtn = document.getElementById('btn-rect');
+                    if (rectBtn) rectBtn.click();
+                } else if (k === 'c') {
+                    const circleBtn = document.getElementById('btn-circle');
+                    if (circleBtn) circleBtn.click();
+                } else if (k === 'l') {
+                    const lassoBtn = document.getElementById('btn-lasso');
+                    if (lassoBtn) lassoBtn.click();
+                } else if (k === 'g') {
+                    const gridBtn = document.getElementById('btn-grid');
+                    if (gridBtn) gridBtn.click();
+                } else if (k === 'p') {
+                    const paintBtn = document.getElementById('btn-paint-plan');
+                    if (paintBtn) paintBtn.click();
+                } else if (e.key === ']') {
+                    const fwdBtn = document.getElementById('btn-forward');
+                    if (fwdBtn) fwdBtn.click();
+                } else if (e.key === '[') {
+                    const bwdBtn = document.getElementById('btn-backward');
+                    if (bwdBtn) bwdBtn.click();
+                }
+            }
         }
     });
 
@@ -348,6 +892,7 @@ $all_recipes = get_recipes($conn);
         isHistoryProcessing = true;
         canvas.loadFromJSON(existingData, () => {
             canvas.backgroundColor = ''; // Force clear any saved background color
+            rehydrateCanvasObjects();
             canvas.renderAll();
             isHistoryProcessing = false;
             saveHistory();
@@ -356,23 +901,70 @@ $all_recipes = get_recipes($conn);
         saveHistory();
     }
 
-    // Tools
+    // --- Centralized Tool State Management ---
+    let isDrawingArrow = false;
+    let arrowLine = null;
+    let isPanToolActive = false;
+
+    function deactivateDrawingModes() {
+        canvas.isDrawingMode = false;
+        isDrawingArrow = false;
+        arrowLine = null;
+        isPanToolActive = false;
+        if (typeof isLassoMode !== 'undefined' && isLassoMode) {
+            const cancelBtn = document.getElementById('btn-lasso-cancel');
+            if (cancelBtn) cancelBtn.click();
+        }
+        canvas.skipTargetFind = false;
+        canvas.selection = true;
+        canvas.defaultCursor = 'default';
+        canvas.setCursor('default');
+
+        ['btn-draw', 'btn-arrow', 'btn-select', 'btn-pan'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.background = '#3b82f6';
+        });
+        const lassoBtn = document.getElementById('btn-lasso');
+        if (lassoBtn) lassoBtn.style.background = '#f97316';
+    }
 
     document.getElementById('btn-select').onclick = (e) => {
-        canvas.isDrawingMode = false;
-        canvas.selection = true;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
+        deactivateDrawingModes();
         e.target.style.background = '#fbbf24';
     };
 
+    document.getElementById('btn-pan').onclick = (e) => {
+        const wasPan = isPanToolActive;
+        deactivateDrawingModes();
+        if (!wasPan) {
+            isPanToolActive = true;
+            canvas.discardActiveObject();
+            canvas.selection = false;
+            canvas.skipTargetFind = true;
+            canvas.defaultCursor = 'grab';
+            canvas.setCursor('grab');
+            e.target.style.background = '#fbbf24';
+            canvas.requestRenderAll();
+        } else {
+            document.getElementById('btn-select').click();
+        }
+    };
+
     document.getElementById('btn-draw').onclick = (e) => {
-        canvas.isDrawingMode = !canvas.isDrawingMode;
-        e.target.style.background = canvas.isDrawingMode ? '#fbbf24' : '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
-        
-        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-        canvas.freeDrawingBrush.color = document.getElementById('brush-color').value;
-        canvas.freeDrawingBrush.width = parseInt(document.getElementById('brush-size').value, 10);
+        const wasDrawing = canvas.isDrawingMode;
+        deactivateDrawingModes();
+        if (!wasDrawing) {
+            canvas.isDrawingMode = true;
+            canvas.skipTargetFind = true;
+            canvas.selection = false;
+            e.target.style.background = '#fbbf24';
+            
+            canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+            canvas.freeDrawingBrush.color = document.getElementById('brush-color').value;
+            canvas.freeDrawingBrush.width = parseInt(document.getElementById('brush-size').value, 10);
+        } else {
+            document.getElementById('btn-select').click();
+        }
     };
 
 
@@ -459,6 +1051,8 @@ $all_recipes = get_recipes($conn);
         if (activeObj) {
             if (activeObj.type === 'i-text' || activeObj.type === 'textbox') {
                 activeObj.set('backgroundColor', color);
+            } else if (activeObj.isArrow) {
+                activeObj.set({ stroke: color });
             } else {
                 activeObj.set('fill', color);
             }
@@ -466,12 +1060,18 @@ $all_recipes = get_recipes($conn);
         }
     });
 
-    // Auto-sync the color picker when you click on a shape
-    function syncColorPicker() {
+    // Auto-sync the color picker and brush size when you click on a shape or arrow
+    function syncBrushControls() {
         const activeObj = canvas.getActiveObject();
         if (activeObj) {
             let color = null;
-            if ((activeObj.type === 'i-text' || activeObj.type === 'textbox') && activeObj.backgroundColor) {
+            if (activeObj.isArrow) {
+                color = activeObj.stroke;
+                if (activeObj.strokeWidth) {
+                    brushSizeInput.value = activeObj.strokeWidth;
+                    updateBrushSizeDisplay(activeObj.strokeWidth);
+                }
+            } else if ((activeObj.type === 'i-text' || activeObj.type === 'textbox') && activeObj.backgroundColor) {
                 color = activeObj.backgroundColor;
             } else if (activeObj.fill && typeof activeObj.fill === 'string') {
                 color = activeObj.fill;
@@ -484,20 +1084,27 @@ $all_recipes = get_recipes($conn);
         }
     }
 
-    canvas.on('selection:created', syncColorPicker);
-    canvas.on('selection:updated', syncColorPicker);
-    document.getElementById('brush-size').addEventListener('input', function() {
-        canvas.freeDrawingBrush.width = parseInt(this.value, 10);
+    canvas.on('selection:created', syncBrushControls);
+    canvas.on('selection:updated', syncBrushControls);
+    const brushSizeInput = document.getElementById('brush-size');
+    const brushSizeVal = document.getElementById('brush-size-val');
+    function updateBrushSizeDisplay(val) {
+        if (brushSizeVal) brushSizeVal.textContent = val + 'px';
+        if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.width = parseInt(val, 10);
+    }
+    brushSizeInput.addEventListener('input', function() {
+        updateBrushSizeDisplay(this.value);
+        const activeObj = canvas.getActiveObject();
+        if (activeObj && activeObj.isArrow) {
+            activeObj.set({ strokeWidth: parseInt(this.value, 10) || 4 });
+            canvas.renderAll();
+        }
     });
-    
-    // Set initial brush settings
-    canvas.freeDrawingBrush.color = '#000000';
-    canvas.freeDrawingBrush.width = 5;
+    updateBrushSizeDisplay(brushSizeInput.value || 5);
 
     document.getElementById('btn-text').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         
         const text = new fabric.IText('Text', { 
             left: 100, 
@@ -508,12 +1115,12 @@ $all_recipes = get_recipes($conn);
         canvas.add(text);
         canvas.viewportCenterObject(text);
         canvas.setActiveObject(text);
+        document.getElementById('btn-select').click();
     };
 
     document.getElementById('btn-sticky').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         
         const sticky = new fabric.Textbox('Double click to edit\n\n\n', { 
             left: 100, 
@@ -528,11 +1135,12 @@ $all_recipes = get_recipes($conn);
         canvas.add(sticky);
         canvas.viewportCenterObject(sticky);
         canvas.setActiveObject(sticky);
+        document.getElementById('btn-select').click();
     };
 
     document.getElementById('fill-toggle').onchange = (e) => {
         const activeObj = canvas.getActiveObject();
-        if (activeObj && activeObj.type !== 'i-text' && activeObj.type !== 'textbox' && activeObj.type !== 'image' && activeObj.type !== 'group') {
+        if (activeObj && activeObj.type !== 'i-text' && activeObj.type !== 'textbox' && activeObj.type !== 'image' && activeObj.type !== 'group' && !activeObj.isArrow) {
             if (e.target.checked) {
                 activeObj.set({ fill: activeObj.stroke });
             } else {
@@ -553,9 +1161,8 @@ $all_recipes = get_recipes($conn);
     }
 
     document.getElementById('btn-rect').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         const colors = getShapeColors();
         const rect = new fabric.Rect({ 
             left: 100, top: 100, 
@@ -567,12 +1174,12 @@ $all_recipes = get_recipes($conn);
         canvas.add(rect);
         canvas.viewportCenterObject(rect);
         canvas.setActiveObject(rect);
+        document.getElementById('btn-select').click();
     };
 
     document.getElementById('btn-circle').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         const colors = getShapeColors();
         const circle = new fabric.Circle({ 
             left: 100, top: 100, radius: 50, 
@@ -583,12 +1190,12 @@ $all_recipes = get_recipes($conn);
         canvas.add(circle);
         canvas.viewportCenterObject(circle);
         canvas.setActiveObject(circle);
+        document.getElementById('btn-select').click();
     };
 
     document.getElementById('btn-triangle').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         const colors = getShapeColors();
         const triangle = new fabric.Triangle({ 
             left: 100, top: 100, width: 100, height: 100, 
@@ -599,12 +1206,12 @@ $all_recipes = get_recipes($conn);
         canvas.add(triangle);
         canvas.viewportCenterObject(triangle);
         canvas.setActiveObject(triangle);
+        document.getElementById('btn-select').click();
     };
 
     document.getElementById('btn-image').onclick = () => {
-        canvas.isDrawingMode = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
+        deactivateDrawingModes();
+        canvas.discardActiveObject();
         document.getElementById('image-upload').click();
     };
 
@@ -621,6 +1228,7 @@ $all_recipes = get_recipes($conn);
                 canvas.viewportCenterObject(img);
                 canvas.setActiveObject(img);
                 document.getElementById('image-upload').value = ''; 
+                document.getElementById('btn-select').click();
             });
         };
         reader.readAsDataURL(file);
@@ -1045,16 +1653,18 @@ $all_recipes = get_recipes($conn);
     };
 
 
-    let isDrawingArrow = false;
-    let arrowLine, arrowHead;
-
     document.getElementById('btn-arrow').onclick = (e) => {
-        canvas.isDrawingMode = false;
-        canvas.selection = false;
-        document.getElementById('btn-draw').style.background = '#3b82f6';
-        document.getElementById('btn-select').style.background = '#3b82f6';
-        e.target.style.background = '#fbbf24';
-        isDrawingArrow = true;
+        const wasArrow = isDrawingArrow;
+        deactivateDrawingModes();
+        if (!wasArrow) {
+            canvas.discardActiveObject();
+            isDrawingArrow = true;
+            canvas.skipTargetFind = true;
+            canvas.selection = false;
+            e.target.style.background = '#fbbf24';
+        } else {
+            document.getElementById('btn-select').click();
+        }
     };
 
     // Zooming (Mouse Wheel)
@@ -1068,25 +1678,186 @@ $all_recipes = get_recipes($conn);
         opt.e.preventDefault();
         opt.e.stopPropagation();
         syncGridToCamera();
+        const activeObj = canvas.getActiveObject();
+        if (activeObj) {
+            activeObj.setCoords();
+        }
+        canvas.requestRenderAll();
     });
 
-    // Panning and Arrow Logic
+    // Dedicated Viewport Panning (Right-Click, Pan Tool, Space-Drag)
+    let isPanning = false;
+    let isSpaceDown = false;
+    let lastPanX = 0;
+    let lastPanY = 0;
+
+    window.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName) && !canvas.isDrawingMode) {
+            isSpaceDown = true;
+            if (!isPanning && canvas.upperCanvasEl) {
+                canvas.defaultCursor = 'grab';
+                canvas.setCursor('grab');
+            }
+        }
+    });
+
+    window.addEventListener('keyup', function(e) {
+        if (e.code === 'Space') {
+            isSpaceDown = false;
+            if (!isPanning && canvas.upperCanvasEl) {
+                canvas.defaultCursor = 'default';
+                canvas.setCursor('default');
+            }
+        }
+    });
+
+    function handlePanStart(e) {
+        const isRight = (e.button === 2);
+        const isSpaceLeft = (isSpaceDown && e.button === 0);
+        const isPanToolLeft = (isPanToolActive && e.button === 0);
+
+        if (isRight || isSpaceLeft || isPanToolLeft) {
+            e.preventDefault();
+            if (e.stopImmediatePropagation) {
+                e.stopImmediatePropagation();
+            }
+
+            isPanning = true;
+            lastPanX = e.clientX;
+            lastPanY = e.clientY;
+
+            canvas.discardActiveObject();
+            canvas.selection = false;
+            canvas.skipTargetFind = true;
+            if (canvas._currentTransform) canvas._currentTransform = null;
+            if (canvas._groupSelector) canvas._groupSelector = null;
+
+            document.body.style.cursor = 'grabbing';
+            canvas.defaultCursor = 'grabbing';
+            canvas.setCursor('grabbing');
+        }
+    }
+
+    function handlePanMove(e) {
+        if (!isPanning) {
+            const isRightHeld = (e.buttons & 2) === 2;
+            const isSpaceLeftHeld = isSpaceDown && ((e.buttons & 1) === 1);
+            const isPanToolHeld = isPanToolActive && ((e.buttons & 1) === 1);
+            if (isRightHeld || isSpaceLeftHeld || isPanToolHeld) {
+                handlePanStart(e);
+            } else {
+                return;
+            }
+        }
+
+        e.preventDefault();
+
+        const dx = e.clientX - lastPanX;
+        const dy = e.clientY - lastPanY;
+        lastPanX = e.clientX;
+        lastPanY = e.clientY;
+
+        const vpt = canvas.viewportTransform;
+        vpt[4] += dx;
+        vpt[5] += dy;
+        canvas.requestRenderAll();
+        syncGridToCamera();
+    }
+
+    function handlePanEnd(e) {
+        if (!isPanning) return;
+
+        if (e.type === 'mouseup' || e.type === 'pointerup') {
+            if ((e.buttons & 2) && !isSpaceDown && !isPanToolActive) {
+                return;
+            }
+        }
+
+        isPanning = false;
+        canvas.setViewportTransform(canvas.viewportTransform);
+
+        if (isPanToolActive) {
+            canvas.selection = false;
+            canvas.skipTargetFind = true;
+            document.body.style.cursor = '';
+            canvas.defaultCursor = 'grab';
+            canvas.setCursor('grab');
+        } else {
+            canvas.selection = !isDrawingArrow && !canvas.isDrawingMode;
+            canvas.skipTargetFind = isDrawingArrow || canvas.isDrawingMode;
+            document.body.style.cursor = '';
+            canvas.defaultCursor = isSpaceDown ? 'grab' : 'default';
+            canvas.setCursor(isSpaceDown ? 'grab' : 'default');
+        }
+
+        const activeObj = canvas.getActiveObject();
+        if (activeObj) {
+            activeObj.setCoords();
+        }
+        canvas.requestRenderAll();
+    }
+
+    // Suppress context menu over canvas/container so Right-Click drag pans cleanly without popups
+    window.addEventListener('contextmenu', function(e) {
+        if (container.contains(e.target) || isPanning) {
+            e.preventDefault();
+        }
+    }, { capture: true });
+
+    // Intercept on canvas upperCanvasEl in capture phase so Fabric's internal listener does NOT fire on right/space/pan-tool click
+    canvas.upperCanvasEl.addEventListener('mousedown', handlePanStart, { capture: true });
+    canvas.upperCanvasEl.addEventListener('pointerdown', handlePanStart, { capture: true });
+    container.addEventListener('mousedown', handlePanStart);
+    container.addEventListener('pointerdown', handlePanStart);
+
+    // Global tracking for smooth uninterrupted dragging even outside canvas/window bounds
+    window.addEventListener('mousemove', handlePanMove, { passive: false });
+    window.addEventListener('pointermove', handlePanMove, { passive: false });
+    window.addEventListener('mouseup', handlePanEnd);
+    window.addEventListener('pointerup', handlePanEnd);
+    window.addEventListener('blur', function() {
+        if (isPanning) {
+            isPanning = false;
+            canvas.setViewportTransform(canvas.viewportTransform);
+            if (isPanToolActive) {
+                canvas.selection = false;
+                canvas.skipTargetFind = true;
+                document.body.style.cursor = '';
+                canvas.defaultCursor = 'grab';
+                canvas.setCursor('grab');
+            } else {
+                canvas.selection = !isDrawingArrow && !canvas.isDrawingMode;
+                canvas.skipTargetFind = isDrawingArrow || canvas.isDrawingMode;
+                document.body.style.cursor = '';
+                canvas.defaultCursor = 'default';
+                canvas.setCursor('default');
+            }
+            canvas.requestRenderAll();
+        }
+    });
+
+    // Drawing Arrow and Shape Interaction Logic
     canvas.on('mouse:down', function(opt) {
+        if (isPanning || isPanToolActive) return;
         var evt = opt.e;
+        if (evt.button !== 0) return;
+
         if (isDrawingArrow) {
             isHistoryProcessing = true;
             const pointer = canvas.getPointer(evt);
-            const points = [pointer.x, pointer.y, pointer.x, pointer.y];
             const color = document.getElementById('brush-color').value;
             const thickness = parseInt(document.getElementById('brush-size').value, 10) || 4;
             
-            arrowLine = new fabric.Line(points, {
-                strokeWidth: thickness, fill: color, stroke: color, originX: 'center', originY: 'center', selectable: false
+            arrowLine = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
+                strokeWidth: thickness,
+                stroke: color,
+                selectable: false,
+                evented: false,
+                originX: 'center',
+                originY: 'center'
             });
-            arrowHead = new fabric.Triangle({
-                width: thickness * 4, height: thickness * 4, fill: color, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center', selectable: false, angle: 90
-            });
-            canvas.add(arrowLine, arrowHead);
+            makeArrow(arrowLine);
+            canvas.add(arrowLine);
             return;
         }
 
@@ -1142,17 +1913,11 @@ $all_recipes = get_recipes($conn);
             return; // prevent panning/selecting
         }
         // --- END NEW LASSO LOGIC ---
-
-        if (evt.altKey === true || evt.button === 1) {
-            this.isDragging = true;
-            this.selection = false;
-            this.lastPosX = evt.clientX;
-            this.lastPosY = evt.clientY;
-            evt.preventDefault();
-        }
     });
     
     canvas.on('mouse:move', function(opt) {
+        if (isPanning) return;
+
         if (isLassoMode) {
             const pointer = canvas.getPointer(opt.e);
             
@@ -1185,30 +1950,24 @@ $all_recipes = get_recipes($conn);
 
         if (isDrawingArrow && arrowLine) {
             const pointer = canvas.getPointer(opt.e);
-            arrowLine.set({ x2: pointer.x, y2: pointer.y });
-            arrowHead.set({ left: pointer.x, top: pointer.y });
-            
-            const dx = pointer.x - arrowLine.x1;
-            const dy = pointer.y - arrowLine.y1;
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            arrowHead.set({ angle: angle + 90 });
+            arrowLine.x2 = pointer.x;
+            arrowLine.y2 = pointer.y;
+            arrowLine.left = (arrowLine.x1 + pointer.x) / 2;
+            arrowLine.top = (arrowLine.y1 + pointer.y) / 2;
+            arrowLine.width = Math.max(1, Math.abs(pointer.x - arrowLine.x1));
+            arrowLine.height = Math.max(1, Math.abs(pointer.y - arrowLine.y1));
+            arrowLine.scaleX = 1;
+            arrowLine.scaleY = 1;
+            arrowLine.angle = 0;
+            arrowLine.setCoords();
             canvas.renderAll();
             return;
-        }
-
-        if (this.isDragging) {
-            var e = opt.e;
-            var vpt = this.viewportTransform;
-            vpt[4] += e.clientX - this.lastPosX;
-            vpt[5] += e.clientY - this.lastPosY;
-            this.requestRenderAll();
-            this.lastPosX = e.clientX;
-            this.lastPosY = e.clientY;
-            syncGridToCamera();
         }
     });
     
     canvas.on('mouse:up', function(opt) {
+        if (isPanning) return;
+
         if (isLassoMode && window.isLassoDrawing) {
             window.isLassoDrawing = false;
             
@@ -1231,32 +1990,34 @@ $all_recipes = get_recipes($conn);
             return;
         }
 
-        if (isDrawingArrow && arrowLine && arrowHead) {
-            if (arrowLine.x1 !== arrowLine.x2 || arrowLine.y1 !== arrowLine.y2) {
-                arrowLine.set({selectable: true});
-                arrowHead.set({selectable: true});
-                const group = new fabric.Group([arrowLine, arrowHead], { selectable: true });
-                canvas.remove(arrowLine, arrowHead);
-                canvas.add(group);
-                canvas.setActiveObject(group);
+        if (isDrawingArrow && arrowLine) {
+            const dx = arrowLine.x2 - arrowLine.x1;
+            const dy = arrowLine.y2 - arrowLine.y1;
+            if (Math.sqrt(dx * dx + dy * dy) > 8) {
+                arrowLine.set({
+                    selectable: true,
+                    evented: true,
+                    left: (arrowLine.x1 + arrowLine.x2) / 2,
+                    top: (arrowLine.y1 + arrowLine.y2) / 2,
+                    width: Math.max(1, Math.abs(arrowLine.x2 - arrowLine.x1)),
+                    height: Math.max(1, Math.abs(arrowLine.y2 - arrowLine.y1)),
+                    scaleX: 1,
+                    scaleY: 1,
+                    angle: 0
+                });
+                arrowLine.setCoords();
+                canvas.setActiveObject(arrowLine);
                 isHistoryProcessing = false;
                 saveHistory();
             } else {
-                canvas.remove(arrowLine, arrowHead);
+                canvas.remove(arrowLine);
                 isHistoryProcessing = false;
             }
             arrowLine = null;
-            arrowHead = null;
-            
-            isDrawingArrow = false;
-            document.getElementById('btn-arrow').style.background = '#3b82f6';
+            deactivateDrawingModes();
             document.getElementById('btn-select').click();
             return;
         }
-
-        this.setViewportTransform(this.viewportTransform);
-        this.isDragging = false;
-        this.selection = true;
     });
 
     // Save Logic
@@ -1266,7 +2027,7 @@ $all_recipes = get_recipes($conn);
         btn.innerHTML = '💾 Saving...';
         btn.disabled = true;
 
-        const jsonData = JSON.stringify(canvas.toJSON());
+        const jsonData = JSON.stringify(canvas.toJSON(['isArrow', 'isLocked']));
         const base64Image = canvas.toDataURL({format: 'jpeg', quality: 0.8});
 
         try {

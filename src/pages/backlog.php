@@ -35,9 +35,25 @@ $buildplans = get_backlog_buildplans($conn);
 $inventory_kits = get_inventory_kits($conn);
 $items = get_backlog_items($conn, $_GET);
 
-$stats = calculate_backlog_stats($items);
-
 $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !empty($_GET['filter_buildplan']);
+
+// Resolve In Progress status ID dynamically from categories
+$in_progress_status_id = null;
+foreach ($statuses as $st) {
+    if (strtolower(trim($st['label'])) === 'in progress') {
+        $in_progress_status_id = (int)$st['id'];
+        break;
+    }
+}
+
+// Show In-Progress banner if unfiltered or if specifically filtered to 'In Progress'
+$status_filter_applied = isset($_GET['filter_status']) && $_GET['filter_status'] !== '';
+$show_in_progress_section = !$status_filter_applied || ((int)$_GET['filter_status'] === $in_progress_status_id);
+
+$all_backlog_items = $has_filters ? get_backlog_items($conn) : $items;
+$in_progress = array_filter($all_backlog_items, fn($item) => ($item['status_label'] ?? '') === 'In Progress');
+
+$stats = calculate_backlog_stats($items);
 
 ?>
 <?php include '../components/layout_header.php'; ?>
@@ -46,11 +62,9 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
             
             <?php include '../components/toast.php'; ?>
 
+            <?php if ($show_in_progress_section): ?>
             <div class="mb-8">
                 <h3 class="text-lg font-bold text-gray-700 mb-3">🔨 Currently In Progress</h3>
-                <?php 
-                $in_progress = array_filter($items, fn($item) => ($item['status_label'] ?? '') === 'In Progress');
-                ?>
                 <?php if (!empty($in_progress)): ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <?php foreach ($in_progress as $ip_item): ?>
@@ -73,6 +87,7 @@ $has_filters = !empty($_GET['filter_status']) || !empty($_GET['search']) || !emp
                 </div>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <?php if ($stats['total_items'] > 0): ?>
 
