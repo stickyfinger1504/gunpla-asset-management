@@ -141,7 +141,7 @@ $straight_build_kits = array_values(array_filter($all_kits, fn($k) => strtolower
 $active_kit = !empty($in_progress_kits) ? $in_progress_kits[0] : null;
 $active_backlog = null;
 if ($active_kit) {
-    $b_stmt = $conn->prepare("SELECT b.backlogid, b.status, c.label as buildplan_label FROM kit_backlog_plan b LEFT JOIN dim_category c ON b.buildplanid = c.id WHERE b.inventoryid = ? ORDER BY b.backlogid DESC LIMIT 1");
+    $b_stmt = $conn->prepare("SELECT b.backlogid, b.status, b.notes, c.label as buildplan_label FROM kit_backlog_plan b LEFT JOIN dim_category c ON b.buildplanid = c.id WHERE b.inventoryid = ? ORDER BY b.backlogid DESC LIMIT 1");
     $b_stmt->bind_param("i", $active_kit['actualid']);
     $b_stmt->execute();
     $b_res = $b_stmt->get_result();
@@ -149,7 +149,26 @@ if ($active_kit) {
         $active_backlog = $b_row;
     }
 }
+
+// Fetch all latest backlog plans and notes for quick lookup across queue and randomizer
+$backlog_plans = [];
+$bp_query = "SELECT b.inventoryid, c.label as buildplan_label, b.notes as buildplan_notes FROM kit_backlog_plan b JOIN dim_category c ON b.buildplanid = c.id ORDER BY b.backlogid ASC";
+$bp_res = $conn->query($bp_query);
+if ($bp_res) {
+    while ($bp_row = $bp_res->fetch_assoc()) {
+        $backlog_plans[(int)$bp_row['inventoryid']] = [
+            'label' => $bp_row['buildplan_label'],
+            'notes' => trim($bp_row['buildplan_notes'] ?? '')
+        ];
+    }
+}
+
 $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
+if ($next_kit) {
+    $plan_info = $backlog_plans[(int)$next_kit['actualid']] ?? null;
+    $next_kit['buildplan_label'] = $plan_info ? $plan_info['label'] : null;
+    $next_kit['buildplan_notes'] = $plan_info ? $plan_info['notes'] : null;
+}
 ?>
 <?php include '../components/layout_header.php'; ?>
 
@@ -239,6 +258,11 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                                             </span>
                                         <?php endif; ?>
                                     </div>
+                                    <?php if ($active_backlog && !empty($active_backlog['notes']) && $active_backlog['notes'] !== '-'): ?>
+                                        <div class="mt-2 text-xs text-gray-600 bg-white/80 border border-gray-200 rounded-lg p-2 italic">
+                                            📝 <?= htmlspecialchars($active_backlog['notes']) ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             <?php else: ?>
                                 <div class="py-6 text-center">
@@ -315,12 +339,22 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                                             <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= get_brand_color_palette($next_kit['statusid']) ?>">
                                                 <?= htmlspecialchars($next_kit['status']) ?>
                                             </span>
+                                            <?php if (!empty($next_kit['buildplan_label'])): ?>
+                                                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                    📋 <?= htmlspecialchars($next_kit['buildplan_label']) ?>
+                                                </span>
+                                            <?php endif; ?>
                                             <?php if (!empty($next_kit['pricebought'])): ?>
                                                 <span class="text-xs text-gray-500 font-mono">
                                                     <?= format_currency($next_kit['pricebought']) ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if (!empty($next_kit['buildplan_notes']) && $next_kit['buildplan_notes'] !== '-'): ?>
+                                            <div class="mt-2 text-xs text-gray-600 bg-white/80 border border-gray-200 rounded-lg p-2 italic">
+                                                📝 <?= htmlspecialchars($next_kit['buildplan_notes']) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php else: ?>
                                     <div class="py-6 text-center">
@@ -360,22 +394,28 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                     
                     <div id="roll-result-card" class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-5 min-h-[100px] flex flex-col justify-center items-center">
                         <h4 id="roll-kit-name" class="text-lg font-bold text-gray-800 leading-snug animate-pulse">Rolling...</h4>
-                        <div id="roll-kit-badges" class="flex flex-wrap items-center gap-1.5 mt-2">
+                        <div id="roll-kit-badges" class="flex flex-wrap items-center gap-1.5 mt-2 justify-center">
                             <span class="text-xs text-gray-500 font-medium">Please wait...</span>
                         </div>
+                        <div id="roll-kit-notes" class="mt-2.5 text-xs text-gray-600 bg-white/90 border border-gray-200 rounded-lg p-2 italic w-full text-center hidden"></div>
                     </div>
 
-                    <div class="flex gap-2">
-                        <button type="button" onclick="closeRollModal()" class="flex-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="flex flex-wrap gap-2 items-center justify-between pt-2">
+                        <button type="button" onclick="closeRollModal()" class="px-3.5 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                             Close
                         </button>
-                        <form id="roll-start-form" method="POST" class="flex-1" style="display:none;">
-                            <input type="hidden" name="action_type" value="quick_start">
-                            <input type="hidden" name="kit_id" id="roll-kit-id" value="">
-                            <button type="submit" id="roll-submit-btn" class="w-full px-4 py-2 text-sm font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-300 rounded-lg transition-all shadow-2xs">
-                                🚀 Build This!
+                        <div class="flex items-center gap-2 flex-1 justify-end">
+                            <button type="button" id="roll-reroll-btn" onclick="rollRandomKit()" style="display:none;" class="px-3.5 py-2 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg shadow-2xs transition-all inline-flex items-center gap-1.5">
+                                🎲 Spin Again
                             </button>
-                        </form>
+                            <form id="roll-start-form" method="POST" class="inline m-0" style="display:none;">
+                                <input type="hidden" name="action_type" value="quick_start">
+                                <input type="hidden" name="kit_id" id="roll-kit-id" value="">
+                                <button type="submit" id="roll-submit-btn" class="px-4 py-2 text-sm font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-300 rounded-lg transition-all shadow-2xs">
+                                    🚀 Build This!
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -644,7 +684,9 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
             'brand_badge' => get_brand_color_palette($k['brandid']),
             'status' => $k['status'],
             'status_badge' => get_brand_color_palette($k['statusid']),
-            'pricebought' => $k['pricebought']
+            'pricebought' => $k['pricebought'],
+            'buildplan_label' => $backlog_plans[(int)$k['actualid']]['label'] ?? null,
+            'buildplan_notes' => $backlog_plans[(int)$k['actualid']]['notes'] ?? null
         ], $not_started_kits)), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
         const straightBuildKits = <?= json_encode(array_values(array_map(fn($k) => [
@@ -654,7 +696,9 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
             'brand_badge' => get_brand_color_palette($k['brandid']),
             'status' => $k['status'],
             'status_badge' => get_brand_color_palette($k['statusid']),
-            'pricebought' => $k['pricebought']
+            'pricebought' => $k['pricebought'],
+            'buildplan_label' => $backlog_plans[(int)$k['actualid']]['label'] ?? null,
+            'buildplan_notes' => $backlog_plans[(int)$k['actualid']]['notes'] ?? null
         ], $straight_build_kits)), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
         let currentIncludeStraight = false;
@@ -704,6 +748,10 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                 const item = pool[0];
                 if (container) {
                     const priceText = item.pricebought ? (typeof ChartConfig !== 'undefined' ? ChartConfig.formatCurrency(item.pricebought) : '$' + item.pricebought) : '';
+                    const planBadge = item.buildplan_label ? `<span class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">📋 ${escapeHtml(item.buildplan_label)}</span>` : '';
+                    const notesHtml = (item.buildplan_notes && item.buildplan_notes !== '-') 
+                        ? `<div class="mt-2 text-xs text-gray-600 bg-white/80 border border-gray-200 rounded-lg p-2 italic">📝 ${escapeHtml(item.buildplan_notes)}</div>` 
+                        : '';
                     container.innerHTML = `
                         <div class="mb-4">
                             <h4 class="text-lg font-bold text-gray-900 leading-snug">
@@ -718,8 +766,10 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                                 <span class="px-2 py-0.5 text-xs font-bold rounded-full ${item.status_badge}">
                                     ${escapeHtml(item.status)}
                                 </span>
+                                ${planBadge}
                                 ${priceText ? `<span class="text-xs text-gray-500 font-mono">${priceText}</span>` : ''}
                             </div>
+                            ${notesHtml}
                         </div>`;
                 }
                 if (form && formKitId) {
@@ -740,13 +790,22 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
             updateQueueDisplay();
         }
 
+        let rollInterval = null;
+
         function rollRandomKit() {
+            if (rollInterval) {
+                clearInterval(rollInterval);
+                rollInterval = null;
+            }
+
             const pool = getActiveQueuePool();
             if (!pool || pool.length === 0) return;
             const modal = document.getElementById('random-roll-modal');
             const nameEl = document.getElementById('roll-kit-name');
             const badgesEl = document.getElementById('roll-kit-badges');
+            const notesEl = document.getElementById('roll-kit-notes');
             const formEl = document.getElementById('roll-start-form');
+            const rerollBtn = document.getElementById('roll-reroll-btn');
             const idInput = document.getElementById('roll-kit-id');
             const submitBtn = document.getElementById('roll-submit-btn');
             const titleEl = document.getElementById('roll-modal-title');
@@ -755,22 +814,42 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
 
             modal.style.display = 'flex';
             formEl.style.display = 'none';
+            if (rerollBtn) rerollBtn.style.display = 'none';
             nameEl.classList.add('animate-pulse');
             titleEl.textContent = 'Choosing Next Build...';
             subEl.textContent = currentIncludeStraight ? 'Cycling through unstarted & straight build kits' : 'Cycling through unstarted hangar kits';
             diceEl.textContent = '🎲';
+            if (notesEl) {
+                notesEl.classList.add('hidden');
+                notesEl.innerHTML = '';
+            }
 
             let count = 0;
             const maxSteps = 16;
-            const interval = setInterval(() => {
+            rollInterval = setInterval(() => {
                 const randIdx = Math.floor(Math.random() * pool.length);
                 const item = pool[randIdx];
                 nameEl.textContent = item.name;
-                badgesEl.innerHTML = `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${item.brand_badge}">${escapeHtml(item.brand)}</span> <span class="px-2 py-0.5 text-xs font-bold rounded-full ${item.status_badge}">${escapeHtml(item.status)}</span>`;
+                const planBadge = item.buildplan_label 
+                    ? `<span class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">📋 ${escapeHtml(item.buildplan_label)}</span>` 
+                    : `<span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 border border-gray-200">📋 No plan</span>`;
+                badgesEl.innerHTML = `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${item.brand_badge}">${escapeHtml(item.brand)}</span> <span class="px-2 py-0.5 text-xs font-bold rounded-full ${item.status_badge}">${escapeHtml(item.status)}</span> ${planBadge}`;
+
+                if (notesEl) {
+                    if (item.buildplan_notes && item.buildplan_notes !== '-') {
+                        notesEl.innerHTML = `📝 ${escapeHtml(item.buildplan_notes)}`;
+                        notesEl.classList.remove('hidden');
+                    } else {
+                        notesEl.innerHTML = '';
+                        notesEl.classList.add('hidden');
+                    }
+                }
+
                 count++;
 
                 if (count >= maxSteps) {
-                    clearInterval(interval);
+                    clearInterval(rollInterval);
+                    rollInterval = null;
                     nameEl.classList.remove('animate-pulse');
                     titleEl.textContent = '🎉 Destiny Has Spoken!';
                     subEl.textContent = 'Here is your next build challenge:';
@@ -780,11 +859,18 @@ $next_kit = !empty($not_started_kits) ? $not_started_kits[0] : null;
                         submitBtn.textContent = (item.status && item.status.toLowerCase().includes('straight')) ? '🎨 Customize This Build!' : '🚀 Build This!';
                     }
                     formEl.style.display = 'block';
+                    if (rerollBtn) {
+                        rerollBtn.style.display = pool.length > 1 ? 'inline-flex' : 'none';
+                    }
                 }
             }, 80);
         }
 
         function closeRollModal() {
+            if (rollInterval) {
+                clearInterval(rollInterval);
+                rollInterval = null;
+            }
             document.getElementById('random-roll-modal').style.display = 'none';
         }
 

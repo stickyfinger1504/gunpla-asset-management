@@ -162,3 +162,74 @@ function calculate_paint_stats($paints) {
 
     return $stats;
 }
+
+/**
+ * Determine if a paint amount level indicates low or empty stock requiring replenishment.
+ *
+ * @param string|null $amount_label The amount label (e.g. "Low", "Finished", "Few left")
+ * @return bool True if the paint level is low/empty, false otherwise
+ */
+function is_low_stock_paint_amount(?string $amount_label): bool
+{
+    if (empty($amount_label) || $amount_label === '-') {
+        return false;
+    }
+
+    $lower = strtolower(trim($amount_label));
+    return str_contains($lower, 'low')
+        || str_contains($lower, 'empty')
+        || str_contains($lower, 'few')
+        || str_contains($lower, 'little')
+        || str_contains($lower, 'finished');
+}
+
+/**
+ * Quickly restock a paint bottle to Full stock level.
+ *
+ * @param mysqli $conn Active database connection
+ * @param int $paint_id Paint inventory ID
+ * @return array{success: bool, name?: string, message: string} Result summary with status and message
+ */
+function quick_restock_paint(mysqli $conn, int $paint_id): array
+{
+    if ($paint_id <= 0) {
+        return ['success' => false, 'message' => 'Invalid paint ID'];
+    }
+
+    $full_id = get_category_id_by_label($conn, 'paintlist', 'amount', 'Full or virtually full');
+    if (!$full_id) {
+        $stmt = $conn->prepare("SELECT id FROM dim_category WHERE section = 'paintlist' AND module = 'amount' AND label LIKE '%Full%' LIMIT 1");
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if ($r = $res->fetch_assoc()) {
+            $full_id = (int)$r['id'];
+        }
+    }
+
+    if (!$full_id) {
+        return ['success' => false, 'message' => 'Full stock level category not found in system'];
+    }
+
+    $n_stmt = $conn->prepare("SELECT name FROM paint_inventory WHERE inventoryid = ?");
+    $n_stmt->bind_param("i", $paint_id);
+    $n_stmt->execute();
+    $name_res = $n_stmt->get_result();
+    if ($name_res->num_rows === 0) {
+        return ['success' => false, 'message' => 'Paint record not found'];
+    }
+    $paint_name = $name_res->fetch_assoc()['name'] ?? 'Paint';
+
+    $stmt = $conn->prepare("UPDATE paint_inventory SET amount = ? WHERE inventoryid = ?");
+    $stmt->bind_param("ii", $full_id, $paint_id);
+    $success = $stmt->execute();
+
+    if ($success) {
+        return [
+            'success' => true,
+            'name' => $paint_name,
+            'message' => "Restocked \"{$paint_name}\" to Full!"
+        ];
+    }
+
+    return ['success' => false, 'message' => 'Database error restocking paint'];
+}

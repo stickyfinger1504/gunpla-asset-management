@@ -36,9 +36,10 @@ function get_recipes($conn, $filters = []) {
     $types_items = str_repeat('i', count($recipe_ids));
 
     $stmt = $conn->prepare(
-        "SELECT ri.*, p.name AS paint_name, p.inventoryid AS paint_actualid
+        "SELECT ri.*, p.name AS paint_name, p.actualid AS paint_actualid, p.id AS paint_code,
+                p.brand, p.brandid, p.painttype, p.painttypeid, p.amount, p.amountid, p.color_hex
          FROM paint_recipe_item ri
-         LEFT JOIN paint_inventory p ON ri.paintid = p.inventoryid
+         LEFT JOIN vw_paint_inventory p ON ri.paintid = p.actualid
          WHERE ri.recipeid IN ($placeholders)
          ORDER BY ri.sort_order ASC"
     );
@@ -67,9 +68,10 @@ function get_recipe($conn, int $recipeid): ?array {
     if (!$recipe) return null;
 
     $stmt = $conn->prepare(
-        "SELECT ri.*, p.name AS paint_name
+        "SELECT ri.*, p.name AS paint_name, p.actualid AS paint_actualid, p.id AS paint_code,
+                p.brand, p.brandid, p.painttype, p.painttypeid, p.amount, p.amountid, p.color_hex
          FROM paint_recipe_item ri
-         LEFT JOIN paint_inventory p ON ri.paintid = p.inventoryid
+         LEFT JOIN vw_paint_inventory p ON ri.paintid = p.actualid
          WHERE ri.recipeid = ?
          ORDER BY ri.sort_order ASC"
     );
