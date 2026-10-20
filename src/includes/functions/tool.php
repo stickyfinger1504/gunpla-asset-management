@@ -144,12 +144,14 @@ function delete_tool($conn, $id) {
 
 function calculate_tool_stats($tools) {
     $stats = [
-        'total_tools'     => count($tools),
-        'total_spent'     => 0,
-        'category_counts' => [],
-        'brand_counts'    => [],
-        'status_counts'   => [],
-        'low_quantity'    => 0,
+        'total_tools'      => count($tools),
+        'total_spent'      => 0,
+        'category_counts'  => [],
+        'brand_counts'     => [],
+        'status_counts'    => [],
+        'low_quantity'     => 0,
+        'prime_condition'  => 0,
+        'attention_needed' => 0,
     ];
 
     foreach ($tools as $t) {
@@ -164,12 +166,66 @@ function calculate_tool_stats($tools) {
         $status = $t['status'] ?? 'Unknown';
         $stats['status_counts'][$status] = ($stats['status_counts'][$status] ?? 0) + 1;
 
-        if ((int)($t['quantity'] ?? 1) <= 3) {
+        $status_lower = strtolower($status);
+        $qty = (int)($t['quantity'] ?? 1);
+        $is_low = $qty <= 3;
+        $is_degraded = str_contains($status_lower, 'worn') || 
+                       str_contains($status_lower, 'needs') || 
+                       str_contains($status_lower, 'broken') || 
+                       str_contains($status_lower, 'retired');
+
+        if ($is_low) {
             $stats['low_quantity']++;
+        }
+
+        if (str_contains($status_lower, 'good') || str_contains($status_lower, 'new')) {
+            $stats['prime_condition']++;
+        }
+
+        if ($is_low || $is_degraded) {
+            $stats['attention_needed']++;
         }
     }
 
     return $stats;
+}
+
+function update_tool_quantity($conn, int $tool_id, int $delta): bool {
+    $stmt = $conn->prepare("UPDATE tool_inventory SET quantity = GREATEST(0, quantity + ?) WHERE toolid = ?");
+    $stmt->bind_param("ii", $delta, $tool_id);
+    return $stmt->execute();
+}
+
+function update_tool_status($conn, int $tool_id, int $status_id): bool {
+    $stmt = $conn->prepare("UPDATE tool_inventory SET status = ? WHERE toolid = ?");
+    $stmt->bind_param("ii", $status_id, $tool_id);
+    return $stmt->execute();
+}
+
+function get_recent_tool_logs($conn, int $limit = 4): array {
+    $sql = "SELECT tl.*, t.name as tool_name, b.name as brand, c.label as category
+            FROM tool_log tl
+            LEFT JOIN tool_inventory t ON tl.toolid = t.toolid
+            LEFT JOIN dim_brand b ON t.brand = b.id
+            LEFT JOIN dim_category c ON t.category = c.id
+            ORDER BY tl.log_date DESC, tl.logid DESC
+            LIMIT ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function get_latest_logs_by_tool($conn): array {
+    $sql = "SELECT toolid, log_type, log_date, notes FROM tool_log ORDER BY log_date ASC, logid ASC";
+    $result = $conn->query($sql);
+    $logs = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $logs[(int)$row['toolid']] = $row;
+        }
+    }
+    return $logs;
 }
 
 function generate_tool_log_id(): string {
