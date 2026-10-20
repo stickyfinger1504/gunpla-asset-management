@@ -419,20 +419,8 @@ foreach ($radar_tools as $t) {
                                 </div>
                             </div>
 
-                            <!-- Preset Action Chips -->
-                            <div>
-                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Quick Presets:</div>
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <button type="button" onclick="setQuickLogText('🗡️ Blade Swapped')" class="px-2 py-0.5 text-[11px] font-medium bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full transition-colors shadow-2xs">🗡️ Blade Swapped</button>
-                                    <button type="button" onclick="setQuickLogText('💧 Cleaned & Oiled')" class="px-2 py-0.5 text-[11px] font-medium bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full transition-colors shadow-2xs">💧 Cleaned & Oiled</button>
-                                    <button type="button" onclick="setQuickLogText('🪥 Deep Cleaned')" class="px-2 py-0.5 text-[11px] font-medium bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full transition-colors shadow-2xs">🪥 Deep Cleaned</button>
-                                    <button type="button" onclick="setQuickLogText('📐 Re-calibrated')" class="px-2 py-0.5 text-[11px] font-medium bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full transition-colors shadow-2xs">📐 Re-calibrated</button>
-                                    <button type="button" onclick="setQuickLogText('🩹 Repaired')" class="px-2 py-0.5 text-[11px] font-medium bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full transition-colors shadow-2xs">🩹 Repaired</button>
-                                </div>
-                            </div>
-
                             <div class="flex gap-2">
-                                <input type="text" id="quicklog-notes" name="notes" placeholder="Enter service notes or select a preset above..." required class="flex-1 text-xs p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                <input type="text" id="quicklog-notes" name="notes" placeholder="Enter service notes (e.g., swapped blade, lubed pivot, deep cleaned)..." required class="flex-1 text-xs p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
                                 <button type="submit" class="px-3.5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm whitespace-nowrap">
                                     + Record Log
                                 </button>
@@ -890,18 +878,6 @@ foreach ($radar_tools as $t) {
             btnLog.className = 'px-3 py-1 text-xs font-bold rounded-md transition-all text-gray-600 hover:text-indigo-900';
             if (copyWrapper) copyWrapper.classList.remove('hidden');
         }
-    }
-
-    function setQuickLogText(preset) {
-        const notes = document.getElementById('quicklog-notes');
-        if (!notes) return;
-        const current = notes.value.trim();
-        if (!current) {
-            notes.value = preset;
-        } else if (!current.includes(preset)) {
-            notes.value = current + '; ' + preset;
-        }
-        notes.focus();
     }
 
     function copySupplyList() {
