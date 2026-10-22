@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title   = $tool['name'];
 $logs         = get_tool_logs($conn, $tool_id);
 $backlog_kits = get_backlog_items($conn); // For assigning usage to kits
-$log_type_defs = get_tool_log_type_definitions();
+$log_types    = get_tool_log_types();
 $csrf_token   = csrf_token();
 $message      = get_flash_message();
 
@@ -289,7 +289,7 @@ if (str_contains($status_lower, 'new') || str_contains($status_lower, 'good') ||
             <?php 
             $type = strtolower($log['log_type'] ?? 'general');
             $raw_type = $log['log_type'] ?? 'General';
-            $badge_class = $log_type_defs[$raw_type]['badge'] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+            $badge_class = get_log_type_badge_class($raw_type);
             ?>
             <div class="log-item bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-2xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all"
                  data-log-type="<?= e($type) ?>">
@@ -354,10 +354,8 @@ if (str_contains($status_lower, 'new') || str_contains($status_lower, 'good') ||
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Log Type *</label>
                 <select name="log_type" id="modal_log_type" required onchange="handleLogTypeChange()"
                         class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                    <?php foreach ($log_type_defs as $type_key => $def): ?>
-                        <option value="<?= e($type_key) ?>">
-                            <?= !empty($def['icon']) ? e($def['icon']) . ' ' : (!empty($def['emoji']) ? e($def['emoji']) . ' ' : '') ?><?= e($def['label'] ?? $type_key) ?><?= !empty($def['helper_description']) ? ' (' . e($def['helper_description']) . ')' : '' ?>
-                        </option>
+                    <?php foreach ($log_types as $lt): ?>
+                        <option value="<?= e($lt) ?>"><?= e($lt) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

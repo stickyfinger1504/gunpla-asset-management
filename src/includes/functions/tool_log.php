@@ -34,8 +34,8 @@ function get_tool_log_type_definitions() {
             'label'              => 'Test Sample',
             'description'        => 'Experimental sample cuts, scribe testing, or airbrush pattern tests',
             'helper_description' => 'Experimental sample cuts, scribe testing, or airbrush pattern tests',
-            'badge'              => 'bg-purple-100 text-purple-800 border-purple-200',
-            'badge_class'        => 'bg-purple-100 text-purple-800 border-purple-200',
+            'badge'              => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+            'badge_class'        => 'bg-indigo-100 text-indigo-800 border-indigo-200',
             'icon'               => '🧪',
             'emoji'              => '🧪',
         ],
@@ -53,12 +53,26 @@ function get_tool_log_type_definitions() {
 
 /**
  * Supported default tool log types
- * Single Source of Truth derived from get_tool_log_type_definitions()
  *
  * @return array
  */
 function get_tool_log_types() {
-    return array_keys(get_tool_log_type_definitions());
+    return ['Usage', 'Maintenance', 'Test Sample', 'General'];
+}
+
+/**
+ * Pure presentation helper for badge styling in code
+ *
+ * @param string $type
+ * @return string
+ */
+function get_log_type_badge_class(string $type): string {
+    return match(strtolower(trim($type))) {
+        'usage'       => 'bg-blue-100 text-blue-800 border-blue-200',
+        'maintenance' => 'bg-amber-100 text-amber-800 border-amber-200',
+        'test sample' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        default       => 'bg-gray-100 text-gray-800 border-gray-200',
+    };
 }
 
 /**

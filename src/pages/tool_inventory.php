@@ -412,9 +412,9 @@ foreach ($radar_tools as $t) {
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-500 uppercase mb-0.5">Log Type</label>
                                     <select name="log_type" class="w-full text-xs p-1.5 border border-gray-300 rounded font-medium bg-white focus:ring-1 focus:ring-indigo-500">
-                                        <option value="Maintenance">Maintenance</option>
-                                        <option value="Usage">Usage</option>
-                                        <option value="General">General</option>
+                                        <?php foreach (get_tool_log_types() as $lt): ?>
+                                            <option value="<?= e($lt) ?>"><?= e($lt) ?></option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
                             </div>
@@ -442,7 +442,7 @@ foreach ($radar_tools as $t) {
                                                 <span class="font-bold text-gray-800 truncate"><?= htmlspecialchars($log['tool_name'] ?? 'Tool') ?>:</span>
                                                 <span class="text-gray-600 truncate" title="<?= htmlspecialchars($log['notes'] ?? '') ?>"><?= htmlspecialchars($log['notes'] ?? '-') ?></span>
                                             </div>
-                                            <span class="px-1.5 py-0.2 text-[10px] font-semibold rounded bg-gray-100 text-gray-600 flex-shrink-0">
+                                            <span class="px-1.5 py-0.2 text-[10px] font-semibold rounded border <?= get_log_type_badge_class($log['log_type'] ?? '') ?> flex-shrink-0">
                                                 <?= htmlspecialchars($log['log_type']) ?>
                                             </span>
                                         </div>

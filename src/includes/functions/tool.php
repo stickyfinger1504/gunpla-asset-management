@@ -138,13 +138,13 @@ function delete_tool($conn, $id) {
 
     if ($success && !empty($old['imagepath'])) {
         // Reciprocal guard: check if tool_wishlist is using the imagepath
-        $stmt_check = $conn->prepare("SELECT COUNT(*) AS cnt FROM tool_wishlist WHERE imagepath = ?");
+        $stmt_check = $conn->prepare("SELECT 1 FROM tool_wishlist WHERE imagepath = ? LIMIT 1");
         $is_referenced = false;
         if ($stmt_check) {
             $stmt_check->bind_param("s", $old['imagepath']);
             $stmt_check->execute();
-            $check_res = $stmt_check->get_result()->fetch_assoc();
-            if (!empty($check_res['cnt']) && (int)$check_res['cnt'] > 0) {
+            $check_res = $stmt_check->get_result();
+            if ($check_res && $check_res->num_rows > 0) {
                 $is_referenced = true;
             }
         }
