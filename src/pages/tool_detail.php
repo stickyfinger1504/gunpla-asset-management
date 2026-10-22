@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title   = $tool['name'];
 $logs         = get_tool_logs($conn, $tool_id);
 $backlog_kits = get_backlog_items($conn); // For assigning usage to kits
+$log_type_defs = get_tool_log_type_definitions();
 $csrf_token   = csrf_token();
 $message      = get_flash_message();
 
@@ -287,12 +288,8 @@ if (str_contains($status_lower, 'new') || str_contains($status_lower, 'good') ||
             <?php foreach ($logs as $log): ?>
             <?php 
             $type = strtolower($log['log_type'] ?? 'general');
-            $badge_class = match($type) {
-                'maintenance' => 'bg-amber-100 text-amber-800 border-amber-200',
-                'usage'       => 'bg-green-100 text-green-800 border-green-200',
-                'test sample' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                default       => 'bg-gray-100 text-gray-800 border-gray-200'
-            };
+            $raw_type = $log['log_type'] ?? 'General';
+            $badge_class = $log_type_defs[$raw_type]['badge'] ?? 'bg-gray-100 text-gray-800 border-gray-200';
             ?>
             <div class="log-item bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-2xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all"
                  data-log-type="<?= e($type) ?>">
@@ -357,10 +354,11 @@ if (str_contains($status_lower, 'new') || str_contains($status_lower, 'good') ||
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Log Type *</label>
                 <select name="log_type" id="modal_log_type" required onchange="handleLogTypeChange()"
                         class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                    <option value="Usage">Usage (Logged against build)</option>
-                    <option value="Maintenance">Maintenance (Clean, sharpen, lubricate)</option>
-                    <option value="Test Sample">🔬 Test Sample / Performance Review</option>
-                    <option value="General">General / Other</option>
+                    <?php foreach ($log_type_defs as $type_key => $def): ?>
+                        <option value="<?= e($type_key) ?>">
+                            <?= !empty($def['icon']) ? e($def['icon']) . ' ' : (!empty($def['emoji']) ? e($def['emoji']) . ' ' : '') ?><?= e($def['label'] ?? $type_key) ?><?= !empty($def['helper_description']) ? ' (' . e($def['helper_description']) . ')' : '' ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 

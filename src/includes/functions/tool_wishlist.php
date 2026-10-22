@@ -218,7 +218,21 @@ function delete_tool_wishlist_item($conn, $id) {
     $success = $stmt->execute();
 
     if ($success && !empty($old_image) && function_exists('delete_image_file') && defined('TOOL_UPLOAD_DIR') && defined('TOOL_UPLOAD_URL_PREFIX')) {
-        delete_image_file($old_image, TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
+        // Shared file pointer guard: only delete if NO record in tool_inventory is using that image
+        $stmt_check = $conn->prepare("SELECT COUNT(*) AS cnt FROM tool_inventory WHERE imagepath = ?");
+        $is_referenced = false;
+        if ($stmt_check) {
+            $stmt_check->bind_param("s", $old_image);
+            $stmt_check->execute();
+            $check_res = $stmt_check->get_result()->fetch_assoc();
+            if (!empty($check_res['cnt']) && (int)$check_res['cnt'] > 0) {
+                $is_referenced = true;
+            }
+        }
+
+        if (!$is_referenced) {
+            delete_image_file($old_image, TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
+        }
     }
 
     return $success;

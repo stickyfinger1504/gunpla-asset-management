@@ -74,7 +74,8 @@ $message      = get_flash_message();
 $csrf_token   = csrf_token();
 $tools_list   = get_tools_for_log_dropdown($conn);
 $backlog_kits = get_backlog_kits_for_log_dropdown($conn);
-$log_types    = get_tool_log_types();
+$log_type_defs = get_tool_log_type_definitions();
+$log_types    = array_keys($log_type_defs);
 $logs         = get_tool_logs_list($conn, $_GET);
 $stats        = calculate_tool_log_stats($logs);
 
@@ -175,9 +176,11 @@ include '../components/layout_header.php';
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Log Type *</label>
                                 <select name="log_type" required class="w-full text-xs p-2 border border-gray-300 rounded font-medium bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                    <option value="Maintenance">Maintenance (Sharpen, clean, lube)</option>
-                                    <option value="Usage">Usage (Kit build session)</option>
-                                    <option value="General">General / Inspection</option>
+                                    <?php foreach ($log_type_defs as $type_key => $def): ?>
+                                        <option value="<?= e($type_key) ?>">
+                                            <?= !empty($def['icon']) ? e($def['icon']) . ' ' : (!empty($def['emoji']) ? e($def['emoji']) . ' ' : '') ?><?= e($def['label'] ?? $type_key) ?><?= !empty($def['helper_description']) ? ' (' . e($def['helper_description']) . ')' : '' ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
@@ -248,12 +251,8 @@ include '../components/layout_header.php';
                     <div id="log-spotlight-content">
                         <?php if ($top_log): ?>
                             <?php
-                            $type_lower = strtolower($top_log['log_type'] ?? 'general');
-                            $type_pill_class = match($type_lower) {
-                                'maintenance' => 'bg-amber-100 text-amber-800 border-amber-200',
-                                'usage'       => 'bg-blue-100 text-blue-800 border-blue-200',
-                                default       => 'bg-gray-100 text-gray-800 border-gray-200'
-                            };
+                            $spotlight_type = $top_log['log_type'] ?? 'General';
+                            $type_pill_class = $log_type_defs[$spotlight_type]['badge'] ?? 'bg-gray-100 text-gray-800 border-gray-200';
                             $display_img = !empty($top_log['imagepath']) ? $top_log['imagepath'] : ($top_log['tool_imagepath'] ?? null);
                             ?>
                             <div class="mb-4">
@@ -461,15 +460,10 @@ include '../components/layout_header.php';
                         $safe_name     = htmlspecialchars($log['tool_name'] ?? 'Tool', ENT_QUOTES);
                         $safe_notes    = htmlspecialchars($log['notes'] ?? '-', ENT_QUOTES);
                         $safe_type     = htmlspecialchars($log['log_type'] ?? 'General', ENT_QUOTES);
-                        $type_lower    = strtolower($log['log_type'] ?? 'general');
                         $brand_class   = get_brand_color_palette($log['brandid'] ?? 0);
                         $cat_class     = get_brand_color_palette($log['categoryid'] ?? 0);
-
-                        $type_badge_class = match($type_lower) {
-                            'maintenance' => 'bg-amber-100 text-amber-800 border-amber-200',
-                            'usage'       => 'bg-blue-100 text-blue-800 border-blue-200',
-                            default       => 'bg-gray-100 text-gray-800 border-gray-200'
-                        };
+                        $log_type_key  = $log['log_type'] ?? 'General';
+                        $type_badge_class = $log_type_defs[$log_type_key]['badge'] ?? 'bg-gray-100 text-gray-800 border-gray-200';
                         ?>
                         <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
                             <!-- Date Column -->
@@ -624,9 +618,11 @@ include '../components/layout_header.php';
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Log Type *</label>
                     <select name="log_type" required class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm">
-                        <option value="Maintenance">Maintenance (Sharpen, clean, lube)</option>
-                        <option value="Usage">Usage (Kit build session)</option>
-                        <option value="General">General / Inspection</option>
+                        <?php foreach ($log_type_defs as $type_key => $def): ?>
+                            <option value="<?= e($type_key) ?>">
+                                <?= !empty($def['icon']) ? e($def['icon']) . ' ' : (!empty($def['emoji']) ? e($def['emoji']) . ' ' : '') ?><?= e($def['label'] ?? $type_key) ?><?= !empty($def['helper_description']) ? ' (' . e($def['helper_description']) . ')' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -712,9 +708,11 @@ include '../components/layout_header.php';
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Log Type *</label>
                     <select name="log_type" id="edit_logtype" required class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm">
-                        <option value="Maintenance">Maintenance (Sharpen, clean, lube)</option>
-                        <option value="Usage">Usage (Kit build session)</option>
-                        <option value="General">General / Inspection</option>
+                        <?php foreach ($log_type_defs as $type_key => $def): ?>
+                            <option value="<?= e($type_key) ?>">
+                                <?= !empty($def['icon']) ? e($def['icon']) . ' ' : (!empty($def['emoji']) ? e($def['emoji']) . ' ' : '') ?><?= e($def['label'] ?? $type_key) ?><?= !empty($def['helper_description']) ? ' (' . e($def['helper_description']) . ')' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -773,13 +771,9 @@ include '../components/layout_header.php';
 
 <script>
     // Spotlight Carousel Datasets & Logic
-    const recentLogs = <?= json_encode(array_map(function($l) {
-        $tLower = strtolower($l['log_type'] ?? 'general');
-        $badgeClass = match($tLower) {
-            'maintenance' => 'bg-amber-100 text-amber-800 border-amber-200',
-            'usage'       => 'bg-blue-100 text-blue-800 border-blue-200',
-            default       => 'bg-gray-100 text-gray-800 border-gray-200'
-        };
+    const recentLogs = <?= json_encode(array_map(function($l) use ($log_type_defs) {
+        $logType = $l['log_type'] ?? 'General';
+        $badgeClass = $log_type_defs[$logType]['badge'] ?? 'bg-gray-100 text-gray-800 border-gray-200';
         return [
             'logid'          => $l['logid'],
             'toolid'         => (int)$l['toolid'],

@@ -252,7 +252,7 @@ SELECT
     tl.backlogid,
     bp.backlogid AS backlog_code,
     bp.name AS kit_name,
-    bp.inventory_id
+    bp.inventoryid AS inventory_id
 FROM tool_log tl
 LEFT JOIN tool_inventory t        ON tl.toolid = t.toolid
 LEFT JOIN dim_brand b             ON t.brand = b.id AND b.section = 'tool'

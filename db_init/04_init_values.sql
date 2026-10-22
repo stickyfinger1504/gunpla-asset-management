@@ -73,6 +73,15 @@ INSERT INTO dim_category (label, section, module) VALUES
     ('Putty / Filler',    'toolbox', 'category'),
     ('Other',             'toolbox', 'category');
 
+-- Tool status (section = 'toolbox', module = 'status')
+INSERT INTO dim_category (label, section, module) VALUES
+    ('New',               'toolbox', 'status'),
+    ('Good',              'toolbox', 'status'),
+    ('Worn',              'toolbox', 'status'),
+    ('Needs Replacement', 'toolbox', 'status'),
+    ('Broken',            'toolbox', 'status'),
+    ('Retired',           'toolbox', 'status');
+
 
 -- Paint finishes (section = 'paintlist', module = 'finish')
 INSERT INTO dim_category (label, section, module) VALUES 

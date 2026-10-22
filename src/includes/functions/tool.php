@@ -137,7 +137,21 @@ function delete_tool($conn, $id) {
     $success = $stmt->execute();
 
     if ($success && !empty($old['imagepath'])) {
-        delete_image_file($old['imagepath'], TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
+        // Reciprocal guard: check if tool_wishlist is using the imagepath
+        $stmt_check = $conn->prepare("SELECT COUNT(*) AS cnt FROM tool_wishlist WHERE imagepath = ?");
+        $is_referenced = false;
+        if ($stmt_check) {
+            $stmt_check->bind_param("s", $old['imagepath']);
+            $stmt_check->execute();
+            $check_res = $stmt_check->get_result()->fetch_assoc();
+            if (!empty($check_res['cnt']) && (int)$check_res['cnt'] > 0) {
+                $is_referenced = true;
+            }
+        }
+
+        if (!$is_referenced) {
+            delete_image_file($old['imagepath'], TOOL_UPLOAD_DIR, TOOL_UPLOAD_URL_PREFIX);
+        }
     }
     return $success;
 }

@@ -5,12 +5,60 @@
  */
 
 /**
+ * Single Source of Truth (SSOT) definitions for Tool Log Types
+ * Maps type keys to labels, helper descriptions, badge classes, and emoji icons.
+ *
+ * @return array
+ */
+function get_tool_log_type_definitions() {
+    return [
+        'Usage' => [
+            'label'              => 'Usage',
+            'description'        => 'Tool usage logged against a specific kit build or project session',
+            'helper_description' => 'Tool usage logged against a specific kit build or project session',
+            'badge'              => 'bg-blue-100 text-blue-800 border-blue-200',
+            'badge_class'        => 'bg-blue-100 text-blue-800 border-blue-200',
+            'icon'               => '🔨',
+            'emoji'              => '🔨',
+        ],
+        'Maintenance' => [
+            'label'              => 'Maintenance',
+            'description'        => 'Maintenance actions such as cleaning, blade replacement, sharpening, or oiling',
+            'helper_description' => 'Maintenance actions such as cleaning, blade replacement, sharpening, or oiling',
+            'badge'              => 'bg-amber-100 text-amber-800 border-amber-200',
+            'badge_class'        => 'bg-amber-100 text-amber-800 border-amber-200',
+            'icon'               => '🧰',
+            'emoji'              => '🧰',
+        ],
+        'Test Sample' => [
+            'label'              => 'Test Sample',
+            'description'        => 'Experimental sample cuts, scribe testing, or airbrush pattern tests',
+            'helper_description' => 'Experimental sample cuts, scribe testing, or airbrush pattern tests',
+            'badge'              => 'bg-purple-100 text-purple-800 border-purple-200',
+            'badge_class'        => 'bg-purple-100 text-purple-800 border-purple-200',
+            'icon'               => '🧪',
+            'emoji'              => '🧪',
+        ],
+        'General' => [
+            'label'              => 'General',
+            'description'        => 'General workbench notes, unboxing, condition inspection, or miscellaneous comments',
+            'helper_description' => 'General workbench notes, unboxing, condition inspection, or miscellaneous comments',
+            'badge'              => 'bg-gray-100 text-gray-700 border-gray-200',
+            'badge_class'        => 'bg-gray-100 text-gray-700 border-gray-200',
+            'icon'               => '📝',
+            'emoji'              => '📝',
+        ],
+    ];
+}
+
+/**
  * Supported default tool log types
+ * Single Source of Truth derived from get_tool_log_type_definitions()
  *
  * @return array
  */
 function get_tool_log_types() {
-    return ['Usage', 'Maintenance', 'Test Sample', 'General'];
+    return array_keys(get_tool_log_type_definitions());
 }
 
 /**
