@@ -115,6 +115,7 @@ $all_recipes = get_recipes($conn);
             <button class="btn" id="btn-backward" title="Send Backward ([)">⏬</button>
             <button class="btn" id="btn-lock" style="background:#4b5563;" title="Lock/Unlock Object">🔒 Lock</button>
             <button class="btn" id="btn-grid" title="Toggle Grid (G)">🎛️ Grid</button>
+            <button class="btn" id="btn-help" style="background:#4b5563;" title="Keyboard Shortcuts & Help Guide (?)" onclick="toggleHelpModal()">❓ Help</button>
             <button class="btn danger" id="btn-delete" title="Delete Selected (Del / Backspace)">🗑️ Delete</button>
         </div>
         <div class="tool-group" style="margin-left: auto;">
@@ -226,12 +227,289 @@ $all_recipes = get_recipes($conn);
     </div>
 </div>
 
+<!-- Help & Hotkeys Modal Dialog -->
+<div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title"
+     class="hidden fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 transition-opacity duration-200"
+     style="display:none; z-index:1000;" onclick="if (event.target === this) closeHelpModal();">
+    <div class="bg-gray-900 border border-gray-700/80 text-gray-200 rounded-xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[88vh] overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between bg-gray-950/40">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl select-none">📐</span>
+                <div>
+                    <h2 id="help-modal-title" class="text-lg font-bold text-white flex items-center gap-2">
+                        Blueprint Editor Guide & Hotkeys
+                        <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-blue-900/60 text-blue-300 border border-blue-700/50">v0.6.4</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Quick keyboard cheatsheet and workbench workflow guide</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeHelpModal()" class="text-gray-400 hover:text-white hover:bg-gray-800 p-1.5 rounded-lg transition-colors text-lg" title="Close (Escape)">
+                ✖
+            </button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="px-6 py-2.5 bg-gray-950/60 border-b border-gray-800 flex items-center gap-2">
+            <button type="button" id="help-tab-btn-shortcuts" onclick="switchHelpTab('shortcuts')"
+                    class="px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg bg-blue-600 text-white shadow-sm transition-all flex items-center gap-1.5">
+                <span>⌨️</span> Keyboard Shortcuts
+            </button>
+            <button type="button" id="help-tab-btn-tips" onclick="switchHelpTab('tips')"
+                    class="px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all flex items-center gap-1.5">
+                <span>💡</span> Workflow Tips
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <div class="p-6 overflow-y-auto space-y-6 text-sm flex-1">
+            
+            <!-- Tab 1: Keyboard Shortcuts -->
+            <div id="help-tab-shortcuts" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Group 1: Navigation -->
+                    <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 shadow-sm">
+                        <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span>🧭</span> Navigation & View
+                        </h3>
+                        <dl class="space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Pan Canvas</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-amber-300 shadow-2xs">Space + Drag</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Hand / Pan Tool</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-blue-300 shadow-2xs">H</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Select Tool / Pointer</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-blue-300 shadow-2xs">V</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Toggle Canvas Dot Grid</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-blue-300 shadow-2xs">G</kbd></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Group 2: Creation & Drawing Tools -->
+                    <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 shadow-sm">
+                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span>🛠️</span> Tools & Annotation
+                        </h3>
+                        <dl class="space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Freehand Brush</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">B</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Callout Arrow</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">A</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Text Label</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">T</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Sticky Note Box</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">S</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Rectangle Box</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">R</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Circle Shape</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">C</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Lasso Snip Mode</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">L</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Paint Plan Sidebar</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-emerald-300 shadow-2xs">P</kbd></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Group 3: Layer Ordering -->
+                    <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 shadow-sm">
+                        <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span>🥞</span> Layer Hierarchy
+                        </h3>
+                        <dl class="space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Bring Forward (Up)</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-purple-300 shadow-2xs">]</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Send Backward (Down)</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-purple-300 shadow-2xs">[</kbd></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Group 4: Actions & History -->
+                    <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 shadow-sm">
+                        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span>⚡</span> Actions & History
+                        </h3>
+                        <dl class="space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Undo Action / Lasso Point</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-amber-300 shadow-2xs">Ctrl + Z</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Redo Action</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-amber-300 shadow-2xs">Ctrl + Y</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Copy Object</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-amber-300 shadow-2xs">Ctrl + C</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Paste Object</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-amber-300 shadow-2xs">Ctrl + V</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Delete Selected Object</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-red-300 shadow-2xs">Del / Backspace</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Save Blueprint</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-green-300 shadow-2xs">Ctrl + S</kbd></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <dt class="text-gray-300 text-xs">Cancel Lasso / Deselect / Close Modal</dt>
+                                <dd><kbd class="px-2 py-1 text-xs font-mono font-semibold bg-gray-900 border border-gray-700 rounded text-gray-300 shadow-2xs">Escape</kbd></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab 2: Workflow Tips -->
+            <div id="help-tab-tips" class="hidden space-y-4">
+                
+                <!-- Tip 1: AI Lineart Generation -->
+                <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:border-gray-600 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-pink-900/60 border border-pink-700/60 flex items-center justify-center text-xl flex-shrink-0">
+                        🪄
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-white text-base">AI Lineart Generation (Beta)</h4>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-pink-900/70 text-pink-300 border border-pink-700/50">Edge Extraction</span>
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Upload a Gunpla manual scan, box art, or runner photo via <strong>Attach Image</strong>, then click <strong>🪄 Generate Lineart</strong>. The client-side OpenCV pipeline applies bilateral edge filtering and adaptive Canny algorithms to cleanly isolate kit armor lines, giving you an interactive monochrome lineart canvas ideal for masking and color scheme planning.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tip 2: Lasso Snip Tool -->
+                <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:border-gray-600 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-orange-900/60 border border-orange-700/60 flex items-center justify-center text-xl flex-shrink-0">
+                        ✂️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-white text-base">Precision Lasso Cropping</h4>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-900/70 text-orange-300 border border-orange-700/50">Sub-assembly Snipping</span>
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Press <kbd class="px-1.5 py-0.5 text-[11px] font-mono bg-gray-900 border border-gray-700 rounded text-orange-300">L</kbd> to enter Lasso Mode. Click sequential vertices around any part (head, chest, shield, beam rifle) or toggle <em>Freehand Mode</em> to trace smoothly. Use <kbd class="px-1.5 py-0.5 text-[11px] font-mono bg-gray-900 border border-gray-700 rounded text-orange-300">Ctrl + Z</kbd> to step back a single anchor point, and click <strong>Finish Snip</strong> to isolate that component as an independent movable canvas element.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tip 3: Paint Swatch & Recipe Planning -->
+                <div class="bg-gray-800/70 border border-gray-700/60 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:border-gray-600 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-900/60 border border-indigo-700/60 flex items-center justify-center text-xl flex-shrink-0">
+                        🎨
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-white text-base">Paint Swatch & Recipe Planning</h4>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-900/70 text-indigo-300 border border-indigo-700/50">Hangar Integration</span>
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Press <kbd class="px-1.5 py-0.5 text-[11px] font-mono bg-gray-900 border border-gray-700 rounded text-indigo-300">P</kbd> to open the Paint Plan sidebar. Here your actual Gunpla Hangar paint bottles and custom mixing recipes are accessible. Clicking any swatch stamps a color-coded callout pill directly on the canvas, ensuring your build scheme is 100% synchronized with what’s physically in your workshop drawers.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3.5 bg-gray-950/60 border-t border-gray-800 flex items-center justify-between">
+            <span class="text-xs text-gray-400 flex items-center gap-1.5">
+                <span>💡</span> Press <kbd class="px-1.5 py-0.5 font-mono text-[11px] bg-gray-800 border border-gray-700 rounded text-blue-300">?</kbd> anywhere on canvas to toggle
+            </span>
+            <button type="button" onclick="closeHelpModal()" class="px-4 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors">
+                Got it
+            </button>
+        </div>
+
+    </div>
+</div>
+
 <script>
     const ALL_PAINTS = <?= json_encode($all_paints, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     let cvReady = false;
     let cvError = false;
     function onOpenCvReady() { cvReady = true; }
     function onOpenCvError() { cvError = true; }
+
+    // Help & Hotkeys Modal Controller
+    function openHelpModal() {
+        const modal = document.getElementById('help-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+
+    function closeHelpModal() {
+        const modal = document.getElementById('help-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+
+    function toggleHelpModal() {
+        const modal = document.getElementById('help-modal');
+        if (!modal) return;
+        if (modal.classList.contains('hidden') || modal.style.display === 'none') {
+            openHelpModal();
+        } else {
+            closeHelpModal();
+        }
+    }
+
+    function switchHelpTab(tab) {
+        const tabShortcuts = document.getElementById('help-tab-shortcuts');
+        const tabTips = document.getElementById('help-tab-tips');
+        const btnShortcuts = document.getElementById('help-tab-btn-shortcuts');
+        const btnTips = document.getElementById('help-tab-btn-tips');
+
+        if (tab === 'shortcuts') {
+            tabShortcuts?.classList.remove('hidden');
+            tabTips?.classList.add('hidden');
+            if (btnShortcuts) btnShortcuts.className = 'px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg bg-blue-600 text-white shadow-sm transition-all flex items-center gap-1.5';
+            if (btnTips) btnTips.className = 'px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all flex items-center gap-1.5';
+        } else {
+            tabTips?.classList.remove('hidden');
+            tabShortcuts?.classList.add('hidden');
+            if (btnTips) btnTips.className = 'px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg bg-blue-600 text-white shadow-sm transition-all flex items-center gap-1.5';
+            if (btnShortcuts) btnShortcuts.className = 'px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all flex items-center gap-1.5';
+        }
+    }
 
     // Initialize Canvas
     const container = document.getElementById('canvas-container');
@@ -778,6 +1056,15 @@ $all_recipes = get_recipes($conn);
         const activeEl = document.activeElement;
         const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
 
+        // Dismiss Help & Hotkeys modal on Escape
+        const helpModal = document.getElementById('help-modal');
+        const isHelpOpen = helpModal && !helpModal.classList.contains('hidden') && helpModal.style.display !== 'none';
+        if (e.key === 'Escape' && isHelpOpen) {
+            e.preventDefault();
+            closeHelpModal();
+            return;
+        }
+
         if (e.ctrlKey && e.key.toLowerCase() === 'z') {
             e.preventDefault();
             if (isLassoMode) {
@@ -808,6 +1095,13 @@ $all_recipes = get_recipes($conn);
         const isEditingText = activeObj && (activeObj.isEditing || (activeObj.type === 'i-text' && activeObj.isEditing));
 
         if (!isInputFocused && !isEditingText) {
+            // Toggle Help & Hotkeys modal on '?' or Shift + '/'
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                e.preventDefault();
+                toggleHelpModal();
+                return;
+            }
+
             // Delete / Backspace: Delete selected object(s)
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 if (canvas.getActiveObjects().length > 0) {

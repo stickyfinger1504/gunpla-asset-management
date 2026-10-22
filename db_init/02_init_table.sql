@@ -96,6 +96,17 @@ CREATE TABLE kit_task (
         REFERENCES kit_backlog_plan(backlogid) ON DELETE CASCADE
 );
 
+CREATE TABLE `kit_blueprint` (
+  `blueprintid` int NOT NULL AUTO_INCREMENT,
+  `backlogid` int NOT NULL,
+  `canvas_data` longtext,
+  `imagepath` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`blueprintid`),
+  UNIQUE KEY `uk_blueprint_backlog` (`backlogid`),
+  CONSTRAINT `fk_blueprint_backlog` FOREIGN KEY (`backlogid`) REFERENCES `kit_backlog_plan` (`backlogid`) ON DELETE CASCADE
+);
+
 CREATE TABLE paint_inventory (
     inventoryid INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
@@ -104,7 +115,7 @@ CREATE TABLE paint_inventory (
     thinned INT DEFAULT NULL,
     amount INT DEFAULT NULL,
     createddate TIMESTAMP DEFAULT NULL,
-    lastupdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    lastupdate TIMESTAMP CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     notes VARCHAR(300) DEFAULT NULL,
     imagepath VARCHAR(255) DEFAULT NULL,
     color_hex VARCHAR(7) DEFAULT NULL,
@@ -188,4 +199,37 @@ CREATE TABLE tool_inventory (
     CONSTRAINT fk_tool_brand    FOREIGN KEY (brand)    REFERENCES dim_brand(id)    ON DELETE SET NULL,
     CONSTRAINT fk_tool_category FOREIGN KEY (category) REFERENCES dim_category(id) ON DELETE SET NULL,
     CONSTRAINT fk_tool_status   FOREIGN KEY (status)   REFERENCES dim_category(id) ON DELETE SET NULL
+);
+
+CREATE TABLE tool_wishlist (
+    wishlistid INT NOT NULL AUTO_INCREMENT,
+    toolid INT DEFAULT NULL,
+    name VARCHAR(255) NOT NULL,
+    brandid INT DEFAULT NULL,
+    categoryid INT DEFAULT NULL,
+    priorityid INT DEFAULT NULL,
+    obtained BOOLEAN NOT NULL DEFAULT 0,
+    imagepath VARCHAR(255) DEFAULT NULL,
+    link VARCHAR(300) DEFAULT NULL,
+    notes VARCHAR(300) DEFAULT NULL,
+    createdat TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lastupdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (wishlistid),
+    CONSTRAINT fk_tool_wishlist_inventory FOREIGN KEY (toolid) REFERENCES tool_inventory(toolid) ON DELETE SET NULL,
+    CONSTRAINT fk_tool_wishlist_brand FOREIGN KEY (brandid) REFERENCES dim_brand(id) ON DELETE SET NULL,
+    CONSTRAINT fk_tool_wishlist_category FOREIGN KEY (categoryid) REFERENCES dim_category(id) ON DELETE SET NULL,
+    CONSTRAINT fk_tool_wishlist_priority FOREIGN KEY (priorityid) REFERENCES dim_category(id) ON DELETE SET NULL
+);
+
+CREATE TABLE `tool_log` (
+  `logid` varchar(255) NOT NULL,
+  `toolid` int NOT NULL,
+  `log_type` varchar(20) NOT NULL, -- 'Usage', 'Maintenance', 'General'
+  `log_date` date NOT NULL,
+  `notes` varchar(300) DEFAULT NULL,
+  `imagepath` varchar(255) DEFAULT NULL,
+  `backlogid` int DEFAULT NULL,
+  PRIMARY KEY (`logid`),
+  CONSTRAINT `fk_tool_log_tool` FOREIGN KEY (`toolid`) REFERENCES `tool_inventory` (`toolid`) ON DELETE CASCADE,
+  CONSTRAINT `fk_tool_log_backlog` FOREIGN KEY (`backlogid`) REFERENCES `kit_backlog_plan` (`backlogid`) ON DELETE SET NULL
 );

@@ -87,6 +87,18 @@ function get_transaction_logs($conn, $filters = []) {
         $types .= "i";
     }
 
+    if (!empty($filters['filter_date_from'])) {
+        $sql .= " AND DATE(createdat) >= ?";
+        $params[] = trim($filters['filter_date_from']);
+        $types .= "s";
+    }
+
+    if (!empty($filters['filter_date_to'])) {
+        $sql .= " AND DATE(createdat) <= ?";
+        $params[] = trim($filters['filter_date_to']);
+        $types .= "s";
+    }
+
     // Sort (whitelist — safe, no user input in SQL)
     $sort = $filters['sortby'] ?? 'date_desc';
     switch ($sort) {

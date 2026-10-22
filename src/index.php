@@ -36,6 +36,12 @@ $dynamicRoutes = [
         $_GET['id'] = $matches[1];
         return 'pages/tool_detail.php';
     },
+    '#^/tool_wishlist$#' => function($matches) {
+        return 'pages/tool_wishlist.php';
+    },
+    '#^/tool_log$#' => function($matches) {
+        return 'pages/tool_log.php';
+    },
 
 ];
 

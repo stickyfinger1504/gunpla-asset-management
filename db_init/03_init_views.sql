@@ -208,3 +208,53 @@ FROM tool_inventory t
 LEFT JOIN dim_brand b     ON t.brand    = b.id    AND b.section = 'tool'
 LEFT JOIN dim_category c  ON t.category = c.id    AND c.section = 'toolbox' AND c.module = 'category'
 LEFT JOIN dim_category s  ON t.status   = s.id    AND s.section = 'toolbox' AND s.module = 'status';
+
+
+CREATE OR REPLACE VIEW vw_tool_wishlist AS
+SELECT
+    w.wishlistid AS actualid,
+    w.wishlistid AS id,
+    w.toolid,
+    w.name,
+    b.name AS brand,
+    w.brandid,
+    c.label AS category,
+    w.categoryid,
+    p.label AS priority,
+    w.priorityid,
+    w.obtained AS obtainedid,
+    CASE WHEN w.obtained = 1 THEN 'Yes' ELSE 'No' END AS obtained,
+    w.imagepath,
+    w.link,
+    w.notes,
+    w.createdat,
+    w.lastupdate
+FROM tool_wishlist w
+LEFT JOIN dim_brand b    ON w.brandid    = b.id AND b.section = 'tool'
+LEFT JOIN dim_category c ON w.categoryid = c.id AND c.section = 'toolbox'  AND c.module = 'category'
+LEFT JOIN dim_category p ON w.priorityid = p.id AND p.section = 'wishlist' AND p.module = 'priority';
+
+
+CREATE OR REPLACE VIEW vw_tool_log AS
+SELECT
+    tl.logid,
+    tl.toolid,
+    t.name AS tool_name,
+    t.imagepath AS tool_imagepath,
+    t.brand AS brandid,
+    b.name AS brand,
+    t.category AS categoryid,
+    c.label AS category,
+    tl.log_type,
+    tl.log_date,
+    tl.notes,
+    tl.imagepath,
+    tl.backlogid,
+    bp.backlogid AS backlog_code,
+    bp.name AS kit_name,
+    bp.inventory_id
+FROM tool_log tl
+LEFT JOIN tool_inventory t        ON tl.toolid = t.toolid
+LEFT JOIN dim_brand b             ON t.brand = b.id AND b.section = 'tool'
+LEFT JOIN dim_category c          ON t.category = c.id AND c.section = 'toolbox' AND c.module = 'category'
+LEFT JOIN vw_kit_backlog_plan bp  ON tl.backlogid = bp.actualid;

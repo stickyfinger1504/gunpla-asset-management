@@ -84,7 +84,7 @@ $backlog_items = get_backlog_items_for_dropdown($conn);
 $logs = get_transaction_logs($conn, $_GET);
 $stats = calculate_transaction_stats($logs);
 
-$has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']);
+$has_filters = !empty($_GET['filter_backlog']) || !empty($_GET['search']) || !empty($_GET['filter_date_from']) || !empty($_GET['filter_date_to']);
 $has_orphaned = count(array_filter($logs, fn($l) => empty($l['name']))) > 0;
 
 // Studio Workbench Datasets
@@ -495,18 +495,19 @@ $project_dock = array_values($project_dock);
                         </select>
                     </div>
                     <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Sort By</label>
-                        <select name="sortby" class="w-full mt-1 p-2 border border-gray-300 rounded">
-                            <option value="date_desc" <?= (($_GET['sortby'] ?? '') == 'date_desc') ? 'selected' : '' ?>>Date: Newest</option>
-                            <option value="date_asc" <?= (($_GET['sortby'] ?? '') == 'date_asc') ? 'selected' : '' ?>>Date: Oldest</option>
-                            <option value="name_asc" <?= (($_GET['sortby'] ?? '') == 'name_asc') ? 'selected' : '' ?>>Name: A-Z</option>
-                            <option value="name_desc" <?= (($_GET['sortby'] ?? '') == 'name_desc') ? 'selected' : '' ?>>Name: Z-A</option>
-                        </select>
+                        <label class="block text-xs font-bold text-gray-500 uppercase">From Date</label>
+                        <input type="date" name="filter_date_from" value="<?= htmlspecialchars($_GET['filter_date_from'] ?? '') ?>"
+                               class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-gray-500 uppercase">To Date</label>
+                        <input type="date" name="filter_date_to" value="<?= htmlspecialchars($_GET['filter_date_to'] ?? '') ?>"
+                               class="w-full mt-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Apply</button>
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Apply</button>
                         <?php if ($has_filters): ?>
-                        <button type="button" onclick="clearFilters(this)" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Clear</button>
+                        <a href="/build_progress" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition text-center flex items-center justify-center">Clear</a>
                         <?php endif; ?>
                     </div>
                 </div>

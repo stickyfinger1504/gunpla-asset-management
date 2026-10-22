@@ -34,6 +34,8 @@ $NAV_SECTIONS = [
         'default_page' => '/tool_inventory',
         'sidebar_items' => [
             ['page' => 'tool_inventory', 'href' => '/tool_inventory', 'icon' => '🔧', 'label' => 'Tool Inventory'],
+            ['page' => 'tool_wishlist', 'href' => '/tool_wishlist', 'icon' => '✨', 'label' => 'Tool Wishlist'],
+            ['page' => 'tool_log', 'href' => '/tool_log', 'icon' => '📝', 'label' => 'Tool Logs'],
         ]
     ]
 ];
