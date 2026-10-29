@@ -202,9 +202,13 @@ if ($active_project) {
                             <?php if ($active_project): ?>
                                 <div class="mb-3">
                                     <h4 class="text-lg font-bold text-gray-900 leading-snug">
-                                        <a href="/kit/<?= $active_project['inventoryid'] ?>" class="hover:text-blue-600 transition-colors">
-                                            <?= htmlspecialchars($active_project['name']) ?>
-                                        </a>
+                                        <?php if (!empty($active_project['inventoryid'])): ?>
+                                            <a href="/kit/<?= (int)$active_project['inventoryid'] ?>" class="hover:text-blue-600 transition-colors">
+                                                <?= htmlspecialchars($active_project['name']) ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="text-gray-900"><?= htmlspecialchars($active_project['name']) ?></span>
+                                        <?php endif; ?>
                                     </h4>
                                     <?php if (!empty($active_project['buildplan_label'])): ?>
                                         <span class="inline-block px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-800 mt-1">
@@ -266,8 +270,8 @@ if ($active_project) {
                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">
                                             📝 Build Log
                                         </a>
-                                    <?php else: ?>
-                                        <a href="/kit/<?= $active_project['inventoryid'] ?>" 
+                                    <?php elseif (!empty($active_project['inventoryid'])): ?>
+                                        <a href="/kit/<?= (int)$active_project['inventoryid'] ?>" 
                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">
                                             Kit Details →
                                         </a>
@@ -428,7 +432,11 @@ if ($active_project) {
                         <?php if ($group_key === '__general__'): ?>
                             📌 General Tasks
                         <?php else: ?>
-                            🔶 <a href="/kit/<?= $tasks[0]['inventoryid'] ?>" class="text-blue-600 hover:underline"><?= e($group_key) ?></a>
+                            🔶 <?php if (!empty($tasks[0]['inventoryid'])): ?>
+                                <a href="/kit/<?= (int)$tasks[0]['inventoryid'] ?>" class="text-blue-600 hover:underline"><?= e($group_key) ?></a>
+                            <?php else: ?>
+                                <span class="text-gray-700"><?= e($group_key) ?></span>
+                            <?php endif; ?>
                             <?php
                             $first = $tasks[0];
                             if (!empty($first['buildplan_label'])): ?>

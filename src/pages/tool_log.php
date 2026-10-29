@@ -294,9 +294,13 @@ include '../components/layout_header.php';
                                     <div class="mt-3 text-xs bg-white/90 border border-indigo-100 rounded-lg p-2 flex items-center gap-2">
                                         <span>🤖</span>
                                         <span class="font-bold text-gray-700">Used on Kit:</span>
-                                        <a href="/kit/<?= (int)$top_log['inventory_id'] ?>" class="text-blue-600 hover:underline font-semibold">
-                                            <?= htmlspecialchars($top_log['kit_name']) ?>
-                                        </a>
+                                        <?php if (!empty($top_log['inventory_id'])): ?>
+                                            <a href="/kit/<?= (int)$top_log['inventory_id'] ?>" class="text-blue-600 hover:underline font-semibold">
+                                                <?= htmlspecialchars($top_log['kit_name']) ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="font-semibold text-gray-700"><?= htmlspecialchars($top_log['kit_name']) ?></span>
+                                        <?php endif; ?>
                                         <?php if (!empty($top_log['backlog_code'])): ?>
                                             <span class="text-gray-400 font-mono">(<?= htmlspecialchars($top_log['backlog_code']) ?>)</span>
                                         <?php endif; ?>

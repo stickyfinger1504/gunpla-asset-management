@@ -55,7 +55,8 @@ CREATE OR REPLACE view vw_kit_wishlist as (
 	)
 	select concat('WSH-',a.rn) as id,
 			a.id as actualid,
-			b.id as inventoryid,
+			a.inventoryid AS inventoryid,
+			b.id AS inventory_code,
 			a.name,
 			a.brandid,
 			a.brand,

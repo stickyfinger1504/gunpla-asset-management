@@ -27,7 +27,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     elseif (isset($_POST['action_type']) && $_POST['action_type'] == 'register_to_hangar') {
         $action_success = add_kit($conn, $_POST);
         if ($action_success && !empty($_POST['from_wishlist_id'])) {
-            mark_wishlist_obtained($conn, (int)$_POST['from_wishlist_id']);
+            $new_kit_id = (is_numeric($action_success) && (int)$action_success > 0) ? (int)$action_success : (int)$conn->insert_id;
+            if ($new_kit_id > 0) {
+                link_wishlist_to_inventory($conn, (int)$_POST['from_wishlist_id'], $new_kit_id);
+            }
         }
         $msg_text = $action_success ? "✅ Successfully inducted " . htmlspecialchars($_POST["kit_name"]) . " into your Hangar!" : "❌ Error adding kit to hangar";
     }

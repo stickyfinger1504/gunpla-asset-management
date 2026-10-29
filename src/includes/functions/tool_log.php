@@ -321,7 +321,20 @@ function get_tools_for_log_dropdown($conn) {
  * @return array
  */
 function get_backlog_kits_for_log_dropdown($conn) {
-    $sql = "SELECT actualid, name, backlogid, status_label FROM vw_kit_backlog_plan ORDER BY name ASC";
+    $sql = "SELECT 
+                bp.backlogid AS actualid, 
+                ki.name AS name, 
+                CONCAT('BCKLG-', bp.backlogid) AS backlogid, 
+                c.label AS status_label,
+                bp.inventoryid AS inventory_id
+            FROM kit_backlog_plan bp
+            INNER JOIN kit_inventory ki ON bp.inventoryid = ki.inventoryid
+            LEFT JOIN dim_category c ON bp.status = c.id AND c.section = 'backlogplan' AND c.module = 'status'
+            LEFT JOIN dim_category ks ON ki.status = ks.id AND ks.section = 'kitinventory' AND ks.module = 'status'
+            WHERE bp.inventoryid IS NOT NULL
+              AND (c.label IS NULL OR LOWER(TRIM(c.label)) != 'done')
+              AND (ks.label IS NULL OR LOWER(TRIM(ks.label)) != 'archived')
+            ORDER BY ki.name ASC";
     $result = $conn->query($sql);
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }

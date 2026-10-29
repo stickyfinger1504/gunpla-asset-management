@@ -12,10 +12,25 @@ function get_kit_detail($conn, int $inventoryid): ?array {
 
     if (!$kit) return null;
 
-    $stmt = $conn->prepare("SELECT * FROM vw_kit_wishlist WHERE inventoryid = ?");
-    $stmt->bind_param("i", $inventoryid);
+    $kit_code = $kit['id'] ?? '';
+    $stmt = $conn->prepare("SELECT * FROM vw_kit_wishlist WHERE inventoryid = ? OR inventoryid = ? LIMIT 1");
+    $stmt->bind_param("ss", $inventoryid, $kit_code);
     $stmt->execute();
     $wishlist = $stmt->get_result()->fetch_assoc();
+
+    if (!$wishlist) {
+        $stmt_w = $conn->prepare(
+            "SELECT w.wishlistid as actualid, w.name, w.link, w.notes, c.label as priority
+             FROM kit_wishlist w
+             LEFT JOIN dim_category c ON w.priorityid = c.id AND c.section = 'wishlist' AND c.module = 'priority'
+             WHERE w.inventoryid = ? LIMIT 1"
+        );
+        if ($stmt_w) {
+            $stmt_w->bind_param("i", $inventoryid);
+            $stmt_w->execute();
+            $wishlist = $stmt_w->get_result()->fetch_assoc();
+        }
+    }
 
     $stmt = $conn->prepare("SELECT * FROM vw_kit_backlog_plan WHERE inventoryid = ?");
     $stmt->bind_param("i", $inventoryid);

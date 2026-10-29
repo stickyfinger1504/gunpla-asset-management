@@ -117,6 +117,25 @@ function mark_wishlist_obtained($conn, $id) {
     return $stmt->execute();
 }
 
+/**
+ * Link an inducted wishlist item to its newly created inventory record
+ *
+ * @param mysqli $conn
+ * @param int $wishlist_id
+ * @param int $inventory_id
+ * @return bool
+ */
+function link_wishlist_to_inventory($conn, $wishlist_id, $inventory_id) {
+    $wishlist_id = (int)$wishlist_id;
+    $inventory_id = (int)$inventory_id;
+    if ($wishlist_id <= 0 || $inventory_id <= 0) return false;
+
+    $stmt = $conn->prepare("UPDATE kit_wishlist SET obtained = 1, inventoryid = ? WHERE wishlistid = ?");
+    if (!$stmt) return false;
+    $stmt->bind_param("ii", $inventory_id, $wishlist_id);
+    return $stmt->execute();
+}
+
 function calculate_wishlist_stats($items) {
     $stats = [
         'total_items' => count($items),

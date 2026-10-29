@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $page_title   = $tool['name'];
 $logs         = get_tool_logs($conn, $tool_id);
-$backlog_kits = get_backlog_items($conn); // For assigning usage to kits
+$backlog_kits = get_backlog_kits_for_log_dropdown($conn); // For assigning usage to active kits
 $log_types    = get_tool_log_types();
 $csrf_token   = csrf_token();
 $message      = get_flash_message();
@@ -309,7 +309,12 @@ if (str_contains($status_lower, 'new') || str_contains($status_lower, 'good') ||
                         <p class="text-sm text-gray-700 whitespace-pre-line"><?= e($log['notes']) ?></p>
                         <?php if (!empty($log['kit_name'])): ?>
                         <p class="text-xs text-blue-600 mt-1 font-medium">
-                            🔗 Used on: <a href="/kit/<?= (int)$log['inventory_id'] ?>" class="underline font-bold hover:text-blue-800"><?= e($log['kit_name']) ?></a>
+                            🔗 Used on: 
+                            <?php if (!empty($log['inventory_id'])): ?>
+                                <a href="/kit/<?= (int)$log['inventory_id'] ?>" class="underline font-bold hover:text-blue-800"><?= e($log['kit_name']) ?></a>
+                            <?php else: ?>
+                                <span class="font-bold text-gray-700"><?= e($log['kit_name']) ?></span>
+                            <?php endif; ?>
                         </p>
                         <?php endif; ?>
                     </div>

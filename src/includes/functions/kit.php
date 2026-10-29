@@ -105,7 +105,10 @@ function add_kit($conn, $data) {
 
     $stmt = $conn->prepare("INSERT INTO kit_inventory (name, status, datebought, pricebought, notes, brandid) VALUES (?,?,?,?,?,?)");
     $stmt->bind_param("sisisi", $data["kit_name"], $data["statusid"], $datebought, $pricebought, $notes, $data["brandid"]);
-    return $stmt->execute();
+    if ($stmt->execute()) {
+        return (int)$conn->insert_id ?: true;
+    }
+    return false;
 }
 
 function update_kit($conn, $data) {
